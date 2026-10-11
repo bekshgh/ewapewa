@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { ConversionSection } from "@/components/conversions/ConversionSection";
 import { ProjectForm } from "@/components/projects/ProjectForm";
 import { SmallSample } from "@/components/projects/ProjectList";
 import { STATUS_LABEL, fmtDate, fmtMetric, fmtNumber } from "@/components/projects/format";
 import { prisma } from "@/lib/db";
+import { googleStatus, listSnapshots } from "@/lib/conversions/actions";
+import { loadState } from "@/lib/conversions/state";
 import { CHANNEL_GROUPS, CONCENTRATION, THEMES, ZONES, labelOf } from "@/lib/projects/dictionaries";
 import { toRow } from "@/lib/projects/rows";
 import { getProjectSettings } from "@/lib/projects/settings";
@@ -30,6 +33,13 @@ export default async function ProjectPage(props: { params: Promise<{ slug: strin
     getProjectSettings(prisma),
   ]);
   if (!project) notFound();
+  const [conversion, snapshots] = await Promise.all([loadState(prisma, project.id), listSnapshots(prisma, project.id)]);
+  // Active campaigns, plus the chosen one even if it was archived since.
+  const campaigns = await prisma.campaign.findMany({
+    where: { OR: [{ status: { not: "archived" } }, { id: conversion.config.ogxCampaign?.id ?? "" }] },
+    orderBy: { createdAt: "desc" },
+    select: { id: true, name: true, label: true },
+  });
   const r = toRow(project);
   const small = r.responses !== null && r.responses < settings.smallSampleN;
   const pct = (v: number | null, d = 0) => fmtMetric(v, { unit: "%", scale: 100, decimals: d });
@@ -108,6 +118,15 @@ export default async function ProjectPage(props: { params: Promise<{ slug: strin
           </section>
         ))}
       </div>
+
+      <ConversionSection
+        projectId={project.id}
+        projectSlug={project.slug}
+        initial={conversion}
+        snapshots={snapshots}
+        campaigns={campaigns}
+        serviceAccountEmail={googleStatus().serviceAccountEmail}
+      />
 
       <section className="card mt-6 p-5">
         <h2 className="mb-3 font-display text-base font-semibold">Project reports</h2>

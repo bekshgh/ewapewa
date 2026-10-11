@@ -129,22 +129,43 @@ function isGibberish(text: string): boolean {
 /** Returns MX presence per domain; a lookup failure or timeout counts as "unknown" (no flag). */
 export type MxLookup = (domain: string) => Promise<boolean | null>;
 
-const mxCache = new Map<string, boolean | null>();
+type ResolveMx = (domain: string) => Promise<{ exchange: string }[]>;
 
-export function dnsMxLookup(timeoutMs: number): MxLookup {
-  return async (domain) => {
-    if (mxCache.has(domain)) return mxCache.get(domain)!;
-    const { resolveMx } = await import("node:dns/promises");
-    const result = await Promise.race<boolean | null>([
+const mxCache = new Map<string, boolean | null>();
+let dnsHealthy: { ok: boolean; at: number } | null = null;
+const CANARY = "gmail.com";
+
+/**
+ * MX lookup with a canary: when even gmail.com does not resolve, DNS itself is
+ * down (every answer would read "not found"), so all lookups return unknown.
+ */
+export function dnsMxLookup(timeoutMs: number, resolver?: ResolveMx): MxLookup {
+  const resolve = async (domain: string): Promise<boolean | null> => {
+    const resolveMx = resolver ?? (await import("node:dns/promises")).resolveMx;
+    return Promise.race<boolean | null>([
       resolveMx(domain).then(
         (r) => r.length > 0,
         (e: NodeJS.ErrnoException) => (e?.code === "ENOTFOUND" || e?.code === "ENODATA" ? false : null),
       ),
-      new Promise((resolve) => setTimeout(() => resolve(null), timeoutMs)),
+      new Promise((done) => setTimeout(() => done(null), timeoutMs)),
     ]);
+  };
+  return async (domain) => {
+    if (!dnsHealthy || Date.now() - dnsHealthy.at > 10 * 60_000) {
+      dnsHealthy = { ok: (await resolve(CANARY)) === true, at: Date.now() };
+    }
+    if (!dnsHealthy.ok) return null;
+    if (mxCache.has(domain)) return mxCache.get(domain)!;
+    const result = await resolve(domain);
     if (result !== null) mxCache.set(domain, result);
     return result;
   };
+}
+
+/** For tests: forget cached MX answers and DNS health. */
+export function resetMxCache() {
+  mxCache.clear();
+  dnsHealthy = null;
 }
 
 /* ─── pipeline ──────────────────────────────────────────────────── */

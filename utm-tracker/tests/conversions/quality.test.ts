@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   countPeople,
+  dnsMxLookup,
   maskEmail,
   normalizeEmail,
   normalizePhone,
   processRows,
+  resetMxCache,
   statusOf,
   type SourceRow,
 } from "@/lib/conversions/quality";
@@ -81,6 +83,19 @@ describe("flags (one test each)", () => {
     const broken = async () => { throw new Error("dns down"); };
     const q = await processRows([row({ email: "a@nomx.kz" })], { settings, mx: broken });
     expect(q.people[0].flags).not.toContain("no_mx");
+  });
+  it("no_mx with real DNS semantics: a broken resolver (everything 'not found') flags nobody", async () => {
+    const settings = { ...DEFAULT_QUALITY, checkMx: true };
+    const notFound = Object.assign(new Error("nf"), { code: "ENOTFOUND" });
+    resetMxCache();
+    const broken = dnsMxLookup(100, async () => { throw notFound; });
+    const p = await processRows([row({ email: "a@mail.ru" }), row({ email: "b@nomx.kz" })], { settings, mx: broken });
+    expect(p.people.some((x) => x.flags.includes("no_mx"))).toBe(false);
+    resetMxCache();
+    const healthy = dnsMxLookup(100, async (d) => { if (d === "nomx.kz") throw notFound; return [{ exchange: "mx" }]; });
+    const q = await processRows([row({ email: "a@mail.ru" }), row({ email: "b@nomx.kz" })], { settings, mx: healthy });
+    expect(q.people.map((x) => x.flags.includes("no_mx"))).toEqual([false, true]);
+    resetMxCache();
   });
   it("test_words", async () => {
     expect(await flagsOf({ email: "test123@mail.ru" })).toContain("test_words");
