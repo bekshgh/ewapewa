@@ -55,6 +55,8 @@ model Campaign {
   user  User?          @relation(fields: [userId], references: [id])
   links TrackingLink[]
 
+  conversionConfigs ProjectConversionConfig[]
+
   @@index([userId])
 }
 
@@ -248,6 +250,9 @@ model Project {
   reports Report[]
   metrics ProjectMetrics?
 
+  conversionConfig    ProjectConversionConfig?
+  conversionSnapshots ConversionSnapshot[]
+
   @@index([typeId])
   @@index([status])
   @@index([startDate])
@@ -342,4 +347,85 @@ model SavedView {
   name      String
   query     String // URL query string, e.g. "type=forum&score10=9..10&sort=-date"
   createdAt DateTime @default(now())
+}
+
+// ─── Conversions (EwA2ELD): ratios such as EwA2oGX per project ───────────
+// Inputs come from the project's registration sheet, the oGX campaign's leads
+// and admin entry. Ratios are computed on read from src/lib/conversions/registry.ts.
+// No names, emails or phones are copied here: rows are keyed by a hash.
+
+model ProjectConversionConfig {
+  projectId         String   @id
+  /// { spreadsheetId, tab, emailCol, timeCol?, phoneCol?, nameCol?, utmCol? }
+  registrationSheet Json?
+  ogxCampaignId     String?
+  countSuspicious   Boolean  @default(true)
+  /// Current manual values and overrides of auto values (see lib/conversions/state.ts).
+  manual            Json     @default("{}")
+  /// Last processed registration source: origin, time, raw count, duplicates, error.
+  registrationMeta  Json?
+  updatedAt         DateTime @updatedAt
+
+  project  Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  campaign Campaign? @relation(fields: [ogxCampaignId], references: [id], onDelete: SetNull)
+
+  @@index([ogxCampaignId])
+}
+
+/// Append-only history: a snapshot is never updated after it is written.
+model ConversionSnapshot {
+  id              String   @id @default(cuid())
+  projectId       String
+  asOfDate        DateTime
+  createdAt       DateTime @default(now())
+  createdBy       String
+  note            String?
+  projectRegs     Int?
+  showUp          Int?
+  regOgx          Int?
+  aiesecOrgSignup Int?
+  regMxp          Int?
+  /// Per input: mode auto|manual, origin, raw count, duplicates, quarantined, pending, override reason.
+  sources         Json
+  quality         Json
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, asOfDate])
+}
+
+/// One unique person per (project, source): automatic check result and the admin's decision.
+model RowReview {
+  id        String    @id @default(cuid())
+  projectId String
+  source    String // sheet | ogx
+  rowKey    String // sha256 of the normalised email
+  status    String // valid | suspicious | quarantined (automatic)
+  flags     String[]  @default([])
+  riskScore Int       @default(0)
+  decision  String? // approved | rejected (admin), null = none
+  decidedBy String?
+  decidedAt DateTime?
+  /// Still present in the source at the last refresh.
+  present   Boolean   @default(true)
+  /// Masked label for the queue, e.g. "a***@gmail.com".
+  label     String?
+  /// Sheet row number or lead id, to find the record in its source.
+  rowRef    String?
+  seenAt    DateTime?
+  updatedAt DateTime  @updatedAt
+
+  @@unique([projectId, source, rowKey])
+  @@index([projectId, source, status])
+}
+
+model ConversionAudit {
+  id        String   @id @default(cuid())
+  projectId String
+  action    String
+  detail    Json
+  actor     String
+  createdAt DateTime @default(now())
+
+  @@index([projectId, createdAt])
 }
