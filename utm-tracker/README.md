@@ -42,6 +42,7 @@ is never blocked by a database error.
 | Settings | `/settings` | Config, environment status, data overview |
 | Data | `/data` | Import everything from a previous deployment of this tracker (paste its `DATABASE_URL`; safe to re-run), bulk delete |
 | Projects | `/projects` | Events with filters, quick views, saved views and compare (see [docs/project-filters.md](docs/project-filters.md)) |
+| Project page | `/projects/{slug}` | Metrics, reports and «Конверсия (EwA2ELD)» ratios with a review queue (see [docs/conversions.md](docs/conversions.md)) |
 | Reports | `/reports` | Upload a Feedback / Registration Excel analysis, preview, publish |
 | Report page | `/report/{slug}` | The published interactive report (see [docs/reports.md](docs/reports.md)) |
 
@@ -99,6 +100,7 @@ npm run dev              # http://localhost:3000
 | `AUTH_EMAIL` | ✅ | Login email for the dashboard |
 | `AUTH_PASSWORD` | ✅ | Login password for the dashboard |
 | `AUTH_SECRET` | ✅ | Signs session cookies, 16+ characters |
+| `GOOGLE_SERVICE_ACCOUNT_JSON` | ➖ | Service-account key (whole JSON) to read project registration sheets; see [docs/conversions.md](docs/conversions.md) |
 
 ---
 
