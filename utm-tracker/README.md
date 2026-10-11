@@ -40,6 +40,7 @@ is never blocked by a database error.
 | Webhook | `/webhooks` | Endpoint URL, Tilda JS snippet, payload, tester, event log |
 | Guideline | `/guide` | 20-step beginner guide (in Russian) |
 | Settings | `/settings` | Config, environment status, data overview |
+| Data | `/data` | Import everything from a previous deployment of this tracker (paste its `DATABASE_URL`; safe to re-run), bulk delete |
 | Projects | `/projects` | Events with filters, quick views, saved views and compare (see [docs/project-filters.md](docs/project-filters.md)) |
 | Reports | `/reports` | Upload a Feedback / Registration Excel analysis, preview, publish |
 | Report page | `/report/{slug}` | The published interactive report (see [docs/reports.md](docs/reports.md)) |
