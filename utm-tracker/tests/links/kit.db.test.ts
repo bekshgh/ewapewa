@@ -29,7 +29,7 @@ describe.skipIf(!url)("createKit (database)", () => {
     destinationUrl: "https://landing.example/tts",
     rows: [
       { source: "telegram", medium: "message", content: "rassylka" },
-      { source: "instagram", medium: "bio", content: "tapter", destinationUrl: "https://other.example/" },
+      { label: "Tapter", source: "instagram", medium: "bio", content: "tapter", destinationUrl: "https://other.example/" },
     ],
   });
 
@@ -41,7 +41,7 @@ describe.skipIf(!url)("createKit (database)", () => {
     const links = await db.trackingLink.findMany({ where: { campaignId: a }, orderBy: { slug: "asc" } });
     expect(links.map((l) => l.slug)).toEqual([`${tag}a-ig-tapter`, `${tag}a-tg-rassylka`]);
     expect(links.every((l) => l.utmCampaign === `${tag}_a`)).toBe(true);
-    expect(links.find((l) => l.utmSource === "instagram")?.destinationUrl).toBe("https://other.example/");
+    expect(links.find((l) => l.utmSource === "instagram")).toMatchObject({ destinationUrl: "https://other.example/", name: "Kit Test A — Tapter" });
 
     const again = await kit.createKit(a, kit.kitSchema.parse(input(`${tag}a`)));
     expect(again.created).toBe(0);
@@ -54,9 +54,10 @@ describe.skipIf(!url)("createKit (database)", () => {
 
   it("reads another campaign's structure", async () => {
     const rows = await kit.campaignStructure(a);
+    // labels come back from the link names, without the campaign part
     expect(rows).toEqual([
-      { source: "telegram", medium: "message", content: "rassylka" },
-      { source: "instagram", medium: "bio", content: "tapter" },
+      { label: "telegram · rassylka", source: "telegram", medium: "message", content: "rassylka" },
+      { label: "Tapter", source: "instagram", medium: "bio", content: "tapter" },
     ]);
   });
 });

@@ -6,6 +6,7 @@ import { DEFAULT_TEMPLATE, PREFIX_RE, cleanRow, planKit, rowKey, type KitRow, ty
 const TEMPLATES_KEY = "links.templates";
 
 const rowSchema = z.object({
+  label: z.string().trim().max(80).optional(),
   source: z.string().trim().min(1, "Each row needs a source").max(80),
   medium: z.string().trim().max(80).default(""),
   content: z.string().trim().max(120).default(""),
@@ -22,6 +23,8 @@ export const kitSchema = z.object({
 });
 
 export class KitError extends Error {}
+
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /** Templates saved by the team (the default one is always offered first). */
 export async function savedTemplates(): Promise<KitTemplate[]> {
@@ -57,17 +60,19 @@ const campaignLinksWhere = (c: { id: string; name: string }) => ({ OR: [{ campai
 
 /** The source / medium / content rows of a campaign's links, oldest first, without repeats. */
 export async function campaignStructure(campaignId: string): Promise<KitRow[]> {
-  const c = await prisma.campaign.findUnique({ where: { id: campaignId }, select: { id: true, name: true } });
+  const c = await prisma.campaign.findUnique({ where: { id: campaignId }, select: { id: true, name: true, label: true } });
   if (!c) throw new KitError("Campaign not found.");
   const links = await prisma.trackingLink.findMany({
     where: { ...campaignLinksWhere(c), isArchived: false },
-    select: { utmSource: true, utmMedium: true, utmContent: true },
+    select: { name: true, utmSource: true, utmMedium: true, utmContent: true },
     orderBy: { createdAt: "asc" },
   });
   const seen = new Set<string>();
   const rows: KitRow[] = [];
   for (const l of links) {
-    const r = cleanRow({ source: l.utmSource ?? "", medium: l.utmMedium ?? "", content: l.utmContent ?? "" });
+    // "TopTalents Sprint F'26 — Tapter" → "Tapter"
+    const label = l.name.replace(new RegExp(`^\\s*(${escapeRe(c.label ?? "")}|${escapeRe(c.name)})\\s*[—–-]\\s*`, "i"), "");
+    const r = cleanRow({ label, source: l.utmSource ?? "", medium: l.utmMedium ?? "", content: l.utmContent ?? "" });
     if (!r.source || seen.has(rowKey(r))) continue;
     seen.add(rowKey(r));
     rows.push(r);
@@ -88,7 +93,7 @@ export async function kitContext(campaignId: string) {
     prisma.trackingLink.findMany({ select: { slug: true } }),
     prisma.campaign.findMany({
       where: { id: { not: campaign.id } },
-      select: { id: true, name: true, label: true },
+      select: { id: true, name: true, label: true, slugPrefix: true },
       orderBy: { createdAt: "desc" },
     }),
     allTemplates(),
@@ -135,7 +140,7 @@ export async function createKit(campaignId: string, input: z.infer<typeof kitSch
     const fresh = rows.filter((r) => r.status === "new");
     const res = await tx.trackingLink.createMany({
       data: fresh.map((r) => ({
-        name: `${label} — ${[r.source, r.content || r.medium].filter(Boolean).join(" · ")}`.slice(0, 120),
+        name: `${label} — ${r.label || [r.source, r.content || r.medium].filter(Boolean).join(" · ")}`.slice(0, 120),
         slug: r.slug,
         destinationUrl: r.destinationUrl,
         campaignId: campaign.id,

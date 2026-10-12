@@ -18,14 +18,15 @@ export default async function CampaignUtmLinksPage(props: { params: Promise<{ id
     <>
       <PageHeader
         breadcrumb="Campaigns"
-        title="Создать utm-ссылки"
+        title="Create UTM links"
         subtitle={`${campaign.label || campaign.name} · utm_campaign: ${campaign.name}`}
       />
       <LinkKitBuilder
         campaign={{ id: campaign.id, name: campaign.name, label: campaign.label, slugPrefix: campaign.slugPrefix }}
         links={ctx.links.map((l) => ({ slug: l.slug, utmSource: l.utmSource, utmMedium: l.utmMedium, utmContent: l.utmContent }))}
         takenSlugs={ctx.takenSlugs}
-        campaigns={ctx.campaigns}
+        campaigns={ctx.campaigns.map(({ id, name, label }) => ({ id, name, label }))}
+        usedPrefixes={Object.fromEntries(ctx.campaigns.filter((c) => c.slugPrefix).map((c) => [c.slugPrefix!, c.label || c.name]))}
         templates={ctx.templates}
         commonDestination={ctx.commonDestination}
         base={BASE}

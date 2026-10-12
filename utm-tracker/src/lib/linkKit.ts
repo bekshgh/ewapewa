@@ -8,6 +8,8 @@
  */
 
 export interface KitRow {
+  /** Human name of the link, e.g. "Tapter"; the link is named "<campaign> — <label>". */
+  label?: string;
   source: string;
   medium: string;
   content: string;
@@ -20,18 +22,30 @@ export interface KitTemplate {
   rows: KitRow[];
 }
 
-/** The usual channels of a project campaign (as in TopTalents Sprint F'26). */
+/**
+ * The channels of a project campaign. UTM values reuse those of
+ * TopTalents Sprint F'26 where it had the channel (tapter, telegram,
+ * infopartnerN, mailing, rassylka); the rest are new.
+ */
 export const DEFAULT_TEMPLATE: KitTemplate = {
-  name: "Стандартный набор проекта",
+  name: "Project set",
   rows: [
-    { source: "telegram", medium: "message", content: "rassylka" },
-    { source: "telegram", medium: "message", content: "rassylka2" },
-    { source: "telegram", medium: "social", content: "telegram" },
-    { source: "instagram", medium: "bio", content: "tapter" },
-    { source: "instagram", medium: "social", content: "threads" },
-    { source: "email", medium: "email", content: "mailing" },
-    { source: "qr", medium: "offline", content: "poster" },
-    { source: "linkedin", medium: "social", content: "post" },
+    { label: "Tapter", source: "instagram", medium: "bio", content: "tapter" },
+    { label: "Target ads", source: "instagram", medium: "cpc", content: "target" },
+    { label: "Telegram", source: "telegram", medium: "social", content: "telegram" },
+    { label: "Info partner 1", source: "referral", medium: "referral", content: "infopartner1" },
+    { label: "Info partner 2", source: "referral", medium: "referral", content: "infopartner2" },
+    { label: "Info partner 3", source: "referral", medium: "referral", content: "infopartner3" },
+    { label: "Info partner 4", source: "referral", medium: "referral", content: "infopartner4" },
+    { label: "Info partner 5", source: "referral", medium: "referral", content: "infopartner5" },
+    { label: "Mailing", source: "email", medium: "email", content: "mailing" },
+    { label: "Telegram mailing 1", source: "telegram", medium: "message", content: "rassylka" },
+    { label: "Telegram mailing 2", source: "telegram", medium: "message", content: "rassylka2" },
+    { label: "Promo video", source: "instagram", medium: "social", content: "promo_video" },
+    { label: "Banner", source: "qr", medium: "offline", content: "banner" },
+    { label: "Small banner", source: "qr", medium: "offline", content: "small_banner" },
+    { label: "NU Space", source: "qr", medium: "offline", content: "nu_space" },
+    { label: "Promo Lower Atrium", source: "qr", medium: "offline", content: "lower_atrium" },
   ],
 };
 
@@ -77,6 +91,8 @@ export function cleanUtm(s: string): string {
 
 export function cleanRow(r: KitRow): KitRow {
   const row: KitRow = { source: cleanUtm(r.source), medium: cleanUtm(r.medium), content: cleanUtm(r.content) };
+  const label = r.label?.trim();
+  if (label) row.label = label.slice(0, 80);
   const dest = r.destinationUrl?.trim();
   if (dest) row.destinationUrl = dest;
   return row;
@@ -148,5 +164,10 @@ export function partnerRows(current: KitRow[], count: number): KitRow[] {
     const m = /^infopartner(\d+)$/.exec(cleanUtm(r.content));
     if (m) max = Math.max(max, Number(m[1]));
   }
-  return Array.from({ length: count }, (_, i) => ({ source: "referral", medium: "referral", content: `infopartner${max + i + 1}` }));
+  return Array.from({ length: count }, (_, i) => ({
+    label: `Info partner ${max + i + 1}`,
+    source: "referral",
+    medium: "referral",
+    content: `infopartner${max + i + 1}`,
+  }));
 }

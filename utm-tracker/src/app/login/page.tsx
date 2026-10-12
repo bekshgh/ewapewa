@@ -24,10 +24,10 @@ export default function LoginPage() {
         router.push("/");
         router.refresh();
       } else {
-        setError("Неверный логин или пароль");
+        setError("Wrong email or password");
       }
     } catch {
-      setError("Ошибка соединения. Попробуй ещё раз.");
+      setError("Connection error. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -76,7 +76,7 @@ export default function LoginPage() {
               disabled={loading}
               className="btn-primary w-full justify-center"
             >
-              {loading ? "Входим…" : "Войти"}
+              {loading ? "Signing in…" : "Sign in"}
             </button>
           </form>
         </div>

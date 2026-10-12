@@ -47,12 +47,14 @@ describe("planKit", () => {
     const plan = planKit("tts", DEFAULT_TEMPLATE.rows, [], []);
     expect(plan.every((r) => r.status === "new")).toBe(true);
     expect(new Set(plan.map((r) => r.slug)).size).toBe(DEFAULT_TEMPLATE.rows.length);
+    expect(plan.map((r) => r.slug)).toContain("tts-ig-tapter");
+    expect(plan.map((r) => r.slug)).toContain("tts-qr-lower-atrium");
   });
 });
 
 describe("partnerRows", () => {
   it("continues the numbering", () => {
     const rows = partnerRows([{ source: "referral", medium: "referral", content: "infopartner3" }], 2);
-    expect(rows.map((r) => r.content)).toEqual(["infopartner4", "infopartner5"]);
+    expect(rows.map((r) => [r.label, r.content])).toEqual([["Info partner 4", "infopartner4"], ["Info partner 5", "infopartner5"]]);
   });
 });
