@@ -48,6 +48,7 @@ model Campaign {
   funnel      String? // e.g. "Projects"
   season      String? // e.g. "spring 2026"
   type        String? // e.g. "Event"
+  slugPrefix  String? @unique // short project code for generated link slugs, e.g. "tts"
   status      String   @default("active") // active | paused | archived
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
