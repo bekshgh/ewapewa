@@ -95,31 +95,49 @@ interface Breakdown {
   cr: number;
 }
 
+/**
+ * Clicks come from the links' UTM; leads from their own UTM, falling back to
+ * the UTM of the link they came through. So leads count even when they are
+ * not tied to a link (imported, unattributed or from a page with UTM only),
+ * the same way the campaign page counts them.
+ */
 async function breakdownBy(field: "utmSource" | "utmCampaign" | "utmContent", range: RangeKey) {
   const since = rangeToDate(range);
-  const [links, unique] = await Promise.all([prisma.trackingLink.findMany({
-    select: {
-      id: true,
-      utmSource: true,
-      utmCampaign: true,
-      utmContent: true,
-      _count: {
-        select: {
-          clicks: since ? { where: { timestamp: { gte: since } } } : true,
-          leads: since ? { where: { submittedAt: { gte: since } } } : true,
-        },
+  const [links, unique, leadGroups] = await Promise.all([
+    prisma.trackingLink.findMany({
+      select: {
+        id: true,
+        utmSource: true,
+        utmCampaign: true,
+        utmContent: true,
+        _count: { select: { clicks: since ? { where: { timestamp: { gte: since } } } : true } },
       },
-    },
-  }), uniqueClicksByLink(since)]);
+    }),
+    uniqueClicksByLink(since),
+    prisma.lead.groupBy({
+      by: [field, "trackingLinkId"],
+      where: since ? { submittedAt: { gte: since } } : {},
+      _count: { _all: true },
+    }),
+  ]);
 
   const agg = new Map<string, { clicks: number; uniqueClicks: number; leads: number }>();
+  const row = (k: string | null | undefined) => {
+    const key = k || "(none)";
+    const r = agg.get(key) ?? { clicks: 0, uniqueClicks: 0, leads: 0 };
+    agg.set(key, r);
+    return r;
+  };
+  const linkValue = new Map<string, string | null>();
   for (const l of links) {
-    const key = (l[field] || "(none)") as string;
-    const row = agg.get(key) ?? { clicks: 0, uniqueClicks: 0, leads: 0 };
-    row.clicks += l._count.clicks;
-    row.uniqueClicks += unique.get(l.id) ?? 0;
-    row.leads += l._count.leads;
-    agg.set(key, row);
+    linkValue.set(l.id, l[field]);
+    const r = row(l[field]);
+    r.clicks += l._count.clicks;
+    r.uniqueClicks += unique.get(l.id) ?? 0;
+  }
+  for (const g of leadGroups) {
+    const own = g[field] as string | null;
+    row(own || (g.trackingLinkId ? linkValue.get(g.trackingLinkId) : null)).leads += g._count._all;
   }
 
   return Array.from(agg.entries())
