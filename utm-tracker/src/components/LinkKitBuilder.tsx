@@ -20,6 +20,8 @@ type Props = {
   links: ExistingLink[];
   takenSlugs: string[];
   campaigns: { id: string; name: string; label: string | null }[];
+  /** Project codes other campaigns already use → their name. */
+  usedPrefixes: Record<string, string>;
   templates: KitTemplate[];
   commonDestination: string;
   base: string;
@@ -29,23 +31,23 @@ type Props = {
 
 type Created = (PlannedRow & { destinationUrl: string })[];
 
-/** 1 ссылка / 2 ссылки / 5 ссылок */
-function plural(n: number, one: string, few: string, many: string) {
-  const m10 = n % 10, m100 = n % 100;
-  if (m10 === 1 && m100 !== 11) return one;
-  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
-  return many;
-}
+const links = (n: number) => `${n} link${n === 1 ? "" : "s"}`;
 
 const STATUS: Record<PlannedRow["status"], { text: string; cls: string }> = {
-  new: { text: "новая", cls: "text-leads" },
-  exists: { text: "уже есть", cls: "text-ink-faint" },
-  duplicate: { text: "повтор", cls: "text-danger" },
+  new: { text: "new", cls: "text-leads" },
+  exists: { text: "already exists", cls: "text-ink-faint" },
+  duplicate: { text: "repeated row", cls: "text-danger" },
 };
 
 export function LinkKitBuilder(p: Props) {
   const router = useRouter();
-  const [prefix, setPrefix] = useState(p.campaign.slugPrefix ?? suggestPrefix(p.campaign.label || p.campaign.name));
+  const [prefix, setPrefix] = useState(() => {
+    if (p.campaign.slugPrefix) return p.campaign.slugPrefix;
+    const base = suggestPrefix(p.campaign.label || p.campaign.name);
+    let code = base;
+    for (let i = 2; p.usedPrefixes[code]; i++) code = `${base}${i}`.slice(0, 12);
+    return code;
+  });
   const [destination, setDestination] = useState(p.commonDestination);
   const [templates, setTemplates] = useState(p.templates);
   const [choice, setChoice] = useState(`t:${DEFAULT_TEMPLATE.name}`);
@@ -57,7 +59,8 @@ export function LinkKitBuilder(p: Props) {
   const [info, setInfo] = useState<string | null>(null);
   const [created, setCreated] = useState<Created | null>(null);
 
-  const prefixOk = PREFIX_RE.test(prefix);
+  const prefixOwner = p.usedPrefixes[prefix];
+  const prefixOk = PREFIX_RE.test(prefix) && !prefixOwner;
   const plan = useMemo(
     () => planKit(prefixOk ? prefix : "xx", rows.filter((r) => r.source.trim()), p.links, p.takenSlugs),
     [prefix, prefixOk, rows, p.links, p.takenSlugs],
@@ -77,8 +80,8 @@ export function LinkKitBuilder(p: Props) {
     if (value.startsWith("c:")) {
       const res = await fetch(`/api/campaigns/${value.slice(2)}/utm-links/structure`);
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) return setError(data.error ?? "Не удалось загрузить ссылки кампании");
-      if (!data.rows?.length) return setError("У этой кампании нет ссылок с utm_source");
+      if (!res.ok) return setError(data.error ?? "Could not load that campaign's links");
+      if (!data.rows?.length) return setError("That campaign has no links with a utm_source");
       setRows(data.rows);
     }
   }
@@ -93,10 +96,10 @@ export function LinkKitBuilder(p: Props) {
       body: JSON.stringify({ name: tplName.trim(), rows: rows.filter((r) => r.source.trim()) }),
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) return setError(data.error ?? "Не удалось сохранить шаблон");
+    if (!res.ok) return setError(data.error ?? "Could not save the template");
     setTemplates(data.templates);
     setChoice(`t:${tplName.trim()}`);
-    setInfo(`Шаблон «${tplName.trim()}» сохранён`);
+    setInfo(`Template "${tplName.trim()}" saved`);
     setTplName("");
   }
 
@@ -106,7 +109,7 @@ export function LinkKitBuilder(p: Props) {
     if (res.ok) {
       setTemplates(data.templates);
       setChoice(`t:${DEFAULT_TEMPLATE.name}`);
-      setInfo(`Шаблон «${name}» удалён`);
+      setInfo(`Template "${name}" deleted`);
     }
   }
 
@@ -120,8 +123,8 @@ export function LinkKitBuilder(p: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ slugPrefix: prefix, destinationUrl: destination, rows: rows.filter((r) => r.source.trim()) }),
       });
-      const data = await res.json().catch(() => ({ error: `Ошибка ${res.status}` }));
-      if (!res.ok) throw new Error(data.error ?? `Ошибка ${res.status}`);
+      const data = await res.json().catch(() => ({ error: `Request failed (${res.status})` }));
+      if (!res.ok) throw new Error(data.error ?? `Request failed (${res.status})`);
       setCreated(data.rows);
       router.refresh();
     } catch (e) {
@@ -131,20 +134,20 @@ export function LinkKitBuilder(p: Props) {
     }
   }
 
-  const label = (r: KitRow) => [r.source, r.content || r.medium].filter(Boolean).join(" · ");
+  const label = (r: KitRow) => r.label || [r.source, r.content || r.medium].filter(Boolean).join(" · ");
 
   function copyAll(list: Created) {
     const text = list.filter((r) => r.slug).map((r) => `${label(r)} — ${short(r.slug)}`).join("\n");
     void navigator.clipboard.writeText(text);
-    setInfo("Все ссылки скопированы");
+    setInfo("All links copied");
   }
 
   function downloadCsv(list: Created) {
     const esc = (v: string) => `"${v.replace(/"/g, '""')}"`;
-    const lines = [["utm_source", "utm_medium", "utm_content", "short_url", "destination", "status"].join(",")];
+    const lines = [["name", "utm_source", "utm_medium", "utm_content", "short_url", "destination", "status"].join(",")];
     for (const r of list) {
       if (!r.slug) continue;
-      lines.push([r.source, r.medium, r.content, short(r.slug), r.destinationUrl, r.status === "new" ? "created" : "existing"].map(esc).join(","));
+      lines.push([label(r), r.source, r.medium, r.content, short(r.slug), r.destinationUrl, r.status === "new" ? "created" : "existing"].map(esc).join(","));
     }
     const url = URL.createObjectURL(new Blob(["﻿" + lines.join("\n")], { type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a");
@@ -159,14 +162,14 @@ export function LinkKitBuilder(p: Props) {
     return (
       <div className="card space-y-4 p-6">
         <h2 className="font-display text-lg font-semibold">
-          Готово: создано {made} {plural(made, "ссылка", "ссылки", "ссылок")}
-          {created.some((r) => r.status === "exists") && ", остальные уже были"}
+          Done: {links(made)} created
+          {created.some((r) => r.status === "exists") && ", the rest already existed"}
         </h2>
         <div className="flex flex-wrap gap-3">
-          <button className="btn-primary text-sm" onClick={() => copyAll(created)}>Скопировать все</button>
-          <button className="btn-ghost border border-line text-sm" onClick={() => downloadCsv(created)}>Скачать CSV</button>
-          <Link className="btn-ghost border border-line text-sm" href={`/campaigns/${p.campaign.id}`}>К кампании</Link>
-          <button className="btn-ghost border border-line text-sm" onClick={() => setCreated(null)}>Создать ещё</button>
+          <button className="btn-primary text-sm" onClick={() => copyAll(created)}>Copy all</button>
+          <button className="btn-ghost border border-line text-sm" onClick={() => downloadCsv(created)}>Download CSV</button>
+          <Link className="btn-ghost border border-line text-sm" href={`/campaigns/${p.campaign.id}`}>Back to campaign</Link>
+          <button className="btn-ghost border border-line text-sm" onClick={() => setCreated(null)}>Create more</button>
         </div>
         {info && <p className="text-sm text-leads">{info}</p>}
         <ResultTable rows={created} short={short} label={label} />
@@ -178,33 +181,35 @@ export function LinkKitBuilder(p: Props) {
     <div className="space-y-6">
       <div className="card grid gap-5 p-6 md:grid-cols-2">
         <div>
-          <label className="label">Код проекта (в начале каждой ссылки)</label>
+          <label className="label">Project code (starts every link)</label>
           <input className="input font-mono" value={prefix} onChange={(e) => setPrefix(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ""))} maxLength={12} />
           <p className={`hint mt-1 ${prefixOk ? "" : "text-danger"}`}>
             {prefixOk
-              ? <>2–12 латинских букв или цифр, свой у каждой кампании. Пример: <code>{short(`${prefix}-tg-rassylka`)}</code></>
-              : "Нужно 2–12 латинских букв или цифр, например tts"}
+              ? <>2–12 latin letters or digits, unique per campaign. Example: <code>{short(`${prefix}-ig-tapter`)}</code></>
+              : prefixOwner
+                ? `Already used by «${prefixOwner}». Each campaign needs its own code, e.g. ${prefix}2.`
+                : "Use 2–12 latin letters or digits, e.g. tts"}
           </p>
         </div>
         <div>
-          <label className="label">Адрес лендинга</label>
+          <label className="label">Landing page</label>
           <input className="input" placeholder="https://aiesecinkz.tilda.ws/…" value={destination} onChange={(e) => setDestination(e.target.value)} />
-          <p className="hint mt-1">Куда ведут все ссылки. Для отдельной ссылки можно указать свой адрес в таблице.</p>
+          <p className="hint mt-1">Where every link leads. A single link can have its own address in the table.</p>
         </div>
       </div>
 
       <div className="card space-y-4 p-6">
         <div className="flex flex-wrap items-end gap-3">
           <div className="min-w-[260px]">
-            <label className="label">Взять ссылки из</label>
+            <label className="label">Start from</label>
             <select className="input" value={choice} onChange={(e) => void choose(e.target.value)}>
-              <optgroup label="Шаблоны">
+              <optgroup label="Templates">
                 {templates.map((t) => (
                   <option key={t.name} value={`t:${t.name}`}>{t.name} ({t.rows.length})</option>
                 ))}
               </optgroup>
               {p.campaigns.length > 0 && (
-                <optgroup label="Как в другой кампании">
+                <optgroup label="Same as another campaign">
                   {p.campaigns.map((c) => (
                     <option key={c.id} value={`c:${c.id}`}>{c.label || c.name}</option>
                   ))}
@@ -213,19 +218,20 @@ export function LinkKitBuilder(p: Props) {
             </select>
           </div>
           {choice.startsWith("t:") && choice.slice(2) !== DEFAULT_TEMPLATE.name && (
-            <button className="btn-ghost border border-line text-sm" onClick={() => void deleteTemplate(choice.slice(2))}>Удалить шаблон</button>
+            <button className="btn-ghost border border-line text-sm" onClick={() => void deleteTemplate(choice.slice(2))}>Delete template</button>
           )}
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px] text-sm">
+          <table className="w-full min-w-[1100px] text-sm">
             <thead>
               <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-faint">
+                <th className="py-2 pr-2 font-medium">Name</th>
                 <th className="py-2 pr-2 font-medium">utm_source</th>
                 <th className="py-2 pr-2 font-medium">utm_medium</th>
                 <th className="py-2 pr-2 font-medium">utm_content</th>
-                <th className="py-2 pr-2 font-medium">Свой адрес (необязательно)</th>
-                <th className="py-2 pr-2 font-medium">Слаг</th>
+                <th className="py-2 pr-2 font-medium">Own address (optional)</th>
+                <th className="py-2 pr-2 font-medium">Slug</th>
                 <th className="py-2 pr-2 font-medium" />
                 <th className="py-2 font-medium" />
               </tr>
@@ -235,14 +241,15 @@ export function LinkKitBuilder(p: Props) {
                 const planned = r.source.trim() ? plan[rows.slice(0, i).filter((x) => x.source.trim()).length] : null;
                 return (
                   <tr key={i}>
+                    <td className="py-1.5 pr-2"><input className="input py-1.5" placeholder="e.g. Banner" value={r.label ?? ""} onChange={(e) => setRow(i, { label: e.target.value })} /></td>
                     <td className="py-1.5 pr-2"><input className="input py-1.5" list="kit-sources" value={r.source} onChange={(e) => setRow(i, { source: e.target.value })} /></td>
                     <td className="py-1.5 pr-2"><input className="input py-1.5" list="kit-mediums" value={r.medium} onChange={(e) => setRow(i, { medium: e.target.value })} /></td>
                     <td className="py-1.5 pr-2"><input className="input py-1.5" value={r.content} onChange={(e) => setRow(i, { content: e.target.value })} /></td>
-                    <td className="py-1.5 pr-2"><input className="input py-1.5" placeholder="как у всех" value={r.destinationUrl ?? ""} onChange={(e) => setRow(i, { destinationUrl: e.target.value })} /></td>
+                    <td className="py-1.5 pr-2"><input className="input py-1.5" placeholder="landing page" value={r.destinationUrl ?? ""} onChange={(e) => setRow(i, { destinationUrl: e.target.value })} /></td>
                     <td className="py-1.5 pr-2 font-mono text-xs text-ink-muted">{planned?.slug || "—"}</td>
                     <td className={`py-1.5 pr-2 text-xs ${planned ? STATUS[planned.status].cls : "text-ink-faint"}`}>{planned ? STATUS[planned.status].text : ""}</td>
                     <td className="py-1.5 text-right">
-                      <button className="text-ink-faint hover:text-danger" aria-label="Убрать строку" onClick={() => setRows((rs) => rs.filter((_, j) => j !== i))}>✕</button>
+                      <button className="text-ink-faint hover:text-danger" aria-label="Remove row" onClick={() => setRows((rs) => rs.filter((_, j) => j !== i))}>✕</button>
                     </td>
                   </tr>
                 );
@@ -254,19 +261,19 @@ export function LinkKitBuilder(p: Props) {
         </div>
 
         <div className="flex flex-wrap items-center gap-3 text-sm">
-          <button className="btn-ghost border border-line text-sm" onClick={() => setRows((rs) => [...rs, { source: "", medium: "", content: "" }])}>
-            + Своя ссылка
+          <button className="btn-ghost border border-line text-sm" onClick={() => setRows((rs) => [...rs, { label: "", source: "", medium: "", content: "" }])}>
+            + Custom link
           </button>
           <span className="flex items-center gap-2">
             <button className="btn-ghost border border-line text-sm" onClick={() => setRows((rs) => [...rs, ...partnerRows(rs, partners)])}>
-              + Инфопартнёры
+              + Info partners
             </button>
             <input className="input w-16 py-1.5" type="number" min={1} max={30} value={partners} onChange={(e) => setPartners(Math.max(1, Math.min(30, Number(e.target.value) || 1)))} />
           </span>
           <span className="flex items-center gap-2">
-            <input className="input w-56 py-1.5" placeholder="Название шаблона" value={tplName} onChange={(e) => setTplName(e.target.value)} />
+            <input className="input w-56 py-1.5" placeholder="Template name" value={tplName} onChange={(e) => setTplName(e.target.value)} />
             <button className="btn-ghost border border-line text-sm" disabled={!tplName.trim()} onClick={() => void saveTemplate()}>
-              Сохранить как шаблон
+              Save as template
             </button>
           </span>
         </div>
@@ -274,10 +281,10 @@ export function LinkKitBuilder(p: Props) {
 
       <div className="flex flex-wrap items-center gap-4">
         <button className="btn-primary" disabled={busy || !prefixOk || !destination.trim() || toCreate === 0} onClick={() => void create()}>
-          {busy ? "Создаю…" : `Создать ${toCreate} ${plural(toCreate, "ссылку", "ссылки", "ссылок")}`}
+          {busy ? "Creating…" : `Create ${links(toCreate)}`}
         </button>
         {plan.some((r) => r.status === "exists") && (
-          <span className="text-sm text-ink-muted">Уже есть в кампании: {plan.filter((r) => r.status === "exists").length} — их пропустим</span>
+          <span className="text-sm text-ink-muted">{links(plan.filter((r) => r.status === "exists").length)} already in the campaign will be skipped</span>
         )}
         {error && <span className="text-sm text-danger">{error}</span>}
         {info && <span className="text-sm text-leads">{info}</span>}
@@ -292,8 +299,8 @@ function ResultTable({ rows, short, label }: { rows: Created; short: (s: string)
       <table className="w-full min-w-[700px] text-sm">
         <thead>
           <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-faint">
-            <th className="py-2 pr-3 font-medium">Канал</th>
-            <th className="py-2 pr-3 font-medium">Короткая ссылка</th>
+            <th className="py-2 pr-3 font-medium">Link</th>
+            <th className="py-2 pr-3 font-medium">Short URL</th>
             <th className="py-2 font-medium" />
           </tr>
         </thead>
@@ -302,7 +309,7 @@ function ResultTable({ rows, short, label }: { rows: Created; short: (s: string)
             <tr key={r.slug}>
               <td className="py-2 pr-3 text-ink">{label(r)}</td>
               <td className="py-2 pr-3 font-mono text-xs text-accent">{short(r.slug)}</td>
-              <td className={`py-2 text-xs ${STATUS[r.status].cls}`}>{r.status === "new" ? "создана" : "уже была"}</td>
+              <td className={`py-2 text-xs ${STATUS[r.status].cls}`}>{r.status === "new" ? "created" : "already existed"}</td>
             </tr>
           ))}
         </tbody>

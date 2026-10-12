@@ -1,28 +1,28 @@
 import { PageHeader } from "@/components/ui/PageHeader";
 
-export const metadata = { title: "Гайдлайн — EwA Tracker" };
+export const metadata = { title: "Guideline — EwA Tracker" };
 
 const SECTIONS = [
-  { id: "utm", n: 1, t: "Что такое UTM-метки простыми словами" },
-  { id: "why", n: 2, t: "Зачем нужен трекер" },
-  { id: "click", n: 3, t: "Что такое клик" },
-  { id: "lead", n: 4, t: "Что такое лид" },
-  { id: "conversion", n: 5, t: "Что такое конверсия" },
-  { id: "first-link", n: 6, t: "Как создать первую ссылку" },
-  { id: "source", n: 7, t: "Как выбрать utm_source" },
-  { id: "medium", n: 8, t: "Как выбрать utm_medium" },
-  { id: "campaign", n: 9, t: "Как назвать utm_campaign" },
-  { id: "content-term", n: 10, t: "utm_content и utm_term" },
-  { id: "where", n: 11, t: "Куда вставлять ссылку" },
-  { id: "tilda", n: 12, t: "Как подключить Tilda" },
-  { id: "webhook", n: 13, t: "Как настроить webhook в Tilda" },
-  { id: "fields", n: 14, t: "Какие поля передавать из Tilda" },
-  { id: "clickid", n: 15, t: "Почему важно передавать click_id" },
-  { id: "check", n: 16, t: "Как проверить, что всё работает" },
-  { id: "read", n: 17, t: "Как читать аналитику" },
-  { id: "mistakes", n: 18, t: "Частые ошибки" },
-  { id: "examples", n: 19, t: "Примеры правильных ссылок" },
-  { id: "checklist", n: 20, t: "Чеклист перед запуском рекламы" },
+  { id: "utm", n: 1, t: "UTM tags in plain words" },
+  { id: "why", n: 2, t: "Why a tracker" },
+  { id: "click", n: 3, t: "What a click is" },
+  { id: "lead", n: 4, t: "What a lead is" },
+  { id: "conversion", n: 5, t: "What conversion is" },
+  { id: "first-link", n: 6, t: "Creating links" },
+  { id: "source", n: 7, t: "Choosing utm_source" },
+  { id: "medium", n: 8, t: "Choosing utm_medium" },
+  { id: "campaign", n: 9, t: "Naming utm_campaign" },
+  { id: "content-term", n: 10, t: "utm_content and utm_term" },
+  { id: "where", n: 11, t: "Where to put the link" },
+  { id: "tilda", n: 12, t: "Connecting Tilda" },
+  { id: "webhook", n: 13, t: "Optional: Tilda webhook" },
+  { id: "fields", n: 14, t: "Form fields" },
+  { id: "clickid", n: 15, t: "Why click_id matters" },
+  { id: "check", n: 16, t: "Checking that it works" },
+  { id: "read", n: 17, t: "Reading the analytics" },
+  { id: "mistakes", n: 18, t: "Common mistakes" },
+  { id: "examples", n: 19, t: "Examples of good links" },
+  { id: "checklist", n: 20, t: "Checklist before launching ads" },
 ];
 
 function Section({ id, n, title, children }: { id: string; n: number; title: string; children: React.ReactNode }) {
@@ -37,13 +37,13 @@ function Section({ id, n, title, children }: { id: string; n: number; title: str
 }
 
 function Tip({ children }: { children: React.ReactNode }) {
-  return <div className="rounded-xl border border-leads/30 bg-leads/5 p-4 text-sm text-ink-muted"><strong className="text-leads">💡 Совет. </strong>{children}</div>;
+  return <div className="rounded-xl border border-leads/30 bg-leads/5 p-4 text-sm text-ink-muted"><strong className="text-leads">💡 Tip. </strong>{children}</div>;
 }
 function Warn({ children }: { children: React.ReactNode }) {
-  return <div className="rounded-xl border border-accent/30 bg-accent/5 p-4 text-sm text-ink-muted"><strong className="text-accent">⚠️ Важно. </strong>{children}</div>;
+  return <div className="rounded-xl border border-accent/30 bg-accent/5 p-4 text-sm text-ink-muted"><strong className="text-accent">⚠️ Important. </strong>{children}</div>;
 }
 function Fix({ children }: { children: React.ReactNode }) {
-  return <div className="rounded-xl border border-line bg-bg-base p-4 text-sm text-ink-muted"><strong className="text-ink">🛠 Если не работает. </strong>{children}</div>;
+  return <div className="rounded-xl border border-line bg-bg-base p-4 text-sm text-ink-muted"><strong className="text-ink">🛠 If it doesn&apos;t work. </strong>{children}</div>;
 }
 function Code({ children }: { children: React.ReactNode }) {
   return <code className="rounded bg-bg-base px-1.5 py-0.5 text-[13px] text-clicks">{children}</code>;
@@ -52,12 +52,12 @@ function Code({ children }: { children: React.ReactNode }) {
 export default function GuidePage() {
   return (
     <>
-      <PageHeader breadcrumb="Гайдлайн" title="Гайд для новичков" subtitle="Пошагово и простым языком: от первой ссылки до чтения аналитики." />
+      <PageHeader breadcrumb="Guideline" title="Beginner's guide" subtitle="Step by step, in plain words: from your first link to reading the analytics." />
 
       <div className="grid gap-10 lg:grid-cols-[260px_1fr]">
         {/* nav */}
         <nav className="hidden lg:block lg:sticky lg:top-8 lg:self-start">
-          <p className="mb-3 text-xs uppercase tracking-wide text-ink-faint">Содержание</p>
+          <p className="mb-3 text-xs uppercase tracking-wide text-ink-faint">Contents</p>
           <ol className="space-y-1 text-sm">
             {SECTIONS.map((s) => (
               <li key={s.id}>
@@ -71,157 +71,158 @@ export default function GuidePage() {
 
         {/* content */}
         <article className="max-w-2xl">
-          <Section id="utm" n={1} title="Что такое UTM-метки простыми словами">
-            <p>UTM-метки — это «бирки», которые мы приклеиваем к ссылке, чтобы потом понять, откуда пришёл человек. Сама ссылка работает как обычно, а метки просто записываются в статистику.</p>
-            <p>Пример: вы выложили ссылку в Instagram и в Telegram. По виду они почти одинаковые, но с метками вы увидите, что 80 человек пришли из Instagram, а 200 — из Telegram.</p>
-            <p>Метки бывают пяти видов: <Code>utm_source</Code> (откуда), <Code>utm_medium</Code> (каким способом), <Code>utm_campaign</Code> (какая кампания), <Code>utm_content</Code> (какое конкретное объявление/пост), <Code>utm_term</Code> (ключевое слово, обычно для рекламы).</p>
+          <Section id="utm" n={1} title="UTM tags in plain words">
+            <p>UTM tags are labels attached to a link so you can later tell where a person came from. The link works as usual; the labels just end up in the statistics.</p>
+            <p>Example: you post a link on Instagram and on Telegram. They look almost the same, but with tags you see that 80 people came from Instagram and 200 from Telegram.</p>
+            <p>There are five tags: <Code>utm_source</Code> (where from), <Code>utm_medium</Code> (how), <Code>utm_campaign</Code> (which campaign), <Code>utm_content</Code> (which exact post or placement) and <Code>utm_term</Code> (keyword or audience, mostly for ads).</p>
           </Section>
 
-          <Section id="why" n={2} title="Зачем нужен трекер">
-            <p>Без трекера вы видите общее число заявок, но не знаете, какой канал их принёс. Трекер связывает каждый клик с каждой заявкой и показывает, какая ссылка реально приводит людей, а какая просто тратит время.</p>
-            <Tip>Это помогает не сливать бюджет: вы вкладываетесь в то, что работает, и отключаете то, что не работает.</Tip>
+          <Section id="why" n={2} title="Why a tracker">
+            <p>Without a tracker you see the total number of sign-ups but not which channel brought them. The tracker ties each click to each lead and shows which link really brings people and which just costs time.</p>
+            <Tip>It keeps you from wasting budget: invest in what works and switch off what doesn&apos;t.</Tip>
           </Section>
 
-          <Section id="click" n={3} title="Что такое клик">
-            <p>Клик — это когда человек нажал на вашу ссылку. EwA Tracker считает клики на сервере в момент перехода, поэтому блокировщики рекламы и отключённый JavaScript не мешают подсчёту.</p>
-            <p>Мы отличаем <strong>уникальные</strong> клики (разные люди) от <strong>повторных</strong> (один человек нажал несколько раз).</p>
+          <Section id="click" n={3} title="What a click is">
+            <p>A click is someone opening your link. EwA Tracker counts clicks on the server at the moment of the redirect, so ad blockers and disabled JavaScript don&apos;t affect the count.</p>
+            <p>We tell <strong>unique</strong> clicks (different people) apart from <strong>repeat</strong> clicks (one person opening the link several times).</p>
           </Section>
 
-          <Section id="lead" n={4} title="Что такое лид">
-            <p>Лид — это человек, который оставил заявку: заполнил форму на Tilda, оставил имя, телефон или почту. Клик — это интерес, лид — это уже действие.</p>
+          <Section id="lead" n={4} title="What a lead is">
+            <p>A lead is a person who signed up: filled in the form on the landing page and left a name, phone or email. A click is interest; a lead is action.</p>
           </Section>
 
-          <Section id="conversion" n={5} title="Что такое конверсия">
-            <p>Конверсия (CR, conversion rate) — какой процент кликнувших оставил заявку. Формула простая: <Code>лиды ÷ клики × 100%</Code>.</p>
-            <p>Пример: 100 кликов и 13 заявок = конверсия 13%. Чем выше — тем лучше работает связка «канал → страница».</p>
+          <Section id="conversion" n={5} title="What conversion is">
+            <p>Conversion rate (CR) is the share of people who clicked and then signed up: <Code>leads ÷ unique clicks × 100%</Code>.</p>
+            <p>Example: 100 unique clicks and 13 sign-ups = 13% conversion. The higher it is, the better the &quot;channel → page&quot; pair works.</p>
           </Section>
 
-          <Section id="first-link" n={6} title="Как создать первую ссылку">
-            <p>Откройте вкладку <strong>Create link</strong> и заполните по шагам:</p>
+          <Section id="first-link" n={6} title="Creating links">
+            <p><strong>All links of a project at once:</strong> open the campaign and press <strong>Create UTM links</strong>. Set the project code (e.g. <Code>tts</Code>) and the landing page, pick the &quot;Project set&quot; template or &quot;Same as another campaign&quot;, adjust the rows and press <strong>Create</strong>. You get links like <Code>/r/tts-ig-tapter</Code>, ready to copy or download as CSV.</p>
+            <p><strong>A single link:</strong> open <strong>Create link</strong> and fill in:</p>
             <ol className="ml-5 list-decimal space-y-1">
-              <li>Описание — для себя и команды (например «Instagram сторис, 30 мая»).</li>
-              <li>Destination URL — куда ведём, обычно страница Tilda.</li>
-              <li>Source, Medium, Campaign — выбираете из списков.</li>
-              <li>Content — конкретное место (story_may30, bio_link).</li>
-              <li>Нажимаете <strong>Create link</strong> — получаете короткую ссылку вида <Code>/r/abc123</Code>.</li>
+              <li>Description — for you and the team (e.g. &quot;Instagram story, May 30&quot;).</li>
+              <li>Destination URL — where it leads, usually the Tilda page.</li>
+              <li>Source, Medium, Campaign — pick from the lists.</li>
+              <li>Content — the exact placement (story_may30, bio_link).</li>
+              <li>Press <strong>Create link</strong> — you get a short link like <Code>/r/abc123</Code>.</li>
             </ol>
-            <Tip>Справа в реальном времени видно, как будет выглядеть короткая ссылка и полный URL с метками.</Tip>
+            <Tip>The right panel shows the short link and the full URL with tags as you type.</Tip>
           </Section>
 
-          <Section id="source" n={7} title="Как выбрать utm_source">
-            <p>Source — это конкретная площадка, <em>откуда</em> идёт трафик. Пишите название площадки, а не тип: <Code>instagram</Code>, <Code>telegram</Code>, <Code>email</Code>, <Code>youtube</Code>.</p>
-            <Warn>Используйте всегда одинаковое написание. <Code>instagram</Code> и <Code>Instagram</Code> система посчитает как два разных источника.</Warn>
+          <Section id="source" n={7} title="Choosing utm_source">
+            <p>Source is the platform the traffic comes <em>from</em>. Write the platform name, not the type: <Code>instagram</Code>, <Code>telegram</Code>, <Code>email</Code>, <Code>youtube</Code>.</p>
+            <Warn>Always spell it the same way. <Code>instagram</Code> and <Code>Instagram</Code> are counted as two different sources.</Warn>
           </Section>
 
-          <Section id="medium" n={8} title="Как выбрать utm_medium">
-            <p>Medium — это <em>способ</em>, которым человек попал по ссылке:</p>
+          <Section id="medium" n={8} title="Choosing utm_medium">
+            <p>Medium is <em>how</em> the person reached the link:</p>
             <ul className="ml-5 list-disc space-y-1">
-              <li><Code>social</Code> — обычный пост или сторис;</li>
-              <li><Code>cpc</Code> — платная реклама;</li>
-              <li><Code>email</Code> — рассылка;</li>
-              <li><Code>referral</Code> — ссылка у партнёра;</li>
-              <li><Code>offline</Code> — QR-код, плакат, баннер.</li>
+              <li><Code>social</Code> — a regular post or story;</li>
+              <li><Code>bio</Code> — link in bio;</li>
+              <li><Code>message</Code> — direct message or chat mailing;</li>
+              <li><Code>cpc</Code> — paid ads;</li>
+              <li><Code>email</Code> — newsletter;</li>
+              <li><Code>referral</Code> — a partner&apos;s link;</li>
+              <li><Code>offline</Code> — QR code, poster, banner.</li>
             </ul>
           </Section>
 
-          <Section id="campaign" n={9} title="Как назвать utm_campaign">
-            <p>Campaign — название всей рекламной активности. Пишите без пробелов, маленькими буквами, с понятным смыслом: <Code>icy_s26</Code>, <Code>summer_sale_2026</Code>.</p>
-            <Tip>Удобно добавлять сезон/год — потом легко найти кампанию в списке.</Tip>
+          <Section id="campaign" n={9} title="Naming utm_campaign">
+            <p>Campaign is the name of the whole activity. Lower case, no spaces, meaningful: <Code>icy_s26</Code>, <Code>toptalentssprint_f26</Code>.</p>
+            <Tip>Adding the season or year makes the campaign easy to find later.</Tip>
           </Section>
 
-          <Section id="content-term" n={10} title="utm_content и utm_term">
-            <p><Code>utm_content</Code> различает <em>разные креативы внутри одной кампании</em>: <Code>story_may30</Code>, <Code>post_video</Code>, <Code>bio_link</Code>. Так вы поймёте, какой именно пост сработал.</p>
-            <p><Code>utm_term</Code> нужен в основном для платной рекламы — ключевое слово или аудитория: <Code>youth_almaty</Code>. Необязательный.</p>
+          <Section id="content-term" n={10} title="utm_content and utm_term">
+            <p><Code>utm_content</Code> separates <em>different placements within one campaign</em>: <Code>tapter</Code>, <Code>rassylka</Code>, <Code>infopartner1</Code>. That&apos;s how you see which exact post or partner worked.</p>
+            <p><Code>utm_term</Code> is mainly for paid ads — a keyword or audience: <Code>youth_almaty</Code>. Optional.</p>
           </Section>
 
-          <Section id="where" n={11} title="Куда вставлять ссылку">
-            <p>Короткую ссылку <Code>/r/...</Code> можно ставить куда угодно:</p>
+          <Section id="where" n={11} title="Where to put the link">
+            <p>The short link <Code>/r/...</Code> can go anywhere:</p>
             <ul className="ml-5 list-disc space-y-1">
-              <li><strong>Instagram</strong> — в шапку профиля (link in bio) или в сторис;</li>
-              <li><strong>Telegram</strong> — в пост или закреп;</li>
-              <li><strong>Email</strong> — в кнопку рассылки;</li>
-              <li><strong>Реклама</strong> — как целевой URL;</li>
-              <li><strong>Офлайн</strong> — зашейте её в QR-код на плакате.</li>
+              <li><strong>Instagram</strong> — link in bio or stories;</li>
+              <li><strong>Telegram</strong> — a post, a pinned message or a mailing;</li>
+              <li><strong>Email</strong> — the newsletter button;</li>
+              <li><strong>Ads</strong> — as the target URL;</li>
+              <li><strong>Offline</strong> — inside a QR code on a poster or banner.</li>
             </ul>
-            <Warn>Всегда делитесь именно короткой ссылкой трекера, а не прямой ссылкой на Tilda. Иначе клик не посчитается.</Warn>
+            <Warn>Always share the tracker&apos;s short link, not the direct Tilda link. Otherwise the click isn&apos;t counted.</Warn>
           </Section>
 
-          <Section id="tilda" n={12} title="Как подключить Tilda">
-            <p>Tilda — это страница, где человек оставляет заявку. Логика такая: короткая ссылка → клик считается у нас → человек попадает на Tilda → заполняет форму → Tilda присылает нам данные.</p>
+          <Section id="tilda" n={12} title="Connecting Tilda">
+            <p>The flow: short link → the click is counted here → the person lands on Tilda → fills in the form → the lead is counted here.</p>
             <ol className="ml-5 list-decimal space-y-1">
-              <li>В поле Destination URL при создании ссылки укажите адрес вашей страницы Tilda.</li>
-              <li>На страницу Tilda добавьте наш JS-сниппет (см. вкладку Webhook).</li>
-              <li>Настройте webhook в форме Tilda.</li>
+              <li>Use your Tilda page address as the link&apos;s destination (or the landing page in Create UTM links).</li>
+              <li>In Tilda: <strong>Site settings → Insert code → HEAD</strong>, paste the one line from the <strong>Webhook</strong> tab (<Code>&lt;script src=&quot;…/t.js&quot; async&gt;&lt;/script&gt;</Code>), save and republish all pages.</li>
+              <li>That&apos;s it: once per Tilda site, not per page or per link. Each project landing on its own Tilda site needs the line too.</li>
             </ol>
           </Section>
 
-          <Section id="webhook" n={13} title="Как настроить webhook в Tilda">
-            <p>Webhook — это автоматическое сообщение, которое Tilda отправляет нам сразу после заполнения формы.</p>
+          <Section id="webhook" n={13} title="Optional: Tilda webhook">
+            <p>The script above already counts leads. A webhook is an extra, server-side channel: Tilda sends us the form data right after it is submitted. Both together never count a lead twice.</p>
             <ol className="ml-5 list-decimal space-y-1">
-              <li>В Tilda откройте форму → <strong>Настройки → Сбор данных (Data capture)</strong>.</li>
-              <li>Добавьте сервис <strong>Webhook</strong>.</li>
-              <li>Вставьте URL из вкладки <strong>Webhook</strong> нашего трекера.</li>
-              <li>Добавьте заголовок <Code>X-Webhook-Secret</Code> со значением секрета. Если заголовок добавить нельзя, допишите к URL <Code>?secret=ВАШ_СЕКРЕТ</Code> — это работает, но адреса попадают в логи серверов, поэтому заголовок надёжнее.</li>
-              <li>Без секрета запрос (и «Отправить тест») получит ошибку 401.</li>
-              <li>Сохраните и нажмите «Отправить тест».</li>
+              <li>In Tilda open the form → <strong>Settings → Data capture</strong>.</li>
+              <li>Add the <strong>Webhook</strong> service.</li>
+              <li>Paste the URL from the tracker&apos;s <strong>Webhook</strong> tab.</li>
+              <li>Add the header <Code>X-Webhook-Secret</Code> with the secret. If you can&apos;t add a header, append <Code>?secret=YOUR_SECRET</Code> to the URL — it works, but addresses end up in server logs, so the header is safer.</li>
+              <li>Without the secret the request (and &quot;Send test&quot;) gets a 401 error.</li>
+              <li>Save and press &quot;Send test&quot;.</li>
             </ol>
           </Section>
 
-          <Section id="fields" n={14} title="Какие поля передавать из Tilda">
-            <p>Видимые поля формы (имя, телефон, почта) — как обычно. Скрытые поля добавит наш сниппет автоматически: <Code>click_id</Code>, <Code>utm_source</Code>, <Code>utm_medium</Code>, <Code>utm_campaign</Code>, <Code>utm_content</Code>, <Code>utm_term</Code>.</p>
-            <Tip>Ничего вручную создавать не нужно — сниппет сам подставит значения из адресной строки.</Tip>
+          <Section id="fields" n={14} title="Form fields">
+            <p>Visible fields (name, phone, email) stay as they are. The script adds hidden fields automatically: <Code>click_id</Code>, <Code>utm_source</Code>, <Code>utm_medium</Code>, <Code>utm_campaign</Code>, <Code>utm_content</Code>, <Code>utm_term</Code>.</p>
+            <Tip>You don&apos;t create anything by hand — the script takes the values from the address bar.</Tip>
           </Section>
 
-          <Section id="clickid" n={15} title="Почему важно передавать click_id">
-            <p><Code>click_id</Code> — это уникальный код конкретного клика. Мы добавляем его в ссылку на Tilda автоматически. Когда форма возвращает его обратно, мы точно знаем, какой клик привёл этого человека.</p>
-            <Warn>С <Code>click_id</Code> привязка <strong>точная</strong> (exact). Без него мы угадываем по UTM и времени — это <strong>оценочная</strong> привязка (estimated), она менее надёжна.</Warn>
+          <Section id="clickid" n={15} title="Why click_id matters">
+            <p><Code>click_id</Code> is the unique code of one click. We add it to the Tilda address automatically. When the form reports it back, we know exactly which click brought the person.</p>
+            <Warn>With <Code>click_id</Code> attribution is <strong>exact</strong>. Without it we guess by UTM and time — <strong>estimated</strong>, which is less reliable.</Warn>
           </Section>
 
-          <Section id="check" n={16} title="Как проверить, что всё работает">
+          <Section id="check" n={16} title="Checking that it works">
             <ol className="ml-5 list-decimal space-y-1">
-              <li>Откройте свою короткую ссылку — в Dashboard должен появиться клик.</li>
-              <li>Проверьте, что в адресе Tilda появился <Code>?...&click_id=clk_...</Code>.</li>
-              <li>Заполните форму на Tilda тестовыми данными.</li>
-              <li>Во вкладке <strong>Leads</strong> появится лид со статусом <strong>exact</strong>.</li>
-              <li>Во вкладке <strong>Webhook</strong> событие будет со статусом <strong>success</strong>.</li>
+              <li>Open your short link — a click appears on the Dashboard.</li>
+              <li>Check that the Tilda address now has <Code>?...&click_id=clk_...</Code>.</li>
+              <li>Fill in the Tilda form with test data and submit.</li>
+              <li>A lead with status <strong>exact</strong> appears in <strong>Leads</strong>.</li>
             </ol>
-            <Fix>Нет клика — вы поделились прямой ссылкой Tilda вместо короткой. Нет лида — проверьте URL webhook и секрет. Статус estimated вместо exact — сниппет не подставил click_id, проверьте, что он добавлен на страницу.</Fix>
+            <Fix>No click — a direct Tilda link was shared instead of the short one. No lead — the <Code>/t.js</Code> line is missing on that Tilda site, or the page wasn&apos;t republished after adding it. Estimated instead of exact — the visitor didn&apos;t come through a short link.</Fix>
           </Section>
 
-          <Section id="read" n={17} title="Как читать аналитику">
-            <p><strong>Total clicks</strong> — все переходы. <strong>Unique clicks</strong> — разные люди. <strong>Total leads</strong> — заявки. <strong>Conversion rate</strong> — заявки ÷ уникальные клики: какая доля разных людей, перешедших по ссылке, оставила заявку.</p>
-            <p>Таблицы «By source / campaign / content» показывают, какой канал и какой креатив приносят больше всего лидов. Смотрите не на клики, а на <strong>конверсию</strong>: иногда канал с меньшим числом кликов даёт больше заявок.</p>
+          <Section id="read" n={17} title="Reading the analytics">
+            <p><strong>Total clicks</strong> — all visits. <strong>Unique clicks</strong> — different people. <strong>Leads</strong> — sign-ups. <strong>Conversion rate</strong> — leads ÷ unique clicks: the share of different people who opened the link and then signed up.</p>
+            <p>The &quot;By source / campaign / content&quot; tables show which channel and placement bring the most leads. Look at <strong>conversion</strong>, not clicks: a channel with fewer clicks sometimes brings more sign-ups.</p>
           </Section>
 
-          <Section id="mistakes" n={18} title="Частые ошибки">
+          <Section id="mistakes" n={18} title="Common mistakes">
             <ul className="ml-5 list-disc space-y-1">
-              <li>Делятся прямой ссылкой Tilda вместо короткой <Code>/r/...</Code> — клики не считаются.</li>
-              <li>Пишут source по-разному: <Code>tg</Code>, <Code>telegram</Code>, <Code>Telegram</Code> — данные дробятся.</li>
-              <li>Забыли сниппет на Tilda — нет click_id, привязка только оценочная.</li>
-              <li>Не указали секрет в webhook — события приходят со статусом unauthorized.</li>
-              <li>Пробелы и заглавные в utm_campaign — ссылка ломается, метки читаются криво.</li>
+              <li>Sharing the direct Tilda link instead of the short <Code>/r/...</Code> one — clicks aren&apos;t counted.</li>
+              <li>Spelling the source differently: <Code>tg</Code>, <Code>telegram</Code>, <Code>Telegram</Code> — the data splits.</li>
+              <li>No <Code>/t.js</Code> line on the landing&apos;s Tilda site — leads aren&apos;t counted.</li>
+              <li>A webhook without the secret — events arrive as unauthorized.</li>
+              <li>Spaces and capitals in utm_campaign — tags are read inconsistently.</li>
             </ul>
           </Section>
 
-          <Section id="examples" n={19} title="Примеры правильных ссылок">
+          <Section id="examples" n={19} title="Examples of good links">
             <div className="space-y-3">
-              <Code>https://your-page.tilda.ws?utm_source=instagram&utm_medium=social&utm_campaign=icy_s26&utm_content=story_may30</Code>
-              <Code>https://your-page.tilda.ws?utm_source=telegram&utm_medium=social&utm_campaign=icy_s26&utm_content=announcement</Code>
-              <Code>https://your-page.tilda.ws?utm_source=email&utm_medium=email&utm_campaign=icy_s26&utm_content=mailing</Code>
+              <Code>https://your-page.tilda.ws?utm_source=instagram&utm_medium=bio&utm_campaign=toptalentssprint_f26&utm_content=tapter</Code>
+              <Code>https://your-page.tilda.ws?utm_source=telegram&utm_medium=message&utm_campaign=toptalentssprint_f26&utm_content=rassylka</Code>
+              <Code>https://your-page.tilda.ws?utm_source=email&utm_medium=email&utm_campaign=toptalentssprint_f26&utm_content=mailing</Code>
             </div>
-            <Tip>Но вам не нужно собирать это вручную — трекер строит такой URL сам, когда вы создаёте ссылку.</Tip>
+            <Tip>You never build these by hand — the tracker adds the tags when a short link is opened.</Tip>
           </Section>
 
-          <Section id="checklist" n={20} title="Мини-чеклист перед запуском рекламы">
+          <Section id="checklist" n={20} title="Checklist before launching ads">
             <ul className="space-y-2">
               {[
-                "Создана кампания во вкладке Campaigns",
-                "Создана короткая ссылка с заполненными source / medium / campaign / content",
-                "Destination ведёт на правильную страницу Tilda",
-                "На страницу Tilda добавлен JS-сниппет",
-                "В форме Tilda настроен webhook с правильным URL и секретом",
-                "Отправлен тестовый лид — он появился в Leads со статусом exact",
-                "Поделились именно короткой ссылкой /r/…, а не прямой ссылкой Tilda",
+                "The campaign exists in Campaigns",
+                "Links are created (Create UTM links on the campaign page)",
+                "The destination is the right Tilda page",
+                "The /t.js line is in Insert code → HEAD of that Tilda site, and pages are republished",
+                "A test sign-up through a short link appeared in Leads as exact",
+                "Only short /r/… links are shared, never the direct Tilda link",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-3 rounded-xl border border-line bg-bg-base px-4 py-3 text-sm text-ink-muted">
                   <span className="mt-0.5 text-leads">✓</span>{item}

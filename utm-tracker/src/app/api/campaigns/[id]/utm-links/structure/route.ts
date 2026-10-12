@@ -3,7 +3,7 @@ import { KitError, campaignStructure } from "@/lib/linkKitServer";
 
 export const dynamic = "force-dynamic";
 
-/** GET — the source / medium / content rows of this campaign's links ("как в другой кампании"). */
+/** GET — the source / medium / content rows of this campaign's links ("Same as another campaign"). */
 export async function GET(_req: NextRequest, props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
   try {

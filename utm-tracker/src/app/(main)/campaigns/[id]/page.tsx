@@ -64,7 +64,7 @@ export default async function CampaignDetailPage(props: { params: Promise<{ id: 
         subtitle={[campaign.type, campaign.season, `utm: ${campaign.name}`].filter(Boolean).join(" · ")}
         action={
           <div className="flex flex-wrap items-center gap-3">
-            <Link href={`/campaigns/${campaign.id}/utm-links`} className="btn-primary text-sm">Создать utm-ссылки</Link>
+            <Link href={`/campaigns/${campaign.id}/utm-links`} className="btn-primary text-sm">Create UTM links</Link>
             <CampaignActions id={campaign.id} status={campaign.status} />
           </div>
         }
