@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Grid, RawCell, Workbook } from "@/lib/reports/xlsx";
-import { RegistrationImportError, parseRegistrations, registrationKey, toDate } from "@/lib/registrationImport";
+import { RegistrationImportError, parseRegistrations, registrationKey, selectRegistrations, toDate } from "@/lib/registrationImport";
 
 function grid(name: string, rows: (string | number | null)[][]): Grid {
   const cells = new Map<string, RawCell>();
@@ -69,5 +69,37 @@ describe("toDate", () => {
   it("reads ISO text and respects the offset", () => {
     expect(toDate("2026-09-15 12:16:10.912", false, 300)?.toISOString()).toBe("2026-09-15T07:16:10.912Z");
     expect(toDate("", false, 300)).toBeNull();
+  });
+});
+
+describe("selectRegistrations", () => {
+  const at = (iso: string) => new Date(iso);
+  const rows = [
+    { row: 2, submittedAt: at("2026-08-30T10:00:00Z"), email: "a@x.kz", city: "Астана" },
+    { row: 3, submittedAt: at("2026-08-29T10:00:00Z"), email: "a@x.kz", city: "Астана" }, // earlier repeat of a@
+    { row: 4, submittedAt: at("2026-08-29T11:00:00Z"), email: "b@x.kz", city: "Алматы" },
+    { row: 5, submittedAt: at("2026-08-29T12:00:00Z"), email: "c@x.kz", city: " астана " },
+  ];
+
+  it("keeps everything by default", () => {
+    expect(selectRegistrations(rows)).toMatchObject({ filteredOut: 0, duplicatesRemoved: 0 });
+    expect(selectRegistrations(rows).rows).toHaveLength(4);
+  });
+
+  it("filters by city, ignoring case and spaces", () => {
+    const s = selectRegistrations(rows, { city: "АСТАНА" });
+    expect(s.rows.map((r) => r.row)).toEqual([2, 3, 5]);
+    expect(s.filteredOut).toBe(1);
+  });
+
+  it("keeps one registration per person, the earliest", () => {
+    const s = selectRegistrations(rows, { city: "Астана", onePerPerson: true });
+    expect(s.rows.map((r) => r.row).sort()).toEqual([3, 5]);
+    expect(s.duplicatesRemoved).toBe(1);
+  });
+
+  it("reads the city column", () => {
+    const parsed = parseRegistrations(wb(grid("Заявки", [["Дата и время", "Email", "Город"], [SERIAL, "a@x.kz", "Астана"]])));
+    expect(parsed.rows[0].city).toBe("Астана");
   });
 });

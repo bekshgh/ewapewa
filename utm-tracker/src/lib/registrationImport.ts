@@ -22,7 +22,7 @@ import { readWorkbook, type Grid, type Workbook } from "@/lib/reports/xlsx";
 export const DEFAULT_TZ_OFFSET_MINUTES = 5 * 60;
 
 type Field =
-  | "date" | "name" | "email" | "phone" | "page" | "clickId"
+  | "date" | "name" | "email" | "phone" | "city" | "page" | "clickId"
   | "utmSource" | "utmMedium" | "utmCampaign" | "utmContent" | "utmTerm";
 
 const ALIASES: Record<Field, string[]> = {
@@ -30,6 +30,7 @@ const ALIASES: Record<Field, string[]> = {
   name: ["имя и фамилия", "имя", "фио", "name", "full name"],
   email: ["email", "e-mail", "почта", "электронная почта"],
   phone: ["телефон", "номер телефона", "phone", "tel"],
+  city: ["город", "city"],
   page: ["страница", "page", "page url", "pageurl", "url"],
   clickId: ["click_id", "clickid"],
   utmSource: ["utm_source"],
@@ -55,6 +56,7 @@ export interface Registration {
   name?: string;
   email?: string;
   phone?: string;
+  city?: string;
   pageUrl?: string;
   clickId?: string;
   utmSource?: string;
@@ -164,6 +166,7 @@ export function parseRegistrations(wb: Workbook, tzOffsetMinutes = DEFAULT_TZ_OF
       name,
       email,
       phone,
+      city: text(cell(r, "city"), 100),
       pageUrl,
       clickId: text(cell(r, "clickId"), 100) ?? text(q?.get("click_id"), 100),
     };
@@ -192,8 +195,43 @@ function formNameOf(pageUrl: string | undefined): string {
   }
 }
 
+export interface SelectOptions {
+  /** Keep only rows whose city column equals this (case-insensitive). */
+  city?: string;
+  /** One lead per person (email, else phone, else name), keeping the earliest row. */
+  onePerPerson?: boolean;
+}
+
+const personOf = (r: Registration) => (r.email || r.phone || r.name || "").toLowerCase();
+
+/** Applies the city filter and the one-per-person rule. */
+export function selectRegistrations(rows: Registration[], opts: SelectOptions = {}) {
+  const city = opts.city ? norm(opts.city) : null;
+  const inCity = city ? rows.filter((r) => r.city && norm(r.city) === city) : rows;
+  if (!opts.onePerPerson) return { rows: inCity, filteredOut: rows.length - inCity.length, duplicatesRemoved: 0 };
+  const seen = new Set<string>();
+  const unique = [...inCity]
+    .sort((a, b) => a.submittedAt.getTime() - b.submittedAt.getTime())
+    .filter((r) => {
+      const who = personOf(r);
+      if (seen.has(who)) return false;
+      seen.add(who);
+      return true;
+    });
+  return { rows: unique, filteredOut: rows.length - inCity.length, duplicatesRemoved: inCity.length - unique.length };
+}
+
 export interface RegistrationImportSummary {
   sheet: string;
+  /** All registration rows in the sheet. */
+  totalRows: number;
+  /** Rows per value of the city column, for picking a filter. */
+  cities: { city: string; rows: number }[];
+  /** Rows left out by the city filter. */
+  filteredOut: number;
+  /** Repeat registrations of the same person dropped by the one-per-person rule. */
+  duplicatesRemoved: number;
+  /** Rows selected for import. */
   rows: number;
   skipped: number;
   dateFrom: string | null;
@@ -215,8 +253,12 @@ type LinkUtm = { id: string; utmSource: string | null; utmMedium: string | null;
 export async function importRegistrations(
   parsed: ParsedRegistrations,
   mode: "check" | "import",
+  opts: SelectOptions = {},
 ): Promise<RegistrationImportSummary> {
-  const { rows } = parsed;
+  const selected = selectRegistrations(parsed.rows, opts);
+  const { rows } = selected;
+  const cityCount = new Map<string, number>();
+  for (const r of parsed.rows) if (r.city) cityCount.set(r.city, (cityCount.get(r.city) ?? 0) + 1);
 
   const clickIds = Array.from(new Set(rows.map((r) => r.clickId).filter((x): x is string => !!x)));
   const keys = rows.map(registrationKey);
@@ -249,11 +291,15 @@ export async function importRegistrations(
 
   const summary: RegistrationImportSummary = {
     sheet: parsed.sheet,
+    totalRows: parsed.rows.length,
+    cities: Array.from(cityCount, ([city, n]) => ({ city, rows: n })).sort((a, b) => b.rows - a.rows),
+    filteredOut: selected.filteredOut,
+    duplicatesRemoved: selected.duplicatesRemoved,
     rows: rows.length,
     skipped: parsed.skipped,
     dateFrom: null,
     dateTo: null,
-    uniquePeople: new Set(rows.map((r) => r.email || r.phone || r.name)).size,
+    uniquePeople: new Set(rows.map(personOf)).size,
     exact: 0,
     estimated: 0,
     unknown: 0,
