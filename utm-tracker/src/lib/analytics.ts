@@ -9,6 +9,24 @@ export function rangeToDate(range: RangeKey): Date | null {
   return new Date(Date.now() - days * 86_400_000);
 }
 
+/**
+ * Unique clicks per link: the first click from a device / IP on that link.
+ * Conversion rates everywhere are leads ÷ unique clicks, so repeat clicks by
+ * the same person do not dilute them.
+ */
+export async function uniqueClicksByLink(since: Date | null, linkIds?: string[]): Promise<Map<string, number>> {
+  const rows = await prisma.clickEvent.groupBy({
+    by: ["trackingLinkId"],
+    where: {
+      isUnique: true,
+      ...(since ? { timestamp: { gte: since } } : {}),
+      ...(linkIds ? { trackingLinkId: { in: linkIds } } : {}),
+    },
+    _count: { _all: true },
+  });
+  return new Map(rows.map((r) => [r.trackingLinkId, r._count._all]));
+}
+
 export async function getOverview(range: RangeKey) {
   const since = rangeToDate(range);
   const clickWhere = since ? { timestamp: { gte: since } } : {};
@@ -26,7 +44,7 @@ export async function getOverview(range: RangeKey) {
     uniqueClicks,
     totalLeads,
     activeCampaigns,
-    conversionRate: conversionRate(totalLeads, totalClicks),
+    conversionRate: conversionRate(totalLeads, uniqueClicks),
   };
 }
 
@@ -71,13 +89,15 @@ export async function getTimeSeries(range: RangeKey) {
 interface Breakdown {
   key: string;
   clicks: number;
+  uniqueClicks: number;
   leads: number;
+  /** leads ÷ unique clicks, % */
   cr: number;
 }
 
 async function breakdownBy(field: "utmSource" | "utmCampaign" | "utmContent", range: RangeKey) {
   const since = rangeToDate(range);
-  const links = await prisma.trackingLink.findMany({
+  const [links, unique] = await Promise.all([prisma.trackingLink.findMany({
     select: {
       id: true,
       utmSource: true,
@@ -90,19 +110,20 @@ async function breakdownBy(field: "utmSource" | "utmCampaign" | "utmContent", ra
         },
       },
     },
-  });
+  }), uniqueClicksByLink(since)]);
 
-  const agg = new Map<string, { clicks: number; leads: number }>();
+  const agg = new Map<string, { clicks: number; uniqueClicks: number; leads: number }>();
   for (const l of links) {
     const key = (l[field] || "(none)") as string;
-    const row = agg.get(key) ?? { clicks: 0, leads: 0 };
+    const row = agg.get(key) ?? { clicks: 0, uniqueClicks: 0, leads: 0 };
     row.clicks += l._count.clicks;
+    row.uniqueClicks += unique.get(l.id) ?? 0;
     row.leads += l._count.leads;
     agg.set(key, row);
   }
 
   return Array.from(agg.entries())
-    .map(([key, v]): Breakdown => ({ key, clicks: v.clicks, leads: v.leads, cr: conversionRate(v.leads, v.clicks) }))
+    .map(([key, v]): Breakdown => ({ key, ...v, cr: conversionRate(v.leads, v.uniqueClicks) }))
     .sort((a, b) => b.clicks - a.clicks || b.leads - a.leads);
 }
 
@@ -127,7 +148,7 @@ export async function getRecentLeads(limit = 10) {
 
 export async function getLinkStats(range: RangeKey) {
   const since = rangeToDate(range);
-  const links = await prisma.trackingLink.findMany({
+  const [links, unique] = await Promise.all([prisma.trackingLink.findMany({
     where: { isArchived: false },
     orderBy: { createdAt: "desc" },
     include: {
@@ -139,12 +160,13 @@ export async function getLinkStats(range: RangeKey) {
         },
       },
     },
-  });
+  }), uniqueClicksByLink(since)]);
   return links.map((l) => ({
     ...l,
     clicks: l._count.clicks,
+    uniqueClicks: unique.get(l.id) ?? 0,
     leads: l._count.leads,
-    cr: conversionRate(l._count.leads, l._count.clicks),
+    cr: conversionRate(l._count.leads, unique.get(l.id) ?? 0),
   }));
 }
 

@@ -50,7 +50,7 @@ export default async function DashboardPage(props: {
         <StatCard label="Total clicks"    value={formatNumber(overview.totalClicks)}     sub="all recorded clicks" accent="clicks" />
         <StatCard label="Unique clicks"   value={formatNumber(overview.uniqueClicks)}    sub="one per device / IP" accent="clicks" />
         <StatCard label="Total leads"     value={formatNumber(overview.totalLeads)}      sub="form submissions"    accent="leads"  />
-        <StatCard label="Conversion rate" value={formatPercent(overview.conversionRate)} sub="clicks → leads"      accent="accent" />
+        <StatCard label="Conversion rate" value={formatPercent(overview.conversionRate)} sub="unique clicks → leads"      accent="accent" />
       </section>
 
       <section className="mt-6 card p-6">
@@ -63,7 +63,7 @@ export default async function DashboardPage(props: {
       <section className="mt-6 card p-6">
         <h2 className="font-display text-lg font-semibold">Conversion funnel</h2>
         <div className="mt-5">
-          <Funnel clicks={overview.totalClicks} leads={overview.totalLeads} cr={overview.conversionRate} />
+          <Funnel clicks={overview.uniqueClicks} leads={overview.totalLeads} cr={overview.conversionRate} />
         </div>
       </section>
 

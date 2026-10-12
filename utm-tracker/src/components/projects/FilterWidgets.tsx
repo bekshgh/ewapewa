@@ -96,7 +96,7 @@ export function MultiSelect({
           return (
             <li key={o.value}>
               <label className={cn("flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm hover:bg-bg-hover", muted && "text-ink-faint", o.disabled && !checked && "cursor-not-allowed")} title={o.disabled}>
-                <input type="checkbox" className="h-4 w-4 accent-[#f6b352]" checked={checked} disabled={Boolean(o.disabled) && !checked} onChange={() => toggle(o.value)} />
+                <input type="checkbox" className="h-4 w-4 accent-accent" checked={checked} disabled={Boolean(o.disabled) && !checked} onChange={() => toggle(o.value)} />
                 <span className="flex-1">{o.label}</span>
                 <span className="num text-xs text-ink-faint" aria-label={`${o.count} projects`}>{o.count}</span>
               </label>
@@ -166,13 +166,13 @@ export function RangeControl({
       <div className="mt-2 space-y-1">
         <label className="flex items-center gap-2 text-xs text-ink-muted" htmlFor={`${id}-min`}>
           <span className="w-8">from</span>
-          <input id={`${id}-min`} type="range" className="flex-1 accent-[#f6b352]" min={lo} max={hi} step={step} value={min}
+          <input id={`${id}-min`} type="range" className="flex-1 accent-accent" min={lo} max={hi} step={step} value={min}
             aria-valuetext={text(min)} onChange={(e) => set(Math.min(Number(e.target.value), max), max)} />
           <span className="num w-16 text-right text-ink">{text(min)}</span>
         </label>
         <label className="flex items-center gap-2 text-xs text-ink-muted" htmlFor={`${id}-max`}>
           <span className="w-8">to</span>
-          <input id={`${id}-max`} type="range" className="flex-1 accent-[#f6b352]" min={lo} max={hi} step={step} value={max}
+          <input id={`${id}-max`} type="range" className="flex-1 accent-accent" min={lo} max={hi} step={step} value={max}
             aria-valuetext={text(max)} onChange={(e) => set(min, Math.max(Number(e.target.value), min))} />
           <span className="num w-16 text-right text-ink">{text(max)}</span>
         </label>

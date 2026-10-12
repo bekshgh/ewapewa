@@ -353,7 +353,7 @@ export function BulkReportUpload({ projects, types }: { projects: ProjectOption[
             : `Save ${ready.length} ${ready.length === 1 ? "report" : "reports"} into ${groupKeys.length} ${groupKeys.length === 1 ? "project" : "projects"}`}
         </button>
         <label className="flex items-center gap-2 text-sm text-ink-muted">
-          <input type="checkbox" className="h-4 w-4 accent-[#f6b352]" checked={publish} onChange={(e) => setPublish(e.target.checked)} disabled={phase === "saving"} />
+          <input type="checkbox" className="h-4 w-4 accent-accent" checked={publish} onChange={(e) => setPublish(e.target.checked)} disabled={phase === "saving"} />
           Publish right away
         </label>
         {phase === "review" && <button type="button" className="text-sm text-ink-faint hover:text-ink" onClick={reset}>Cancel</button>}

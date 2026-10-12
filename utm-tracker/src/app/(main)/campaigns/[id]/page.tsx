@@ -5,6 +5,7 @@ import { StatCard } from "@/components/ui/StatCard";
 import { BreakdownPanel } from "@/components/charts/Charts";
 import { CampaignActions } from "@/components/CampaignActions";
 import { formatNumber, formatPercent, conversionRate } from "@/lib/utils";
+import { uniqueClicksByLink } from "@/lib/analytics";
 
 export const dynamic = "force-dynamic";
 
@@ -19,49 +20,40 @@ export default async function CampaignDetailPage(props: { params: Promise<{ id: 
   });
   const linkIds = links.map((l) => l.id);
 
-  const [totalClicks, uniqueClicks, totalLeads] = await Promise.all([
-    prisma.clickEvent.count({ where: { trackingLinkId: { in: linkIds } } }),
-    prisma.clickEvent.count({ where: { trackingLinkId: { in: linkIds }, isUnique: true } }),
+  const [allByLink, uniqueByLink, totalLeads, srcLeads, cntLeads] = await Promise.all([
+    prisma.clickEvent.groupBy({ by: ["trackingLinkId"], where: { trackingLinkId: { in: linkIds } }, _count: { _all: true } }),
+    uniqueClicksByLink(null, linkIds),
     prisma.lead.count({ where: { utmCampaign: campaign.name } }),
+    prisma.lead.groupBy({ by: ["utmSource"], where: { utmCampaign: campaign.name }, _count: { _all: true } }),
+    prisma.lead.groupBy({ by: ["utmContent"], where: { utmCampaign: campaign.name }, _count: { _all: true } }),
   ]);
+  const clicksOf = new Map(allByLink.map((r) => [r.trackingLinkId, r._count._all]));
+  const totalClicks = allByLink.reduce((n, r) => n + r._count._all, 0);
+  const uniqueClicks = Array.from(uniqueByLink.values()).reduce((n, v) => n + v, 0);
 
-  const cr = conversionRate(totalLeads, totalClicks);
+  // Conversion is leads ÷ unique clicks (see uniqueClicksByLink).
+  const cr = conversionRate(totalLeads, uniqueClicks);
 
-  const srcMap = new Map<string, { clicks: number; leads: number }>();
-  for (const l of links) {
-    const key = l.utmSource || "(none)";
-    const r = srcMap.get(key) ?? { clicks: 0, leads: 0 };
-    r.clicks += await prisma.clickEvent.count({ where: { trackingLinkId: l.id } });
-    srcMap.set(key, r);
+  function breakdown(keyOf: (l: (typeof links)[number]) => string | null, leadRows: { key: string | null; n: number }[]) {
+    const map = new Map<string, { clicks: number; uniqueClicks: number; leads: number }>();
+    const row = (k: string | null) => {
+      const key = k || "(none)";
+      const r = map.get(key) ?? { clicks: 0, uniqueClicks: 0, leads: 0 };
+      map.set(key, r);
+      return r;
+    };
+    for (const l of links) {
+      const r = row(keyOf(l));
+      r.clicks += clicksOf.get(l.id) ?? 0;
+      r.uniqueClicks += uniqueByLink.get(l.id) ?? 0;
+    }
+    for (const x of leadRows) row(x.key).leads += x.n;
+    return Array.from(map.entries())
+      .map(([key, v]) => ({ key, ...v, cr: conversionRate(v.leads, v.uniqueClicks) }))
+      .sort((a, b) => b.clicks - a.clicks);
   }
-  const srcLeads = await prisma.lead.groupBy({ by: ["utmSource"], where: { utmCampaign: campaign.name }, _count: { _all: true } });
-  for (const row of srcLeads) {
-    const key = row.utmSource || "(none)";
-    const r = srcMap.get(key) ?? { clicks: 0, leads: 0 };
-    r.leads += row._count._all;
-    srcMap.set(key, r);
-  }
-  const bySource = Array.from(srcMap.entries())
-    .map(([key, v]) => ({ key, clicks: v.clicks, leads: v.leads, cr: conversionRate(v.leads, v.clicks) }))
-    .sort((a, b) => b.clicks - a.clicks);
-
-  const cntMap = new Map<string, { clicks: number; leads: number }>();
-  for (const l of links) {
-    const key = l.utmContent || "(none)";
-    const r = cntMap.get(key) ?? { clicks: 0, leads: 0 };
-    r.clicks += await prisma.clickEvent.count({ where: { trackingLinkId: l.id } });
-    cntMap.set(key, r);
-  }
-  const cntLeads = await prisma.lead.groupBy({ by: ["utmContent"], where: { utmCampaign: campaign.name }, _count: { _all: true } });
-  for (const row of cntLeads) {
-    const key = row.utmContent || "(none)";
-    const r = cntMap.get(key) ?? { clicks: 0, leads: 0 };
-    r.leads += row._count._all;
-    cntMap.set(key, r);
-  }
-  const byContent = Array.from(cntMap.entries())
-    .map(([key, v]) => ({ key, clicks: v.clicks, leads: v.leads, cr: conversionRate(v.leads, v.clicks) }))
-    .sort((a, b) => b.clicks - a.clicks);
+  const bySource = breakdown((l) => l.utmSource, srcLeads.map((r) => ({ key: r.utmSource, n: r._count._all })));
+  const byContent = breakdown((l) => l.utmContent, cntLeads.map((r) => ({ key: r.utmContent, n: r._count._all })));
 
   return (
     <>
@@ -75,7 +67,7 @@ export default async function CampaignDetailPage(props: { params: Promise<{ id: 
         <StatCard label="Total clicks"    value={formatNumber(totalClicks)}  sub="all recorded"     accent="clicks" />
         <StatCard label="Unique clicks"   value={formatNumber(uniqueClicks)} sub="per device / IP"  accent="clicks" />
         <StatCard label="Leads"           value={formatNumber(totalLeads)}   sub="form submissions" accent="leads"  />
-        <StatCard label="Conversion rate" value={formatPercent(cr)}          sub="clicks → leads"   accent="accent" />
+        <StatCard label="Conversion rate" value={formatPercent(cr)}          sub="unique clicks → leads" accent="accent" />
       </section>
       <section className="grid gap-6 lg:grid-cols-2">
         <BreakdownPanel title="By source"  head="Source"  rows={bySource}  />
