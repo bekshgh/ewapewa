@@ -55,7 +55,7 @@ function DataBadges({ r }: { r: ProjectRow }) {
 function Pick({ r, picked, onPick, disabled }: { r: ProjectRow; picked: boolean; onPick: () => void; disabled: boolean }) {
   return (
     <label className={cn("flex items-center gap-1.5 text-xs", disabled ? "text-ink-faint" : "cursor-pointer text-ink-muted hover:text-ink")}>
-      <input type="checkbox" className="h-4 w-4 accent-[#f6b352]" checked={picked} disabled={disabled} onChange={onPick} aria-label={`Compare: ${r.name}`} />
+      <input type="checkbox" className="h-4 w-4 accent-accent" checked={picked} disabled={disabled} onChange={onPick} aria-label={`Compare: ${r.name}`} />
       compare
     </label>
   );
@@ -96,7 +96,7 @@ export function ProjectList({
             {rows.map((r) => (
               <tr key={r.id} className="hover:bg-bg-hover/40">
                 <td className="px-4 py-3">
-                  <input type="checkbox" className="h-4 w-4 accent-[#f6b352]" checked={picked.includes(r.slug)} disabled={full && !picked.includes(r.slug)}
+                  <input type="checkbox" className="h-4 w-4 accent-accent" checked={picked.includes(r.slug)} disabled={full && !picked.includes(r.slug)}
                     onChange={() => onPick(r.slug)} aria-label={`Compare: ${r.name}`} />
                 </td>
                 <td className="px-4 py-3">

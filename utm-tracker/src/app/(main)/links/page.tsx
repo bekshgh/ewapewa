@@ -1,7 +1,8 @@
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LinksTable, type LinkRow } from "@/components/LinksTable";
-import { getLinkStats } from "@/lib/analytics";
+import { getLinkStats, uniqueClicksByLink } from "@/lib/analytics";
+import { conversionRate } from "@/lib/utils";
 import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +17,7 @@ export default async function LinksPage() {
     }),
   ]);
 
+  const archivedUnique = await uniqueClicksByLink(null, archived.map((l) => l.id));
   const total = withStats.length + archived.length;
 
   const rows: LinkRow[] = [
@@ -31,7 +33,7 @@ export default async function LinksPage() {
       utmSource: l.utmSource, utmMedium: l.utmMedium, utmContent: l.utmContent,
       campaignName: l.campaign?.label || l.campaign?.name || l.utmCampaign,
       clicks: l._count.clicks, leads: l._count.leads,
-      cr: l._count.clicks ? (l._count.leads / l._count.clicks) * 100 : 0,
+      cr: conversionRate(l._count.leads, archivedUnique.get(l.id) ?? 0),
       isActive: l.isActive, isArchived: l.isArchived, createdAt: l.createdAt.toISOString(),
     })),
   ];

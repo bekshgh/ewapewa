@@ -18,8 +18,8 @@ const config: Config = {
           faint: "#6b6b76",
         },
         accent: {
-          DEFAULT: "#f6b352", // amber — primary / conversions
-          soft: "#3a2e1a",
+          DEFAULT: "#5290BD", // brand blue — buttons, focus, highlights
+          soft: "#14222e",
         },
         clicks: "#5b9bff", // cool blue — clicks
         leads: "#3ecf8e", // green — leads / conversions
@@ -36,7 +36,7 @@ const config: Config = {
       },
       boxShadow: {
         card: "0 1px 0 0 rgba(255,255,255,0.03) inset, 0 8px 24px -12px rgba(0,0,0,0.6)",
-        glow: "0 0 0 1px rgba(246,179,82,0.25), 0 8px 30px -10px rgba(246,179,82,0.25)",
+        glow: "0 0 0 1px rgba(82,144,189,0.3), 0 8px 30px -10px rgba(82,144,189,0.35)",
       },
       keyframes: {
         "fade-up": {

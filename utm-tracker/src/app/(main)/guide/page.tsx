@@ -189,7 +189,7 @@ export default function GuidePage() {
           </Section>
 
           <Section id="read" n={17} title="Как читать аналитику">
-            <p><strong>Total clicks</strong> — все переходы. <strong>Unique clicks</strong> — разные люди. <strong>Total leads</strong> — заявки. <strong>Conversion rate</strong> — процент кликов, ставших заявками.</p>
+            <p><strong>Total clicks</strong> — все переходы. <strong>Unique clicks</strong> — разные люди. <strong>Total leads</strong> — заявки. <strong>Conversion rate</strong> — заявки ÷ уникальные клики: какая доля разных людей, перешедших по ссылке, оставила заявку.</p>
             <p>Таблицы «By source / campaign / content» показывают, какой канал и какой креатив приносят больше всего лидов. Смотрите не на клики, а на <strong>конверсию</strong>: иногда канал с меньшим числом кликов даёт больше заявок.</p>
           </Section>
 
