@@ -1,17 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { StatCard } from "@/components/ui/StatCard";
+import { ProjectNumbers } from "@/components/ProjectNumbers";
+import { folderNumbers } from "@/lib/projectNumbers";
 import { formatNumber, formatPercent } from "@/lib/utils";
-import { projectStats, type ChannelRow, type CampaignStats } from "@/lib/projectStats";
+import { manualNumbers, projectStats, type ChannelRow, type CampaignStats } from "@/lib/projectStats";
 
 export const dynamic = "force-dynamic";
 
-const pct = (v: number | null) => (v === null ? "—" : formatPercent(v));
-
 export default async function ProjectFolderPage(props: { params: Promise<{ key: string }> }) {
   const { key } = await props.params;
-  const s = await projectStats(key);
+  const [s, manual] = await Promise.all([projectStats(key), manualNumbers(key)]);
   if (!s) notFound();
   const programmes = s.campaigns.filter((c) => c.role.kind === "programme");
 
@@ -24,33 +23,29 @@ export default async function ProjectFolderPage(props: { params: Promise<{ key: 
         action={<Link href="/campaigns" className="btn-ghost">← All campaigns</Link>}
       />
 
-      <section className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Project registrations" value={formatNumber(s.totals.projectRegs)} sub="leads of the project campaign" accent="leads" />
-        {programmes.map((c) => (
-          <StatCard
-            key={c.id}
-            label={`${c.role.title} registrations`}
-            value={formatNumber(c.leads)}
-            sub={c.ofProject === null ? "no project registrations yet" : `${formatPercent(c.ofProject)} of project registrations`}
-            accent="accent"
-          />
-        ))}
-        <StatCard label="Unique clicks" value={formatNumber(s.totals.uniqueClicks)} sub={`${formatNumber(s.totals.clicks)} clicks, all campaigns`} accent="clicks" />
-      </section>
+      <ProjectNumbers
+        folder={s.group.key}
+        numbers={folderNumbers(
+          {
+            projectRegs: s.projectCampaignIds.length ? s.totals.projectRegs : null,
+            programmes: programmes.map((c) => ({ id: c.id, title: c.role.title, leads: c.leads })),
+          },
+          manual,
+        )}
+      />
 
-      {programmes.length > 0 && (
+      {programmes.length > 0 && s.totals.projectRegs > 0 && (
         <section className="card mb-6 p-5">
-          <h2 className="font-display text-base font-semibold">Project → programme</h2>
+          <h2 className="font-display text-base font-semibold">Who went on from the project</h2>
           <p className="mt-1 text-xs text-ink-faint">
-            Conversion = programme registrations ÷ project registrations. &ldquo;Also registered for the project&rdquo; matches people by e-mail or phone.
+            Tracker data: programme registrants who are also among the project&apos;s registrants (same e-mail or phone).
           </p>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-faint">
                   <th className="pb-2 font-medium">Programme</th>
-                  <th className="pb-2 text-right font-medium">Registrations</th>
-                  <th className="pb-2 text-right font-medium">÷ project regs</th>
+                  <th className="pb-2 text-right font-medium">Registrations (tracker)</th>
                   <th className="pb-2 text-right font-medium">Also registered for the project</th>
                 </tr>
               </thead>
@@ -59,9 +54,8 @@ export default async function ProjectFolderPage(props: { params: Promise<{ key: 
                   <tr key={c.id}>
                     <td className="py-2.5 text-ink">{c.role.title}</td>
                     <td className="num py-2.5 text-right text-leads">{formatNumber(c.leads)}</td>
-                    <td className="num py-2.5 text-right font-medium text-ink">{pct(c.ofProject)}</td>
                     <td className="num py-2.5 text-right text-ink-muted">
-                      {c.fromProject === null ? "—" : `${formatNumber(c.fromProject)}${s.totals.projectRegs ? ` (${formatPercent((c.fromProject / s.totals.projectRegs) * 100)})` : ""}`}
+                      {c.fromProject === null ? "—" : `${formatNumber(c.fromProject)} (${formatPercent((c.fromProject / s.totals.projectRegs) * 100)} of project regs)`}
                     </td>
                   </tr>
                 ))}
