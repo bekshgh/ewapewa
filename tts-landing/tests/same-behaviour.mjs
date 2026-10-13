@@ -2,8 +2,18 @@
 // same #tt DOM after load and after each form scenario.
 import { chromium, page, serve, LANDING } from "./harness.mjs";
 
-const ORIGINAL = page(process.env.ORIG_DIR), NEW = page(process.env.NEW_DIR || "dist");
-const OPEN_TIME = new Date("2026-09-05T12:00:00+05:00");
+// content edits made on purpose since the original (new deadline, links to the new tracker)
+const CONTENT_EDITS = [
+  ["2026-09-10T23:59:59+05:00", "2026-10-14T23:59:59+05:00"],
+  ["Дедлайн: 10 сентября 2026, 23:59", "Дедлайн: 14 октября 2026, 23:59"], ["до 10 сентября<", "до 14 октября<"],
+  ["Приём закрылся 10 сентября 2026", "Приём закрылся 14 октября 2026"], ["Приём заявок до 10 сентября 2026", "Приём заявок до 14 октября 2026"],
+  ["Deadline: 10 September 2026", "Deadline: 14 October 2026"], ["until 10 September", "until 14 October"],
+  ["closed on 10 September 2026", "closed on 14 October 2026"], ["close 10 September 2026", "close 14 October 2026"],
+  ["Заявки до 10 сентября 2026.", "Заявки до 14 октября 2026."], ["https://aieseckz.vercel.app/r/tt_ogx", "https://ewapewa-utm-tracker.vercel.app/r/tt_ogx"],
+];
+const edit = (h) => CONTENT_EDITS.reduce((x, [a, b]) => x.split(a).join(b), h);
+const ORIGINAL = edit(page(process.env.ORIG_DIR)), NEW = page(process.env.NEW_DIR || "dist");
+const OPEN_TIME = new Date("2026-10-10T12:00:00+05:00");
 const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" }).catch(() => chromium.launch());
 
 async function run(html, steps, { reduced = true, time = OPEN_TIME, width = 1280 } = {}) {
@@ -63,7 +73,7 @@ const SCENARIOS = {
 
 let failed = 0;
 // after the deadline: form hidden, "closed" block, CTA texts changed
-for (const opts of [{ time: new Date("2026-10-13T12:00:00+05:00") }, { time: new Date("2026-10-13T12:00:00+05:00"), width: 375 }]) {
+for (const opts of [{ time: new Date("2026-10-20T12:00:00+05:00") }, { time: new Date("2026-10-20T12:00:00+05:00"), width: 375 }]) {
   const steps = [["closed", async () => {}], ["closed-en", async (p) => p.click('.lang button[data-lang="en"]')]];
   const a = await run(ORIGINAL, steps, opts), b = await run(NEW, steps, opts);
   for (const k of Object.keys(a.snaps)) {

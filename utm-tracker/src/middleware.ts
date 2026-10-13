@@ -14,7 +14,6 @@ const PUBLIC = [
   "/api/track/submit",
   "/t.js",
   "/api/collect",
-  "/api/cron/purge-analytics", // checks CRON_SECRET itself
 ];
 
 export async function middleware(req: NextRequest) {
