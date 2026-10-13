@@ -374,7 +374,10 @@ model SavedView {
 model AnalyticsForm {
   id          String   @id // e.g. "tts-f26-registration"
   projectSlug String? // project folder key in Campaigns → Projects, e.g. "toptalentssprint-f26"
-  fields      Json // [{k, kind: text|select|check, cond: bool, req: bool}] in page order
+  projectSetByHand Boolean @default(false) // picked in Forms: the page's links / UTM no longer change it
+  title       String? // heading of the form's block (forms found by /t.js), else the page title
+  pageUrl     String? // page the form is on (forms found by /t.js)
+  fields      Json // [{k, kind: text|select|check, cond: bool, req: bool, label?}] in page order
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

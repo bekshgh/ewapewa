@@ -20,7 +20,8 @@
     "sanitize:fixture": "tsx scripts/sanitize-fixture.ts",
     "db:seed:demo": "tsx prisma/seed-demo.ts",
     "projects:recompute": "tsx scripts/recompute-metrics.ts",
-    "analytics:purge": "node scripts/purge-analytics.mjs"
+    "analytics:purge": "node scripts/purge-analytics.mjs",
+    "check:forms": "tsx scripts/check-form-autodiscovery.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

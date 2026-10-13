@@ -156,6 +156,12 @@ export default function GuidePage() {
               <li>In Tilda: <strong>Site settings → Insert code → HEAD</strong>, paste the one line from the <strong>Webhook</strong> tab (<Code>&lt;script src=&quot;…/t.js&quot; async&gt;&lt;/script&gt;</Code>), save and republish all pages.</li>
               <li>That&apos;s it: once per Tilda site, not per page or per link. Each project landing on its own Tilda site needs the line too.</li>
             </ol>
+            <p>
+              The same line also turns on <strong>Forms</strong>: every form on every page of the site shows up there by itself after its first visitor — where people
+              drop off, which questions they get stuck on, what blocks «Send». Nothing typed is stored, only whether a field was filled. The form joins the project
+              whose links lead to that page (else the visitor&apos;s utm_campaign); you can change it on the form&apos;s page. To check a page yourself without
+              spoiling the numbers, open it with <Code>?tt_debug=1</Code>: the visit is marked as a test.
+            </p>
           </Section>
 
           <Section id="webhook" n={13} title="Optional: Tilda webhook">

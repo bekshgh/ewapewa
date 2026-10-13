@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { batchSchema, hashIpDaily, ingest, IngestError } from "@/lib/formAnalytics/ingest";
+import { isTeamSite } from "@/lib/formAnalytics/project";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -9,7 +10,8 @@ export const runtime = "nodejs";
  * The page sends batches with navigator.sendBeacon / fetch as text/plain,
  * so there is no CORS preflight; OPTIONS is answered anyway.
  *
- * Guards: Origin must be on the allowlist, body ≤ 64 KB, ≤ 50 events per
+ * Guards: Origin must be on the allowlist (or a site the team's tracker links
+ * lead to — /t.js tracks forms on any such page), body ≤ 64 KB, ≤ 50 events per
  * batch, ≤ 120 batches a minute per IP (per server instance), and the raw IP
  * is never stored — only a hash with a daily salt and the country.
  */
@@ -24,8 +26,14 @@ function allowedOrigins(): Set<string> {
   return new Set(list);
 }
 
-function cors(origin: string | null): Record<string, string> {
-  return origin && allowedOrigins().has(origin)
+async function allowed(origin: string | null): Promise<boolean> {
+  if (!origin || origin === "null") return false;
+  if (allowedOrigins().has(origin)) return true;
+  return isTeamSite(origin).catch(() => false);
+}
+
+function cors(origin: string | null, ok: boolean): Record<string, string> {
+  return origin && ok
     ? { "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type", "Access-Control-Max-Age": "86400", Vary: "Origin" }
     : { Vary: "Origin" };
 }
@@ -44,16 +52,18 @@ function limited(key: string, now = Date.now()): boolean {
 }
 
 export async function OPTIONS(req: NextRequest) {
-  return new NextResponse(null, { status: 204, headers: cors(req.headers.get("origin")) });
+  const origin = req.headers.get("origin");
+  return new NextResponse(null, { status: 204, headers: cors(origin, await allowed(origin)) });
 }
 
 export async function POST(req: NextRequest) {
   const origin = req.headers.get("origin");
-  const headers = cors(origin);
+  const ok = await allowed(origin);
+  const headers = cors(origin, ok);
   const reply = (status: number, body?: Record<string, unknown>) =>
     body ? NextResponse.json(body, { status, headers }) : new NextResponse(null, { status, headers });
 
-  if (!origin || !allowedOrigins().has(origin)) return reply(403, { error: "origin not allowed" });
+  if (!ok) return reply(403, { error: "origin not allowed" });
   if (Number(req.headers.get("content-length") ?? 0) > MAX_BODY) return reply(413, { error: "too large" });
 
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || null;

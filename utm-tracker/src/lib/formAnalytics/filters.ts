@@ -53,4 +53,9 @@ export const FIELD_LABEL: Record<string, string> = {
   status: "Background", course: "Year of study", university: "Field of study", universityName: "University",
   english: "English level", relocation: "Ready to relocate", confirmRelocation: "Relocation confirmation", confirmData: "Data consent",
 };
-export const fieldLabel = (k: string) => FIELD_LABEL[k] ?? k;
+/** The question's name: as the page labelled it (forms found by /t.js), else the TTS names, else the key. */
+export const fieldLabel = (k: string, labels?: Record<string, string>) => labels?.[k] || FIELD_LABEL[k] || k;
+export const labelsOf = (fields: unknown): Record<string, string> =>
+  Object.fromEntries(((fields as { k: string; label?: string }[] | null) ?? []).filter((f) => f.label).map((f) => [f.k, f.label!]));
+/** A form's name in lists and headers. */
+export const formTitle = (f: { id: string; title: string | null }) => f.title || f.id;

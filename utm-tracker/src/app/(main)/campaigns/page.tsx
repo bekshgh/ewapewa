@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { groupCampaigns } from "@/lib/projectGroups";
 import { currentActor, editableCampaignIds } from "@/lib/auth";
 import { canCreateCampaigns } from "@/lib/permissions";
+import { NewBadge } from "@/components/ui/NewBadge";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,7 @@ export default async function CampaignsPage() {
 
       {folders.length > 0 && (
         <section className="mb-8">
-          <h2 className="mb-1 font-display text-base font-semibold">Projects</h2>
+          <h2 className="mb-1 font-display text-base font-semibold">Projects <NewBadge className="ml-1" /></h2>
           <p className="mb-3 text-xs text-ink-faint">
             Campaigns with the same project name are one folder: the project campaign plus its EwA2oGX / EwA2MXP campaigns.
           </p>

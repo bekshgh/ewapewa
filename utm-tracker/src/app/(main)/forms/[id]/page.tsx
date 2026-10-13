@@ -3,7 +3,11 @@ import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { prisma } from "@/lib/db";
 import { filterOptions, report, sessions as listSessions, slice } from "@/lib/formAnalytics/report";
-import { SLICES, duration, fieldLabel, parseFilter, pickSlice, type SP } from "@/lib/formAnalytics/filters";
+import { SLICES, duration, fieldLabel, formTitle, labelsOf, parseFilter, pickSlice, type SP } from "@/lib/formAnalytics/filters";
+import { FormProjectPicker } from "@/components/FormProjectPicker";
+import { currentActor } from "@/lib/auth";
+import { canEditFolder } from "@/lib/permissions";
+import { allProjectGroups } from "@/lib/projectStats";
 import { formatNumber, formatPercent } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +19,13 @@ export default async function FormReportPage(props: { params: Promise<{ id: stri
   if (!form) notFound();
   const f = parseFilter(id, sp);
   const by = pickSlice(sp.slice);
-  const [r, options, sliceRows, recent] = await Promise.all([report(f), filterOptions(id), slice(f, by), listSessions(f, 50)]);
+  const [r, options, sliceRows, recent, actor, groups] = await Promise.all([report(f), filterOptions(id), slice(f, by), listSessions(f, 50), currentActor(), allProjectGroups()]);
+  const labels = labelsOf(form.fields);
+  const projects = groups
+    .filter((g) => canEditFolder(actor, g.key) || g.key === form.projectSlug)
+    .map((g) => ({ key: g.key, title: g.title }));
+  const mayPick = (k: string | null) => (k ? canEditFolder(actor, k) : actor?.role === "admin" && actor.status === "active");
+  const projectTitle = groups.find((g) => g.key === form.projectSlug)?.title ?? form.projectSlug;
   const q = new URLSearchParams(Object.entries(sp).flatMap(([k, v]) => (typeof v === "string" && v ? [[k, v]] : [])));
   const withQ = (extra: Record<string, string>) => {
     const x = new URLSearchParams(q);
@@ -33,7 +43,7 @@ export default async function FormReportPage(props: { params: Promise<{ id: stri
   const leaves = [
     { label: "Left before the form", n: r.leave.beforeFormSeen, muted: true },
     { label: "Saw the form, didn't start", n: r.leave.sawFormNotStarted, muted: true },
-    ...r.fields.filter((x) => x.leftHere > 0).map((x) => ({ label: fieldLabel(x.k), n: x.leftHere, muted: false })),
+    ...r.fields.filter((x) => x.leftHere > 0).map((x) => ({ label: fieldLabel(x.k, labels), n: x.leftHere, muted: false })),
   ];
   const maxLeave = Math.max(1, ...leaves.map((l) => l.n));
   const maxBlocked = Math.max(1, ...r.blocked.map((b) => b.sessions));
@@ -42,8 +52,8 @@ export default async function FormReportPage(props: { params: Promise<{ id: stri
     <>
       <PageHeader
         breadcrumb="Forms"
-        title={id}
-        subtitle={`${form.projectSlug ? `Project ${form.projectSlug} · ` : ""}${formatNumber(fn.visitors)} visitors · ${formatNumber(fn.sessions)} sessions`}
+        title={formTitle(form)}
+        subtitle={`${form.pageUrl ? `${form.pageUrl.replace(/^https?:\/\//, "")} · ` : ""}${projectTitle ? `${projectTitle} · ` : ""}${formatNumber(fn.visitors)} visitors · ${formatNumber(fn.sessions)} sessions`}
         action={
           <div className="flex flex-wrap gap-2">
             {form.projectSlug && <Link href={`/campaigns/projects/${form.projectSlug}`} className="btn-ghost text-sm">Project folder →</Link>}
@@ -51,6 +61,14 @@ export default async function FormReportPage(props: { params: Promise<{ id: stri
             <a href={`/api/forms/${encodeURIComponent(id)}/export${withQ({ kind: "sessions" })}`} className="btn-ghost text-sm">CSV: sessions</a>
           </div>
         }
+      />
+
+      <FormProjectPicker
+        formId={id}
+        current={form.projectSlug}
+        byHand={form.projectSetByHand}
+        projects={projects}
+        editable={(!form.projectSlug || mayPick(form.projectSlug)) && projects.some((p) => mayPick(p.key))}
       />
 
       <form className="card mb-6 grid gap-3 p-4 text-sm sm:grid-cols-4 lg:grid-cols-8" method="get">
@@ -131,7 +149,7 @@ export default async function FormReportPage(props: { params: Promise<{ id: stri
               {r.fields.map((x) => (
                 <tr key={x.k} className="hover:bg-bg-hover/40">
                   <td className="px-5 py-2.5">
-                    <span className="text-ink">{fieldLabel(x.k)}</span>
+                    <span className="text-ink">{fieldLabel(x.k, labels)}</span>
                     {x.conditional && <span className="ml-2 rounded bg-bg-raised px-1.5 py-0.5 text-[11px] text-ink-faint">conditional · shown to {formatNumber(x.shown ?? 0)}</span>}
                   </td>
                   <td className="num px-3 py-2.5 text-right text-ink">{formatNumber(x.reached)}</td>
@@ -171,7 +189,7 @@ export default async function FormReportPage(props: { params: Promise<{ id: stri
             {r.blocked.length === 0 && <p className="text-sm text-ink-faint">No blocked attempts.</p>}
             {r.blocked.map((b) => (
               <div key={b.k} className="grid grid-cols-[minmax(120px,180px)_1fr_auto] items-center gap-3 text-sm">
-                <span className="truncate text-ink-muted">{fieldLabel(b.k)}</span>
+                <span className="truncate text-ink-muted">{fieldLabel(b.k, labels)}</span>
                 <div className="h-5 rounded bg-bg-raised"><div className="h-5 rounded bg-accent/60" style={{ width: `${(b.sessions / maxBlocked) * 100}%` }} /></div>
                 <span className="num w-10 text-right text-ink">{formatNumber(b.sessions)}</span>
               </div>
@@ -250,7 +268,7 @@ export default async function FormReportPage(props: { params: Promise<{ id: stri
                     {s.isTest && <span className="ml-2 text-[11px] text-ink-faint">test</span>}
                   </td>
                   <td className={`px-3 py-2.5 ${s.outcome === "success" ? "text-leads" : s.outcome === "abandoned" ? "text-danger" : "text-ink-muted"}`}>{s.outcome}</td>
-                  <td className="px-3 py-2.5 text-ink-muted">{s.lastField ? fieldLabel(s.lastField) : "—"}</td>
+                  <td className="px-3 py-2.5 text-ink-muted">{s.lastField ? fieldLabel(s.lastField, labels) : "—"}</td>
                   <td className="px-3 py-2.5 text-ink-muted">{s.utmSource ?? "—"}</td>
                   <td className="px-3 py-2.5 text-ink-muted">{s.device ?? "—"}</td>
                   <td className="px-3 py-2.5 text-ink-muted">{s.city ?? "—"}</td>
