@@ -1,0 +1,43 @@
+{
+  "meta": {
+    "ru": {
+      "t": "TopTalents — работа в Higgsfield | Отбор от AIESEC Kazakhstan",
+      "d": "Higgsfield — первый казахстанский единорог, оценка $5,4 млрд. AIESEC Kazakhstan ведёт отбор в команду: офис в Алматы, релокация обязательна. Заявки до 10 сентября 2026."
+    },
+    "en": {
+      "t": "TopTalents — work at Higgsfield | Selection by AIESEC Kazakhstan",
+      "d": "Higgsfield is Kazakhstan's first unicorn, valued at $5.4B. AIESEC Kazakhstan runs the selection: office in Almaty, relocation required. Applications close 10 September 2026."
+    }
+  },
+  "countdown": {
+    "ru": { "open": "ОТКРЫТ", "closed": "ЗАКРЫТ", "finalClosed": "Приём заявок закрыт.", "left": "Осталось: {d} д {h} ч {m} мин" },
+    "en": { "open": "OPEN", "closed": "CLOSED", "finalClosed": "Applications are closed.", "left": "Time left: {d} d {h} h {m} min" }
+  },
+  "closedCta": { "ru": "Приём закрыт", "en": "Applications closed" },
+  "chat": {
+    "ru": {
+      "astana": "Заходи в чат участников — там расписание, адрес в Астане и задание на видео.",
+      "almaty": "Заходи в чат участников — там расписание, адрес в Алматы и задание на видео.",
+      "none": "Заходи в чат участников — там расписание, адрес и задание на видео."
+    },
+    "en": {
+      "astana": "Join the participants chat — schedule, the Astana address and the video task are posted there.",
+      "almaty": "Join the participants chat — schedule, the Almaty address and the video task are posted there.",
+      "none": "Join the participants chat — schedule, address and the video task are posted there."
+    }
+  },
+  "form": {
+    "ru": {
+      "one": "Остался один пункт: {label}.",
+      "many": "Не заполнено пунктов: {n}. Начни с поля «{label}».",
+      "sending": "Отправляем…",
+      "failed": "Не удалось отправить заявку. Проверь соединение и попробуй ещё раз."
+    },
+    "en": {
+      "one": "One item to go: {label}.",
+      "many": "{n} items to go — start with {label}.",
+      "sending": "Sending…",
+      "failed": "Could not send the form. Check your connection and try again."
+    }
+  }
+}

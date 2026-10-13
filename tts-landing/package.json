@@ -1,0 +1,9 @@
+{
+  "name": "tts-landing",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test:same": "ORIG_DIR=original node tests/same-behaviour.mjs"
+  }
+}

@@ -363,3 +363,77 @@ model SavedView {
   query     String // URL query string, e.g. "type=forum&score10=9..10&sort=-date"
   createdAt DateTime @default(now())
 }
+
+// ─── Registration-form analytics (drop-off funnel, Tally-style) ───────────────
+// Filled by POST /api/collect from the landing's analytics script. Anonymous:
+// text answers (name, e-mail, phone, telegram, age) are never stored, only
+// whether a field was filled, its length and validity. Category answers
+// (city, status, relocation, checkboxes) are kept for slicing.
+
+/// One form on a landing; field order comes from the page (first session that reports it).
+model AnalyticsForm {
+  id          String   @id // e.g. "tts-f26-registration"
+  projectSlug String? // project folder key in Campaigns → Projects, e.g. "toptalentssprint-f26"
+  fields      Json // [{k, kind: text|select|check, cond: bool, req: bool}] in page order
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sessions AnalyticsSession[]
+}
+
+enum AnalyticsOutcome {
+  open // still on the page or left before the page could report it
+  success // the form was sent
+  abandoned // left the page without sending
+}
+
+model AnalyticsSession {
+  id          String  @id // client session_id (new after 30 min of inactivity)
+  visitorId   String
+  formId      String
+  projectSlug String?
+
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String? // = Campaign.name in the tracker
+  utmContent  String?
+  utmTerm     String?
+  clickId     String? // tracker click (ClickEvent.clickId) when the visitor came through a tracker link
+  referrer    String?
+  landingUrl  String?
+  device      String? // mobile | tablet | desktop
+  screenW     Int?
+  lang        String?
+  country     String? // from Vercel's geo header
+  ipHash      String? // sha256(ip + daily salt): no raw IP is stored
+
+  answers     Json? // latest category answers, e.g. {"city":"almaty","relocation":"yes"}
+  startedAt   DateTime
+  lastSeenAt  DateTime
+  outcome     AnalyticsOutcome @default(open)
+  lastField   String? // last active field when the page was left
+  isTest      Boolean          @default(false)
+
+  form   AnalyticsForm    @relation(fields: [formId], references: [id], onDelete: Cascade)
+  events AnalyticsEvent[]
+
+  @@index([formId, startedAt])
+  @@index([visitorId])
+  @@index([utmCampaign])
+}
+
+model AnalyticsEvent {
+  id        String   @id // client event id "<session>.<n>": a resent batch is not stored twice
+  sessionId String
+  type      String // page_view, form_start, field_blur, submit_success, …
+  fieldId   String?
+  ts        DateTime
+  offsetMs  Int // ms since the session started
+  meta      Json?
+
+  session AnalyticsSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, ts])
+  @@index([type, fieldId])
+  @@index([ts])
+}
