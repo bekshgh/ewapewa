@@ -72,18 +72,28 @@ export function buildSnippetJs(base: string): string {
   // 2. Report the lead on a press of the submit button, and again on Tilda's
   //    success callback / event. Repeats are merged into one lead on the server
   //    (by click_id), filling in contact fields typed after the first press.
+  //    Visitors who did not come through a tracker link are reported too, as
+  //    "direct" registrations: one per page view (sid), only with an e-mail or phone.
   var last = 0;
+  var sid = "";
+  function pageViewId() {
+    if (!sid) sid = Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
+    return sid;
+  }
   window.tlConversion = function ($form) {
     try {
       var clickId = val("click_id");
       var now = Date.now();
       // the button click and the form's submit event fire together — send once
-      if (!clickId || now - last < 1500) return;
-      last = now;
+      if (now - last < 1500) return;
       var form = unwrap($form);
-      var data = { click_id: clickId, pageUrl: location.href, formname: formName(form) };
-      FIELDS.forEach(function (n) { if (n !== "click_id") data[n] = val(n); });
+      var data = { pageUrl: location.href, formname: formName(form) };
+      FIELDS.forEach(function (n) { var v = val(n); if (v) data[n] = v; });
       contacts(form, data);
+      if (!clickId && !data.email && !data.phone) return;
+      // also sent with a click_id: if the click is unknown (an old link), the lead still counts as direct
+      data.sid = pageViewId();
+      last = now;
       send("/api/track/conversion", data);
     } catch (e) {}
   };

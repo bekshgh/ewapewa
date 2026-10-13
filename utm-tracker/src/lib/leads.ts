@@ -23,9 +23,9 @@ export interface RecordLeadResult {
  */
 export async function recordLead(
   lead: NormalisedLead,
-  opts: { provider: string; rawPayload: Prisma.InputJsonValue },
+  opts: { provider: string; rawPayload: Prisma.InputJsonValue; dedupeKey?: string },
 ): Promise<RecordLeadResult> {
-  const dedupeKey = buildDedupeKey({
+  const dedupeKey = opts.dedupeKey ?? buildDedupeKey({
     clickId: lead.clickId,
     email: lead.email,
     phone: lead.phone,
