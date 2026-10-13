@@ -1,0 +1,87 @@
+{
+  "markers": {
+    "1": "<!-- ═══ ЧАСТЬ 1/5 → Настройки СТРАНИЦЫ → HTML-код внутрь HEAD ═══ -->",
+    "2": "<!-- ═══ ЧАСТЬ 2/5 → блок T123 (HTML-код) на странице ═══ -->",
+    "3": "<!-- ═══ ЧАСТЬ 3/5 → Настройки СТРАНИЦЫ → HTML-код перед </body> ═══ -->",
+    "4": "<!-- ═══ ЧАСТЬ 4/5 → Настройки САЙТА → HTML-код внутрь HEAD (шрифт) ═══ -->",
+    "5": "<!-- ═══ ЧАСТЬ 5/5 → Настройки САЙТА → HTML-код перед </body> (картинки) ═══ -->"
+  },
+  "images": {
+    "1": [
+      {
+        "key": "a2",
+        "mime": "image/png",
+        "file": "a2.png.b64",
+        "comma": true
+      },
+      {
+        "key": "a9",
+        "mime": "image/png",
+        "file": "a9.png.b64",
+        "comma": true
+      },
+      {
+        "key": "a4",
+        "mime": "image/png",
+        "file": "a4.png.b64",
+        "comma": false
+      }
+    ],
+    "3": [
+      {
+        "key": "a6",
+        "mime": "image/png",
+        "file": "a6.png.b64",
+        "comma": true
+      },
+      {
+        "key": "a1",
+        "mime": "image/png",
+        "file": "a1.png.b64",
+        "comma": false
+      }
+    ],
+    "4": [
+      {
+        "key": "a5",
+        "mime": "image/png",
+        "file": "a5.png.b64",
+        "comma": false
+      }
+    ],
+    "5": [
+      {
+        "key": "a3",
+        "mime": "image/webp",
+        "file": "a3.webp.b64",
+        "comma": true
+      },
+      {
+        "key": "a8",
+        "mime": "image/png",
+        "file": "a8.png.b64",
+        "comma": true
+      },
+      {
+        "key": "a7",
+        "mime": "image/png",
+        "file": "a7.png.b64",
+        "comma": false
+      }
+    ]
+  },
+  "fonts": [
+    {
+      "weight": 400,
+      "file": "hn-400.woff2.b64"
+    },
+    {
+      "weight": 700,
+      "file": "hn-700.woff2.b64"
+    },
+    {
+      "weight": 900,
+      "file": "hn-900.woff2.b64"
+    }
+  ]
+}

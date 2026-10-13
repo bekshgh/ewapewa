@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ProjectNumbers } from "@/components/ProjectNumbers";
 import { currentActor } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 import { canEditFolder } from "@/lib/permissions";
 import { folderNumbers } from "@/lib/projectNumbers";
 import { formatNumber, formatPercent } from "@/lib/utils";
@@ -12,7 +13,10 @@ export const dynamic = "force-dynamic";
 
 export default async function ProjectFolderPage(props: { params: Promise<{ key: string }> }) {
   const { key } = await props.params;
-  const [s, manual, actor] = await Promise.all([projectStats(key), manualNumbers(key), currentActor()]);
+  const [s, manual, actor, forms] = await Promise.all([
+    projectStats(key), manualNumbers(key), currentActor(),
+    prisma.analyticsForm.findMany({ where: { projectSlug: key }, select: { id: true } }),
+  ]);
   if (!s) notFound();
   const programmes = s.campaigns.filter((c) => c.role.kind === "programme");
 
@@ -22,7 +26,12 @@ export default async function ProjectFolderPage(props: { params: Promise<{ key: 
         breadcrumb="Campaigns · Project"
         title={s.group.title}
         subtitle={s.campaigns.map((c) => `${c.role.title}: ${c.label || c.name}`).join(" · ")}
-        action={<Link href="/campaigns" className="btn-ghost">← All campaigns</Link>}
+        action={
+          <div className="flex flex-wrap gap-2">
+            {forms.map((f) => <Link key={f.id} href={`/forms/${encodeURIComponent(f.id)}`} className="btn-ghost">Form drop-off →</Link>)}
+            <Link href="/campaigns" className="btn-ghost">← All campaigns</Link>
+          </div>
+        }
       />
 
       <ProjectNumbers
