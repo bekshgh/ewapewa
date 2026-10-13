@@ -119,3 +119,14 @@ describe("privacy", () => {
     expect(maskText("dates 2026-08-21 and 603 registrants stay")).toBe("dates 2026-08-21 and 603 registrants stay");
   });
 });
+
+describe("detectType", () => {
+  it("recognises a workbook with one signature sheet renamed or dropped", () => {
+    expect(detectType(["01 · Trend Dashboard", "02 · Channel Dashboard", "03 · Audience"])).toBe("registration");
+    expect(detectType(["Satisfaction & Themes", "Operational Scorecard"])).toBe("feedback");
+  });
+  it("stays unsure when sheets of both types are present, or too few", () => {
+    expect(detectType(["Trend Dashboard", "Channel Dashboard", "Operational Scorecard"])).toBeNull();
+    expect(detectType(["Trend Dashboard", "Sheet1"])).toBeNull();
+  });
+});

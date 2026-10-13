@@ -180,8 +180,12 @@ export function normalizeSheetName(name: string): string {
 
 export function detectType(sheetNames: string[]): ReportType | null {
   const names = sheetNames.map(normalizeSheetName);
-  const hits = (Object.values(CONFIGS) as TypeConfig[]).filter((c) =>
-    c.signature.every((re) => names.some((n) => re.test(n))),
-  );
-  return hits.length === 1 ? hits[0].type : null;
+  const score = (c: TypeConfig) => c.signature.filter((re) => names.some((n) => re.test(n))).length;
+  const all = Object.values(CONFIGS) as TypeConfig[];
+  const hits = all.filter((c) => score(c) === c.signature.length);
+  if (hits.length === 1) return hits[0].type;
+  if (hits.length > 1) return null;
+  // A sheet renamed or dropped: most of one type's signature, none of the other's.
+  const most = all.filter((c) => score(c) * 2 > c.signature.length);
+  return most.length === 1 && all.every((c) => c === most[0] || score(c) === 0) ? most[0].type : null;
 }

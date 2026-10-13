@@ -24,6 +24,8 @@ interface Item {
   status: ItemStatus;
   summary?: UploadSummary;
   error?: string;
+  /** the type could not be recognised: the person picks it */
+  needsType?: boolean;
   /** which group (event) the file belongs to */
   group: string;
   reportId?: string;
@@ -76,12 +78,19 @@ export function BulkReportUpload({ projects, types }: { projects: ProjectOption[
     });
   }
 
-  async function inspect(item: Item) {
+  async function inspect(item: Item, type?: "feedback" | "registration") {
     const fd = new FormData();
     fd.set("file", item.file);
+    if (type) fd.set("type", type);
     const res = await fetch("/api/reports/inspect", { method: "POST", body: fd }).catch(() => null);
     const body = res ? await res.json().catch(() => ({})) : {};
-    if (!res?.ok) return patchItem(item.id, { status: "error", error: body.error ?? "Could not read the file." });
+    if (!res?.ok && body.code === "unknown_type" && !type) {
+      // The file name usually says it: "… Registration Form Analysis.xlsx"
+      const guess = /regist|регистр/i.test(item.file.name) ? "registration" : /feedback|фидбек|отзыв/i.test(item.file.name) ? "feedback" : null;
+      if (guess) return inspect(item, guess);
+      return patchItem(item.id, { status: "error", needsType: true, error: "Could not tell whether this is a Feedback or a Registration analysis. Pick the type:" });
+    }
+    if (!res?.ok) return patchItem(item.id, { status: "error", needsType: false, error: body.error ?? "Could not read the file." });
     const s = body as UploadSummary;
     const group = s.eventKey || `file-${item.id}`;
     ensureGroup(group, s);
@@ -280,7 +289,21 @@ export function BulkReportUpload({ projects, types }: { projects: ProjectOption[
         <div role="alert" className="rounded-xl border border-danger/40 bg-danger/5 p-3 text-sm text-danger">
           These files can't be used and will be skipped:
           <ul className="mt-1 list-disc pl-5">
-            {errors.map((f) => <li key={f.id}>{f.file.name}: {f.error}</li>)}
+            {errors.map((f) => (
+              <li key={f.id}>
+                {f.file.name}: {f.error}
+                {f.needsType && (
+                  <span className="ml-2 inline-flex gap-2">
+                    {(["registration", "feedback"] as const).map((t) => (
+                      <button key={t} type="button" className="btn-ghost px-2 py-0.5 text-xs text-ink"
+                        onClick={() => { patchItem(f.id, { status: "inspecting", error: undefined, needsType: false }); inspect(f, t); }}>
+                        {TYPE_LABEL[t]}
+                      </button>
+                    ))}
+                  </span>
+                )}
+              </li>
+            ))}
           </ul>
         </div>
       )}
