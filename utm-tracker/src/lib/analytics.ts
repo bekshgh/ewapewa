@@ -49,8 +49,22 @@ export async function getOverview(range: RangeKey) {
 }
 
 /** Daily clicks & leads series for the line chart. */
+/** "All time" chart start: the first click or lead, at most a year back (30 days when there is nothing yet). */
+async function firstActivity(): Promise<Date> {
+  const [c, l] = await Promise.all([
+    prisma.clickEvent.aggregate({ _min: { timestamp: true } }),
+    prisma.lead.aggregate({ _min: { submittedAt: true } }),
+  ]);
+  const yearAgo = Date.now() - 366 * 86_400_000;
+  const first = Math.min(c._min.timestamp?.getTime() ?? Infinity, l._min.submittedAt?.getTime() ?? Infinity);
+  if (!Number.isFinite(first)) return new Date(Date.now() - 30 * 86_400_000);
+  const d = new Date(Math.max(first, yearAgo));
+  d.setUTCHours(0, 0, 0, 0);
+  return d;
+}
+
 export async function getTimeSeries(range: RangeKey) {
-  const since = rangeToDate(range) ?? new Date(Date.now() - 30 * 86_400_000);
+  const since = rangeToDate(range) ?? (await firstActivity());
   const [clicks, leads] = await Promise.all([
     prisma.clickEvent.findMany({
       where: { timestamp: { gte: since } },

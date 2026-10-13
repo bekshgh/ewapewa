@@ -6,7 +6,8 @@ import { formatNumber, formatPercent } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 function pickRange(v?: string): RangeKey {
-  return v === "7d" || v === "90d" || v === "all" ? v : "30d";
+  // All time by default: projects run for weeks, a 30-day window hides finished ones.
+  return v === "7d" || v === "30d" || v === "90d" ? v : "all";
 }
 
 export default async function AnalyticsPage(props: { searchParams: Promise<{ range?: string }> }) {
