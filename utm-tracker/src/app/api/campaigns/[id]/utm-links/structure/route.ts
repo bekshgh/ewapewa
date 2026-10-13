@@ -1,3 +1,4 @@
+import { guard } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { KitError, campaignStructure } from "@/lib/linkKitServer";
 
@@ -5,6 +6,8 @@ export const dynamic = "force-dynamic";
 
 /** GET — the source / medium / content rows of this campaign's links ("Same as another campaign"). */
 export async function GET(_req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const actor = await guard("active");
+  if (actor instanceof NextResponse) return actor;
   const { id } = await props.params;
   try {
     return NextResponse.json({ rows: await campaignStructure(id) });

@@ -1,8 +1,9 @@
+import { guard } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { isAdmin, unauthorized } from "@/lib/reports/store";
+import { isTeamMember, unauthorized } from "@/lib/reports/store";
 import { recomputeAll } from "@/lib/projects/recompute";
 import { SETTINGS_KEY, getProjectSettings } from "@/lib/projects/settings";
 
@@ -26,7 +27,9 @@ const schema = z
 
 /** Update the project thresholds. Metrics that depend on them are recomputed. */
 export async function PATCH(req: Request) {
-  if (!(await isAdmin())) return unauthorized();
+  const actor = await guard("admin");
+  if (actor instanceof NextResponse) return actor;
+  if (!(await isTeamMember())) return unauthorized();
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Validation failed", issues: parsed.error.flatten().fieldErrors }, { status: 422 });
   const before = await getProjectSettings(prisma);

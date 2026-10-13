@@ -1,7 +1,10 @@
+import { guard } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
 export async function DELETE(req: NextRequest) {
+  const actor = await guard("admin");
+  if (actor instanceof NextResponse) return actor;
   const { target, campaignId } = await req.json();
 
   if (target === "clicks") {

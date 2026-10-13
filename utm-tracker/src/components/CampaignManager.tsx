@@ -11,7 +11,8 @@ type Row = {
   status: string; linkCount: number;
 };
 
-export function CampaignManager({ campaigns }: { campaigns: Row[] }) {
+export function CampaignManager({ campaigns, canCreate, editable }: { campaigns: Row[]; canCreate: boolean; editable: string[] }) {
+  const canEdit = new Set(editable);
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: "", label: "", description: "", funnel: "", season: "", type: "" });
@@ -28,7 +29,10 @@ export function CampaignManager({ campaigns }: { campaigns: Row[] }) {
     });
     setSaving(false);
     if (res.ok) { setForm({ name: "", label: "", description: "", funnel: "", season: "", type: "" }); setOpen(false); router.refresh(); }
-    else setError("Could not save. Check the campaign name is unique and valid.");
+    else {
+      const err = (await res.json().catch(() => null))?.error;
+      setError(res.status === 403 && err ? err : "Could not save. Check the campaign name is unique and valid.");
+    }
   }
 
   async function patch(id: string, status: string) {
@@ -45,9 +49,11 @@ export function CampaignManager({ campaigns }: { campaigns: Row[] }) {
 
   return (
     <>
-      <div className="mb-5">
-        <button className="btn-primary" onClick={() => setOpen((v) => !v)}>{open ? "Close" : "+ Add campaign"}</button>
-      </div>
+      {canCreate && (
+        <div className="mb-5">
+          <button className="btn-primary" onClick={() => setOpen((v) => !v)}>{open ? "Close" : "+ Add campaign"}</button>
+        </div>
+      )}
 
       {open && (
         <div className="card mb-6 p-6">
@@ -103,7 +109,7 @@ export function CampaignManager({ campaigns }: { campaigns: Row[] }) {
                   <td className="num px-5 py-3.5 text-right text-ink">{c.linkCount}</td>
                   <td className="px-5 py-3.5 text-right">
                     <div className="flex items-center justify-end gap-2 text-xs">
-                      {c.status === "active" ? (
+                      {!canEdit.has(c.id) ? null : c.status === "active" ? (
                         <button onClick={() => patch(c.id, "stopped")} disabled={patching === c.id + "stopped"} className="text-ink-faint hover:text-accent transition">
                           {patching === c.id + "stopped" ? "…" : "Stop"}
                         </button>

@@ -8,12 +8,14 @@ import { CampaignActions } from "@/components/CampaignActions";
 import { formatNumber, formatPercent, conversionRate } from "@/lib/utils";
 import { uniqueClicksByLink } from "@/lib/analytics";
 import { allProjectGroups } from "@/lib/projectStats";
+import { canEditCampaign, currentActor } from "@/lib/auth";
+import { isAdmin } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
 
 export default async function CampaignDetailPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
-  const campaign = await prisma.campaign.findUnique({ where: { id: params.id } });
+  const [campaign, actor] = await Promise.all([prisma.campaign.findUnique({ where: { id: params.id } }), currentActor()]);
   if (!campaign) notFound();
 
   const links = await prisma.trackingLink.findMany({
@@ -31,6 +33,7 @@ export default async function CampaignDetailPage(props: { params: Promise<{ id: 
     allProjectGroups(),
   ]);
   const folder = groups.find((g) => g.campaigns.some((c) => c.id === campaign.id));
+  const editable = await canEditCampaign(actor, campaign.id);
   const clicksOf = new Map(allByLink.map((r) => [r.trackingLinkId, r._count._all]));
   const totalClicks = allByLink.reduce((n, r) => n + r._count._all, 0);
   const uniqueClicks = Array.from(uniqueByLink.values()).reduce((n, v) => n + v, 0);
@@ -68,8 +71,8 @@ export default async function CampaignDetailPage(props: { params: Promise<{ id: 
         action={
           <div className="flex flex-wrap items-center gap-3">
             {folder && <Link href={`/campaigns/projects/${folder.key}`} className="btn-ghost text-sm">Project: {folder.title} →</Link>}
-            <Link href={`/campaigns/${campaign.id}/utm-links`} className="btn-primary text-sm">Create UTM links</Link>
-            <CampaignActions id={campaign.id} status={campaign.status} />
+            {editable && <Link href={`/campaigns/${campaign.id}/utm-links`} className="btn-primary text-sm">Create UTM links</Link>}
+            {editable && <CampaignActions id={campaign.id} status={campaign.status} canDelete={isAdmin(actor)} />}
           </div>
         }
       />

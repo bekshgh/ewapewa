@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
+import { canEditCampaign, forbidden, guard } from "@/lib/auth";
 import { KitError, createKit, kitSchema } from "@/lib/linkKitServer";
 
 export const dynamic = "force-dynamic";
 
 /** POST { slugPrefix, destinationUrl, rows[] } — create the campaign's UTM links in one go. */
 export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const actor = await guard("active");
+  if (actor instanceof NextResponse) return actor;
   const { id } = await props.params;
+  if (!(await canEditCampaign(actor, id))) return forbidden("this campaign");
   const parsed = kitSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid request" }, { status: 422 });

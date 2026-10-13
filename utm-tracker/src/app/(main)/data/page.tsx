@@ -3,10 +3,14 @@ import { prisma } from "@/lib/db";
 import { DataManager } from "@/components/DataManager";
 import { LegacyImport } from "@/components/LegacyImport";
 import { RegistrationImport } from "@/components/RegistrationImport";
+import { AccessDenied } from "@/components/AccessDenied";
+import { currentActor } from "@/lib/auth";
+import { isAdmin } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
 
 export default async function DataPage() {
+  if (!isAdmin(await currentActor())) return <AccessDenied />;
   const [clicks, leads, links, campaigns, webhookLogs] = await Promise.all([
     prisma.clickEvent.count(),
     prisma.lead.count(),

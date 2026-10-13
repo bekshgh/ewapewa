@@ -9,6 +9,9 @@ import { ReportView } from "@/components/reports/ReportView";
 import { prisma } from "@/lib/db";
 import type { ReportDocument } from "@/lib/reports/types";
 import { formatDateTime } from "@/lib/utils";
+import { AccessDenied } from "@/components/AccessDenied";
+import { currentActor } from "@/lib/auth";
+import { isAdmin } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +19,7 @@ export default async function ReportAdminPage(props: {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ tab?: string }>;
 }) {
+  if (!isAdmin(await currentActor())) return <AccessDenied />;
   const [params, searchParams] = await Promise.all([props.params, props.searchParams]);
   const [report, projects] = await Promise.all([
     prisma.report.findUnique({

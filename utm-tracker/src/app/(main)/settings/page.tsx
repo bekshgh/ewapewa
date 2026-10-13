@@ -4,6 +4,9 @@ import { Pill } from "@/components/ui/Pill";
 import { prisma } from "@/lib/db";
 import { getProjectSettings } from "@/lib/projects/settings";
 import { ThresholdsForm } from "@/components/projects/ThresholdsForm";
+import { AccessDenied } from "@/components/AccessDenied";
+import { currentActor } from "@/lib/auth";
+import { isAdmin } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
 
@@ -52,6 +55,7 @@ function EnvRow({
 }
 
 export default async function SettingsPage() {
+  if (!isAdmin(await currentActor())) return <AccessDenied />;
   const thresholds = await getProjectSettings(prisma);
   const [links, clicks, leads, campaigns, webhookLogs] = await Promise.all([
     prisma.trackingLink.count(),

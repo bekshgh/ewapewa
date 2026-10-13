@@ -7,7 +7,7 @@ import { formatNumber, formatPercent } from "@/lib/utils";
 
 type Field = { key: string; label: string; n: NumberValue; hint: string };
 
-export function ProjectNumbers({ folder, numbers }: { folder: string; numbers: FolderNumbers }) {
+export function ProjectNumbers({ folder, numbers, editable }: { folder: string; numbers: FolderNumbers; editable: boolean }) {
   const router = useRouter();
   const fields: Field[] = [
     { key: "projectRegs", label: "Project registrations", n: numbers.projectRegs, hint: "leads of the project campaign" },
@@ -66,9 +66,9 @@ export function ProjectNumbers({ folder, numbers }: { folder: string; numbers: F
             <button className="btn-ghost text-sm" onClick={() => { setDraft(initial()); setEditing(false); setError(""); }} disabled={saving}>Cancel</button>
             <button className="btn-primary text-sm" onClick={save} disabled={saving}>{saving ? "Saving…" : "Save"}</button>
           </div>
-        ) : (
+        ) : editable ? (
           <button className="btn-ghost text-sm" onClick={() => setEditing(true)}>Edit numbers</button>
-        )}
+        ) : null}
       </div>
       {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
 

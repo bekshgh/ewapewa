@@ -5,20 +5,33 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-const NAV = [
+type Access = "all" | "editors" | "admins";
+
+const NAV: { href: string; label: string; icon: string; access?: Access }[] = [
   { href: "/", label: "Dashboard", icon: "grid" },
   { href: "/links", label: "Links", icon: "link" },
-  { href: "/links/new", label: "Create link", icon: "plus" },
+  { href: "/links/new", label: "Create link", icon: "plus", access: "editors" },
   { href: "/analytics", label: "Analytics", icon: "chart" },
   { href: "/leads", label: "Leads", icon: "users" },
   { href: "/campaigns", label: "Campaigns", icon: "flag" },
   { href: "/projects", label: "Projects", icon: "stack" },
   { href: "/reports", label: "Reports", icon: "doc" },
-  { href: "/webhooks", label: "Webhook", icon: "bolt" },
+  { href: "/webhooks", label: "Webhook", icon: "bolt", access: "admins" },
   { href: "/guide", label: "Guideline", icon: "book" },
-  { href: "/data", label: "Data", icon: "trash" },
-  { href: "/settings", label: "Settings", icon: "cog" },
+  { href: "/users", label: "Team", icon: "team", access: "admins" },
+  { href: "/data", label: "Data", icon: "trash", access: "admins" },
+  { href: "/settings", label: "Settings", icon: "cog", access: "admins" },
 ];
+
+export interface SidebarUser {
+  name: string;
+  roleLabel: string;
+  admin: boolean;
+  /** Admins and project managers. */
+  editor: boolean;
+  /** Admins waiting to approve someone. */
+  pending: number;
+}
 
 function Icon({ name }: { name: string }) {
   const common = { width: 18, height: 18, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.7, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
@@ -27,6 +40,7 @@ function Icon({ name }: { name: string }) {
     link: <><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1" /><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1" /></>,
     plus: <><circle cx="12" cy="12" r="9" /><path d="M12 8v8M8 12h8" /></>,
     chart: <><path d="M3 3v18h18" /><path d="M7 14l3-3 3 3 4-5" /></>,
+    team: <><circle cx="8" cy="9" r="2.5" /><circle cx="16" cy="9" r="2.5" /><path d="M3 19a5 5 0 0 1 10 0M11 19a5 5 0 0 1 10 0" /></>,
     users: <><circle cx="9" cy="8" r="3" /><path d="M3 20a6 6 0 0 1 12 0" /><path d="M16 6a3 3 0 0 1 0 6M21 20a6 6 0 0 0-4-5.6" /></>,
     flag: <><path d="M5 21V4" /><path d="M5 4h11l-2 3 2 3H5" /></>,
     stack: <><path d="M12 3 3 8l9 5 9-5-9-5Z" /><path d="m3 13 9 5 9-5" /></>,
@@ -39,15 +53,16 @@ function Icon({ name }: { name: string }) {
   return <svg {...common}>{paths[name]}</svg>;
 }
 
-export function Sidebar() {
+export function Sidebar({ user }: { user: SidebarUser }) {
   const pathname = usePathname();
+  const items = NAV.filter((i) => !i.access || i.access === "all" || (i.access === "admins" ? user.admin : user.editor));
   const [open, setOpen] = useState(false);
 
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
   const Nav = (
     <nav className="flex flex-col gap-1">
-      {NAV.map((item) => (
+      {items.map((item) => (
         <Link
           key={item.href}
           href={item.href}
@@ -63,7 +78,9 @@ export function Sidebar() {
             <Icon name={item.icon} />
           </span>
           {item.label}
-
+          {item.href === "/users" && user.pending > 0 && (
+            <span className="ml-auto rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold text-bg-base">{user.pending}</span>
+          )}
         </Link>
       ))}
     </nav>
@@ -82,7 +99,11 @@ export function Sidebar() {
       </header>
 
       {open && (
-        <div className="fixed inset-0 top-[57px] z-30 bg-bg-base/95 px-4 py-4 backdrop-blur lg:hidden">{Nav}</div>
+        <div className="fixed inset-0 top-[57px] z-30 overflow-y-auto bg-bg-base/95 px-4 py-4 backdrop-blur lg:hidden">
+          {Nav}
+          <Link href="/profile" onClick={() => setOpen(false)} className="mt-3 block rounded-xl px-3 py-2.5 text-sm text-ink-muted">{user.name} · Profile</Link>
+          <LogoutButton />
+        </div>
       )}
 
       {/* Desktop sidebar */}
@@ -91,10 +112,10 @@ export function Sidebar() {
           <Brand />
         </div>
         <div className="mt-8 flex-1">{Nav}</div>
-        <div className="rounded-xl border border-line bg-bg-raised p-3 text-xs text-ink-faint">
-          <p className="font-medium text-ink-muted">Server-side tracking</p>
-          <p className="mt-1 leading-relaxed">Clicks are counted on the redirect, not in the browser — ad-blockers can&apos;t hide them.</p>
-        </div>
+        <Link href="/profile" className="block rounded-xl border border-line bg-bg-raised p-3 text-xs transition hover:border-accent/50">
+          <p className="truncate font-medium text-ink">{user.name}</p>
+          <p className="mt-0.5 text-ink-faint">{user.roleLabel} · Profile →</p>
+        </Link>
         <LogoutButton />
       </aside>
 

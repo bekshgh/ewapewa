@@ -1,5 +1,6 @@
+import { guard } from "@/lib/auth";
 import { NextResponse } from "next/server";
-import { isAdmin, unauthorized } from "@/lib/reports/store";
+import { isTeamMember, unauthorized } from "@/lib/reports/store";
 import { MAX_FILE_BYTES, ReportFileError } from "@/lib/reports/xlsx";
 import { RegistrationImportError, importRegistrations, readRegistrationFile } from "@/lib/registrationImport";
 
@@ -12,7 +13,9 @@ export const maxDuration = 300;
  * Turns a landing page's registrations sheet into leads (see lib/registrationImport).
  */
 export async function POST(req: Request) {
-  if (!(await isAdmin())) return unauthorized();
+  const actor = await guard("admin");
+  if (actor instanceof NextResponse) return actor;
+  if (!(await isTeamMember())) return unauthorized();
 
   const form = await req.formData().catch(() => null);
   const file = form?.get("file");

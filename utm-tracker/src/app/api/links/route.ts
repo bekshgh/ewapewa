@@ -1,9 +1,12 @@
+import { canEditLink, guard } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { createLinkSchema } from "@/lib/validation";
 import { generateSlug } from "@/lib/utils";
 
 export async function GET() {
+  const actor = await guard("active");
+  if (actor instanceof NextResponse) return actor;
   const links = await prisma.trackingLink.findMany({
     orderBy: { createdAt: "desc" },
     include: { campaign: true, _count: { select: { clicks: true, leads: true } } },
@@ -12,6 +15,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const actor = await guard("active");
+  if (actor instanceof NextResponse) return actor;
   const body = await req.json().catch(() => null);
   const parsed = createLinkSchema.safeParse(body);
   if (!parsed.success) {
@@ -21,6 +26,9 @@ export async function POST(req: NextRequest) {
     );
   }
   const data = parsed.data;
+  if (!(await canEditLink(actor, data))) {
+    return NextResponse.json({ error: "Put the link in a campaign of one of your projects" }, { status: 403 });
+  }
 
   // ensure slug uniqueness; auto-generate if taken/empty
   let slug = data.slug?.trim() || generateSlug();

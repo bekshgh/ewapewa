@@ -1,6 +1,7 @@
+import { guard } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { isAdmin, newSlug, unauthorized } from "@/lib/reports/store";
+import { isTeamMember, newSlug, unauthorized } from "@/lib/reports/store";
 import { queryProjects } from "@/lib/projects/query";
 import { projectSchema, toDate } from "@/lib/projects/validation";
 
@@ -9,13 +10,17 @@ export const dynamic = "force-dynamic";
 
 /** Filtered projects with facet counts and histograms. The query string is the /projects URL state. */
 export async function GET(req: Request) {
-  if (!(await isAdmin())) return unauthorized();
+  const actor = await guard("active");
+  if (actor instanceof NextResponse) return actor;
+  if (!(await isTeamMember())) return unauthorized();
   const { state, result } = await queryProjects(prisma, new URL(req.url).searchParams, { admin: true });
   return NextResponse.json({ state, ...result });
 }
 
 export async function POST(req: Request) {
-  if (!(await isAdmin())) return unauthorized();
+  const actor = await guard("admin");
+  if (actor instanceof NextResponse) return actor;
+  if (!(await isTeamMember())) return unauthorized();
   const parsed = projectSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: "Validation failed", issues: parsed.error.flatten().fieldErrors }, { status: 422 });

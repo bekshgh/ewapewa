@@ -43,37 +43,46 @@ export function safeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
+/** Who the session belongs to: a User id, or OWNER for the AUTH_EMAIL login. */
+export const OWNER = "owner";
+
 /** Returns null when AUTH_SECRET is missing or too short. */
-export async function createSessionToken(): Promise<string | null> {
+export async function createSessionToken(subject: string = OWNER): Promise<string | null> {
   const secret = getSecret();
   if (!secret) return null;
-  const payload = `${PREFIX}:${Date.now()}`;
+  const payload = `${PREFIX}:${Date.now()}:${subject}`;
   const sig = await hmac(secret, payload);
   return toBase64Url(encoder.encode(`${payload}|${sig}`));
 }
 
-export async function verifySessionToken(token: string | undefined): Promise<boolean> {
+/** The session's subject (a User id or OWNER), or null when the token is missing, forged or expired. */
+export async function readSessionToken(token: string | undefined): Promise<string | null> {
   const secret = getSecret();
-  if (!secret || !token) return false;
+  if (!secret || !token) return null;
 
   let decoded: string;
   try {
     decoded = fromBase64Url(token);
   } catch {
-    return false;
+    return null;
   }
 
   const sep = decoded.lastIndexOf("|");
-  if (sep < 0) return false;
+  if (sep < 0) return null;
   const payload = decoded.slice(0, sep);
   const sig = decoded.slice(sep + 1);
 
-  const [prefix, issuedAtRaw] = payload.split(":");
+  // Tokens issued before user accounts carry no subject: they came from the AUTH_EMAIL login.
+  const [prefix, issuedAtRaw, subject = OWNER] = payload.split(":");
   const issuedAt = Number(issuedAtRaw);
-  if (prefix !== PREFIX || !Number.isFinite(issuedAt)) return false;
+  if (prefix !== PREFIX || !Number.isFinite(issuedAt) || !subject) return null;
 
   const age = Date.now() - issuedAt;
-  if (age < 0 || age > SESSION_MAX_AGE_SEC * 1000) return false;
+  if (age < 0 || age > SESSION_MAX_AGE_SEC * 1000) return null;
 
-  return safeEqual(sig, await hmac(secret, payload));
+  return safeEqual(sig, await hmac(secret, payload)) ? subject : null;
+}
+
+export async function verifySessionToken(token: string | undefined): Promise<boolean> {
+  return (await readSessionToken(token)) !== null;
 }

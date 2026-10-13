@@ -1,3 +1,4 @@
+import { guard } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -5,6 +6,8 @@ import { NextRequest, NextResponse } from "next/server";
  * verify the integration from the Webhook Settings page.
  */
 export async function POST(req: NextRequest) {
+  const actor = await guard("admin");
+  if (actor instanceof NextResponse) return actor;
   const { clickId } = await req.json().catch(() => ({ clickId: undefined }));
   const base = process.env.NEXT_PUBLIC_BASE_URL || new URL(req.url).origin;
   const secret = process.env.WEBHOOK_SECRET || "";

@@ -3,14 +3,17 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { CampaignManager } from "@/components/CampaignManager";
 import { prisma } from "@/lib/db";
 import { groupCampaigns } from "@/lib/projectGroups";
+import { currentActor, editableCampaignIds } from "@/lib/auth";
+import { canCreateCampaigns } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
 
 export default async function CampaignsPage() {
-  const campaigns = await prisma.campaign.findMany({
+  const actor = await currentActor();
+  const [campaigns, editable] = await Promise.all([prisma.campaign.findMany({
     orderBy: { createdAt: "desc" },
     include: { _count: { select: { links: true } } },
-  });
+  }), editableCampaignIds(actor)]);
 
   const rows = campaigns.map((c) => ({
     id: c.id, name: c.name, label: c.label, description: c.description,
@@ -44,7 +47,7 @@ export default async function CampaignsPage() {
         </section>
       )}
 
-      <CampaignManager campaigns={rows} />
+      <CampaignManager campaigns={rows} canCreate={canCreateCampaigns(actor)} editable={[...editable]} />
     </>
   );
 }

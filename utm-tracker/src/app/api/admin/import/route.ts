@@ -1,7 +1,8 @@
+import { guard } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { importLegacy, inspectLegacy, isPostgresUrl } from "@/lib/legacyImport";
-import { isAdmin, unauthorized } from "@/lib/reports/store";
+import { isTeamMember, unauthorized } from "@/lib/reports/store";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -15,7 +16,9 @@ const bodySchema = z.object({
 
 /** The connection string is used for this request only: never stored or logged. */
 export async function POST(req: Request) {
-  if (!(await isAdmin())) return unauthorized();
+  const actor = await guard("admin");
+  if (actor instanceof NextResponse) return actor;
+  if (!(await isTeamMember())) return unauthorized();
   const parsed = bodySchema.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid request" }, { status: 400 });

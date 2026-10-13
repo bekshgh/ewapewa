@@ -1,14 +1,17 @@
+import { guard } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { isAdmin, unauthorized } from "@/lib/reports/store";
+import { isTeamMember, unauthorized } from "@/lib/reports/store";
 import { projectPatchSchema, toDate } from "@/lib/projects/validation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function PATCH(req: Request, props: { params: Promise<{ id: string }> }) {
+  const actor = await guard("admin");
+  if (actor instanceof NextResponse) return actor;
   const params = await props.params;
-  if (!(await isAdmin())) return unauthorized();
+  if (!(await isTeamMember())) return unauthorized();
   const parsed = projectPatchSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: "Validation failed", issues: parsed.error.flatten().fieldErrors }, { status: 422 });
@@ -44,8 +47,10 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
 
 /** Deleting a project keeps its reports; they are only detached from it. */
 export async function DELETE(_req: Request, props: { params: Promise<{ id: string }> }) {
+  const actor = await guard("admin");
+  if (actor instanceof NextResponse) return actor;
   const params = await props.params;
-  if (!(await isAdmin())) return unauthorized();
+  if (!(await isTeamMember())) return unauthorized();
   await prisma.project.delete({ where: { id: params.id } }).catch(() => null);
   return NextResponse.json({ ok: true });
 }

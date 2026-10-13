@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export function CampaignActions({ id, status }: { id: string; status: string }) {
+export function CampaignActions({ id, status, canDelete }: { id: string; status: string; canDelete: boolean }) {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -48,12 +48,14 @@ export function CampaignActions({ id, status }: { id: string; status: string }) 
             {loading === "active" ? "Activating…" : "▶ Activate"}
           </button>
         )}
-        <button
-          onClick={() => { setConfirmDelete(true); setConfirmText(""); }}
-          className="rounded-xl border border-danger/40 px-4 py-2 text-sm font-medium text-danger transition hover:bg-danger hover:text-white"
-        >
-          🗑 Delete campaign
-        </button>
+        {canDelete && (
+          <button
+            onClick={() => { setConfirmDelete(true); setConfirmText(""); }}
+            className="rounded-xl border border-danger/40 px-4 py-2 text-sm font-medium text-danger transition hover:bg-danger hover:text-white"
+          >
+            🗑 Delete campaign
+          </button>
+        )}
       </div>
 
       {confirmDelete && (

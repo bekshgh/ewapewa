@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { LinkKitBuilder } from "@/components/LinkKitBuilder";
 import { kitContext } from "@/lib/linkKitServer";
+import { AccessDenied } from "@/components/AccessDenied";
+import { canEditCampaign, currentActor } from "@/lib/auth";
 import { UTM_MEDIUMS, UTM_SOURCES } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
@@ -10,6 +12,7 @@ const BASE = process.env.NEXT_PUBLIC_BASE_URL || "";
 
 export default async function CampaignUtmLinksPage(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
+  if (!(await canEditCampaign(await currentActor(), id))) return <AccessDenied title="Not your project" />;
   const ctx = await kitContext(id);
   if (!ctx) notFound();
   const { campaign } = ctx;

@@ -1,15 +1,15 @@
 import { randomBytes } from "node:crypto";
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import type { Report } from "@prisma/client";
-import { SESSION_COOKIE, verifySessionToken } from "@/lib/session";
+import { currentActor } from "@/lib/auth";
 import { slug as slugify } from "./extract";
 import { parseReport } from "./parse";
 import type { ReportDocument, ReportType } from "./types";
 import { MAX_FILE_BYTES, ReportFileError } from "./xlsx";
 
-export async function isAdmin(): Promise<boolean> {
-  return verifySessionToken((await cookies()).get(SESSION_COOKIE)?.value);
+/** Signed in with an approved account (any role). Changes are checked by guard() in src/lib/auth.ts. */
+export async function isTeamMember(): Promise<boolean> {
+  return (await currentActor())?.status === "active";
 }
 
 /** Who may open a report page. Drafts and private reports are admin-only. */

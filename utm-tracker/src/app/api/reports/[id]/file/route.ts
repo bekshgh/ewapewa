@@ -1,7 +1,8 @@
+import { guard } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { isAdmin, readUpload, unauthorized } from "@/lib/reports/store";
+import { isTeamMember, readUpload, unauthorized } from "@/lib/reports/store";
 import { recomputeProjectMetrics, syncThemeMappings } from "@/lib/projects/recompute";
 
 export const runtime = "nodejs";
@@ -10,8 +11,10 @@ export const maxDuration = 30;
 
 /** Replace a report's data with a newer file of the same event (slug and link stay). */
 export async function POST(req: Request, props: { params: Promise<{ id: string }> }) {
+  const actor = await guard("admin");
+  if (actor instanceof NextResponse) return actor;
   const params = await props.params;
-  if (!(await isAdmin())) return unauthorized();
+  if (!(await isTeamMember())) return unauthorized();
   const existing = await prisma.report.findUnique({ where: { id: params.id }, select: { type: true, projectId: true } });
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 

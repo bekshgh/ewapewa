@@ -1,10 +1,25 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+
+const REASON: Record<string, string> = {
+  pending: "Your account is waiting for an admin's approval.",
+  disabled: "Your account is disabled. Ask an admin.",
+};
 
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
+  const reason = REASON[useSearchParams().get("reason") ?? ""];
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -24,7 +39,8 @@ export default function LoginPage() {
         router.push("/");
         router.refresh();
       } else {
-        setError("Wrong email or password");
+        const data = await res.json().catch(() => null);
+        setError(res.status === 403 && data?.error ? data.error : "Wrong email or password");
       }
     } catch {
       setError("Connection error. Please try again.");
@@ -65,6 +81,10 @@ export default function LoginPage() {
               />
             </div>
 
+            {reason && !error && (
+              <p className="rounded-xl border border-accent/30 bg-accent/10 px-4 py-2.5 text-sm text-accent">{reason}</p>
+            )}
+
             {error && (
               <p className="rounded-xl border border-danger/30 bg-danger/10 px-4 py-2.5 text-sm text-danger">
                 {error}
@@ -79,6 +99,9 @@ export default function LoginPage() {
               {loading ? "Signing in…" : "Sign in"}
             </button>
           </form>
+          <p className="mt-4 text-center text-sm text-ink-faint">
+            New to the team? <Link href="/register" className="text-accent hover:underline">Create an account</Link>
+          </p>
         </div>
       </div>
     </div>

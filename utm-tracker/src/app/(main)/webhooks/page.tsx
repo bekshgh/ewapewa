@@ -5,6 +5,9 @@ import { CopyButton } from "@/components/ui/CopyButton";
 import { WebhookTester } from "@/components/WebhookTester";
 import { prisma } from "@/lib/db";
 import { formatDateTime } from "@/lib/utils";
+import { AccessDenied } from "@/components/AccessDenied";
+import { currentActor } from "@/lib/auth";
+import { isAdmin } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +31,7 @@ const PAYLOAD_EXAMPLE = `{
 }`;
 
 export default async function WebhookPage() {
+  if (!isAdmin(await currentActor())) return <AccessDenied />;
   const logs = await prisma.webhookLog.findMany({ orderBy: { createdAt: "desc" }, take: 20 });
   const endpoint = `${BASE}/api/webhooks/tilda-lead`;
   const last = logs[0];
