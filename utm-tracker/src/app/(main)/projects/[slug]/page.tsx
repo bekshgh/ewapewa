@@ -9,6 +9,8 @@ import { CHANNEL_GROUPS, CONCENTRATION, THEMES, ZONES, labelOf } from "@/lib/pro
 import { toRow } from "@/lib/projects/rows";
 import { getProjectSettings } from "@/lib/projects/settings";
 import { formatDateTime } from "@/lib/utils";
+import { currentActor } from "@/lib/auth";
+import { isAdmin } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +23,7 @@ function similarQuery(typeKey: string, registrants: number | null) {
 
 export default async function ProjectPage(props: { params: Promise<{ slug: string }> }) {
   const params = await props.params;
+  const admin = isAdmin(await currentActor());
   const [project, types, settings] = await Promise.all([
     prisma.project.findUnique({
       where: { slug: params.slug },
@@ -130,6 +133,7 @@ export default async function ProjectPage(props: { params: Promise<{ slug: strin
         {project.metrics && <p className="mt-3 text-xs text-ink-faint">Metrics recomputed {formatDateTime(project.metrics.computedAt)} (formula version {project.metrics.metricsVersion}).</p>}
       </section>
 
+      {admin && (
       <details className="card mt-6 p-5">
         <summary className="cursor-pointer font-display text-base font-semibold">Edit project</summary>
         <div className="mt-4">
@@ -151,6 +155,7 @@ export default async function ProjectPage(props: { params: Promise<{ slug: strin
           />
         </div>
       </details>
+      )}
     </>
   );
 }

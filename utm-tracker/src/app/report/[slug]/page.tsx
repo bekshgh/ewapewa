@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { canView, isAdmin } from "@/lib/reports/store";
+import { canView, isTeamMember } from "@/lib/reports/store";
 import type { ReportDocument } from "@/lib/reports/types";
 import { ReportView } from "@/components/reports/ReportView";
 
@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 async function load(slug: string) {
   const report = await prisma.report.findUnique({ where: { slug } });
-  const admin = await isAdmin();
+  const admin = await isTeamMember();
   // Private / draft reports look exactly like missing ones to visitors.
   if (!report || !canView(report, admin)) return null;
   return { report, admin };

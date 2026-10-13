@@ -1,6 +1,7 @@
+import { guard } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { isAdmin, newSlug, readUpload, unauthorized } from "@/lib/reports/store";
+import { isTeamMember, newSlug, readUpload, unauthorized } from "@/lib/reports/store";
 import { recomputeProjectMetrics, syncThemeMappings } from "@/lib/projects/recompute";
 import type { Prisma } from "@prisma/client";
 
@@ -10,7 +11,9 @@ export const maxDuration = 30;
 
 /** Upload an analysis workbook → parsed draft report (preview before publishing). */
 export async function POST(req: Request) {
-  if (!(await isAdmin())) return unauthorized();
+  const actor = await guard("admin");
+  if (actor instanceof NextResponse) return actor;
+  if (!(await isTeamMember())) return unauthorized();
   const up = await readUpload(req);
   if (up instanceof NextResponse) return up;
 

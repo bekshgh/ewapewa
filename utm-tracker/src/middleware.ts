@@ -5,7 +5,9 @@ import { SESSION_COOKIE, verifySessionToken } from "@/lib/session";
 // conversion / submit beacons. /api/webhooks/test stays private (it is an admin action).
 const PUBLIC = [
   "/login",
+  "/register",
   "/api/auth/login",
+  "/api/auth/register",
   "/api/auth/logout",
   "/api/webhooks/tilda-lead",
   "/api/track/conversion",

@@ -1,25 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
-import { SESSION_COOKIE, SESSION_MAX_AGE_SEC, createSessionToken, safeEqual } from "@/lib/session";
+import { prisma } from "@/lib/db";
+import { verifyPassword } from "@/lib/password";
+import { OWNER, SESSION_COOKIE, SESSION_MAX_AGE_SEC, createSessionToken, safeEqual } from "@/lib/session";
 
+/** POST { email, password } — a team account, or the owner (AUTH_EMAIL / AUTH_PASSWORD). */
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const { email, password } = body as { email?: string; password?: string };
-
-  const expectedEmail = process.env.AUTH_EMAIL;
-  const expectedPassword = process.env.AUTH_PASSWORD;
-
-  if (
-    !expectedEmail ||
-    !expectedPassword ||
-    typeof email !== "string" ||
-    typeof password !== "string" ||
-    email.toLowerCase().trim() !== expectedEmail.toLowerCase().trim() ||
-    !safeEqual(password, expectedPassword)
-  ) {
+  if (typeof email !== "string" || typeof password !== "string") {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
+  const mail = email.toLowerCase().trim();
 
-  const token = await createSessionToken();
+  let subject: string | null = null;
+  const user = await prisma.user.findUnique({ where: { email: mail } });
+  if (user && (await verifyPassword(password, user.passwordHash))) {
+    if (user.status === "pending") return NextResponse.json({ error: "Your account is waiting for an admin's approval." }, { status: 403 });
+    if (user.status === "disabled") return NextResponse.json({ error: "Your account is disabled. Ask an admin." }, { status: 403 });
+    subject = user.id;
+    await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+  } else {
+    const ownerEmail = process.env.AUTH_EMAIL;
+    const ownerPassword = process.env.AUTH_PASSWORD;
+    if (ownerEmail && ownerPassword && mail === ownerEmail.toLowerCase().trim() && safeEqual(password, ownerPassword)) subject = OWNER;
+  }
+  if (!subject) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+
+  const token = await createSessionToken(subject);
   if (!token) {
     return NextResponse.json(
       { error: "Server misconfigured: AUTH_SECRET must be set (16+ characters)" },

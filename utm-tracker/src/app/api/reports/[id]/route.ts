@@ -1,7 +1,8 @@
+import { guard } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { isAdmin, unauthorized } from "@/lib/reports/store";
+import { isTeamMember, unauthorized } from "@/lib/reports/store";
 import { recomputeProjectMetrics } from "@/lib/projects/recompute";
 
 export const runtime = "nodejs";
@@ -18,8 +19,10 @@ const patchSchema = z
 
 /** Publish / unpublish, change visibility, rename the event. */
 export async function PATCH(req: Request, props: { params: Promise<{ id: string }> }) {
+  const actor = await guard("admin");
+  if (actor instanceof NextResponse) return actor;
   const params = await props.params;
-  if (!(await isAdmin())) return unauthorized();
+  if (!(await isTeamMember())) return unauthorized();
   const parsed = patchSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Validation failed" }, { status: 422 });
 
@@ -49,8 +52,10 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
 }
 
 export async function DELETE(_req: Request, props: { params: Promise<{ id: string }> }) {
+  const actor = await guard("admin");
+  if (actor instanceof NextResponse) return actor;
   const params = await props.params;
-  if (!(await isAdmin())) return unauthorized();
+  if (!(await isTeamMember())) return unauthorized();
   await prisma.$transaction(async (tx) => {
     const r = await tx.report.findUnique({ where: { id: params.id }, select: { projectId: true } });
     if (!r) return;

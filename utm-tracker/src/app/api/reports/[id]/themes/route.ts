@@ -1,7 +1,8 @@
+import { guard } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { isAdmin, unauthorized } from "@/lib/reports/store";
+import { isTeamMember, unauthorized } from "@/lib/reports/store";
 import { THEMES } from "@/lib/projects/dictionaries";
 import { recomputeProjectMetrics } from "@/lib/projects/recompute";
 
@@ -16,8 +17,10 @@ const schema = z.object({
 
 /** Confirm / correct the open-answer theme → canonical theme mapping; the project's metrics follow. */
 export async function PATCH(req: Request, props: { params: Promise<{ id: string }> }) {
+  const actor = await guard("admin");
+  if (actor instanceof NextResponse) return actor;
   const params = await props.params;
-  if (!(await isAdmin())) return unauthorized();
+  if (!(await isTeamMember())) return unauthorized();
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Validation failed" }, { status: 422 });
   const keys = new Set(THEMES.map((t) => t.key));

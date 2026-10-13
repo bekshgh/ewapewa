@@ -29,11 +29,30 @@ enum WebhookStatus {
   unauthorized
 }
 
+enum UserRole {
+  admin // everything, incl. users and settings
+  manager // project manager: edits own project folders, sees the rest
+  viewer // sees everything, edits nothing
+}
+
+enum UserStatus {
+  pending // registered, waiting for an admin
+  active
+  disabled
+}
+
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
+  id           String     @id @default(cuid())
+  email        String     @unique
+  name         String?
+  passwordHash String?
+  role         UserRole   @default(viewer)
+  status       UserStatus @default(pending)
+  position     String? // e.g. "Project manager", "VP"
+  projectKeys  String[]   @default([]) // project folders a manager edits (see projectGroups.ts)
+  lastLoginAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @default(now()) @updatedAt
 
   campaigns Campaign[]
   links     TrackingLink[]

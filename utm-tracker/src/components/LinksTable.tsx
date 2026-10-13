@@ -22,6 +22,8 @@ export type LinkRow = {
   isActive: boolean;
   isArchived: boolean;
   createdAt: string;
+  /** The viewer may pause, archive or delete it. */
+  editable: boolean;
 };
 
 function QRModal({ url, onClose }: { url: string; onClose: () => void }) {
@@ -152,13 +154,17 @@ export function LinksTable({ links }: { links: LinkRow[] }) {
                     <td className="px-5 py-3.5">
                       <div className="flex items-center justify-end gap-3 text-xs">
                         <a href={fullUrl} target="_blank" rel="noreferrer" className="text-ink-faint hover:text-ink">Open</a>
-                        <button onClick={() => patch(l.id, { isActive: !l.isActive })} className="text-ink-faint hover:text-ink">
-                          {l.isActive ? "Pause" : "Resume"}
-                        </button>
-                        <button onClick={() => patch(l.id, { isArchived: !l.isArchived })} className="text-ink-faint hover:text-ink">
-                          {l.isArchived ? "Restore" : "Archive"}
-                        </button>
-                        <button onClick={() => remove(l.id)} className="text-danger hover:opacity-80">Delete</button>
+                        {l.editable && (
+                          <>
+                            <button onClick={() => patch(l.id, { isActive: !l.isActive })} className="text-ink-faint hover:text-ink">
+                              {l.isActive ? "Pause" : "Resume"}
+                            </button>
+                            <button onClick={() => patch(l.id, { isArchived: !l.isArchived })} className="text-ink-faint hover:text-ink">
+                              {l.isArchived ? "Restore" : "Archive"}
+                            </button>
+                            <button onClick={() => remove(l.id)} className="text-danger hover:opacity-80">Delete</button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
