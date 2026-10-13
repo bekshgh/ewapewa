@@ -9,7 +9,7 @@ const CONTENT_EDITS = [
   ["Приём закрылся 10 сентября 2026", "Приём закрылся 14 октября 2026"], ["Приём заявок до 10 сентября 2026", "Приём заявок до 14 октября 2026"],
   ["Deadline: 10 September 2026", "Deadline: 14 October 2026"], ["until 10 September", "until 14 October"],
   ["closed on 10 September 2026", "closed on 14 October 2026"], ["close 10 September 2026", "close 14 October 2026"],
-  ["Заявки до 10 сентября 2026.", "Заявки до 14 октября 2026."], ["https://aieseckz.vercel.app/r/tt_ogx", "https://ewapewa-utm-tracker.vercel.app/r/tt_ogx"],
+  ["Заявки до 10 сентября 2026.", "Заявки до 14 октября 2026."], ["https://aieseckz.vercel.app/r/tt_ogx", "https://aieseckz.vercel.app/r/tt_ogx"],
 ];
 const edit = (h) => CONTENT_EDITS.reduce((x, [a, b]) => x.split(a).join(b), h);
 const ORIGINAL = edit(page(process.env.ORIG_DIR)), NEW = page(process.env.NEW_DIR || "dist");
