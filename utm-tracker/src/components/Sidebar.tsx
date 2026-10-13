@@ -4,22 +4,23 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { NewBadge } from "@/components/ui/NewBadge";
 
 type Access = "all" | "editors" | "admins";
 
-const NAV: { href: string; label: string; icon: string; access?: Access }[] = [
+const NAV: { href: string; label: string; icon: string; access?: Access; isNew?: boolean }[] = [
   { href: "/", label: "Dashboard", icon: "grid" },
   { href: "/links", label: "Links", icon: "link" },
   { href: "/links/new", label: "Create link", icon: "plus", access: "editors" },
   { href: "/analytics", label: "Analytics", icon: "chart" },
   { href: "/leads", label: "Leads", icon: "users" },
-  { href: "/campaigns", label: "Campaigns", icon: "flag" },
-  { href: "/forms", label: "Forms", icon: "form" },
+  { href: "/campaigns", label: "Campaigns", icon: "flag", isNew: true },
+  { href: "/forms", label: "Forms", icon: "form", isNew: true },
   { href: "/projects", label: "Projects", icon: "stack" },
   { href: "/reports", label: "Reports", icon: "doc" },
   { href: "/webhooks", label: "Webhook", icon: "bolt", access: "admins" },
   { href: "/guide", label: "Guideline", icon: "book" },
-  { href: "/users", label: "Team", icon: "team", access: "admins" },
+  { href: "/users", label: "Team", icon: "team", access: "admins", isNew: true },
   { href: "/data", label: "Data", icon: "trash", access: "admins" },
   { href: "/settings", label: "Settings", icon: "cog", access: "admins" },
 ];
@@ -80,6 +81,7 @@ export function Sidebar({ user }: { user: SidebarUser }) {
             <Icon name={item.icon} />
           </span>
           {item.label}
+          {item.isNew && !(item.href === "/users" && user.pending > 0) && <NewBadge className="ml-auto" />}
           {item.href === "/users" && user.pending > 0 && (
             <span className="ml-auto rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold text-bg-base">{user.pending}</span>
           )}

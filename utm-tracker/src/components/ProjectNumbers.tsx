@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { conversions, type FolderNumbers, type NumberValue } from "@/lib/projectNumbers";
 import { formatNumber, formatPercent } from "@/lib/utils";
+import { NewBadge } from "@/components/ui/NewBadge";
 
 type Field = { key: string; label: string; n: NumberValue; hint: string };
 
@@ -56,7 +57,7 @@ export function ProjectNumbers({ folder, numbers, editable }: { folder: string; 
     <section className="card mb-6 p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-display text-base font-semibold">Project numbers</h2>
+          <h2 className="font-display text-base font-semibold">Project numbers <NewBadge className="ml-1" /></h2>
           <p className="mt-1 text-xs text-ink-faint">
             Registrations come from the tracker; type your own number to replace one, leave it empty to go back to the tracker&apos;s.
           </p>

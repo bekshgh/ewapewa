@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { NewBadge } from "@/components/ui/NewBadge";
 import { ProjectNumbers } from "@/components/ProjectNumbers";
 import { currentActor } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -28,7 +29,7 @@ export default async function ProjectFolderPage(props: { params: Promise<{ key: 
         subtitle={s.campaigns.map((c) => `${c.role.title}: ${c.label || c.name}`).join(" · ")}
         action={
           <div className="flex flex-wrap gap-2">
-            {forms.map((f) => <Link key={f.id} href={`/forms/${encodeURIComponent(f.id)}`} className="btn-ghost">Form drop-off →</Link>)}
+            {forms.map((f) => <Link key={f.id} href={`/forms/${encodeURIComponent(f.id)}`} className="btn-ghost">Form drop-off <NewBadge className="ml-1" /> →</Link>)}
             <Link href="/campaigns" className="btn-ghost">← All campaigns</Link>
           </div>
         }

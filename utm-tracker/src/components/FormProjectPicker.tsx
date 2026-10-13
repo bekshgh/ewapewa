@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { NewBadge } from "@/components/ui/NewBadge";
 
 /** Which project folder a form belongs to; worked out automatically, can be changed by hand. */
 export function FormProjectPicker({ formId, current, byHand, projects, editable }: {
@@ -31,7 +32,7 @@ export function FormProjectPicker({ formId, current, byHand, projects, editable 
 
   return (
     <div className="card mb-6 flex flex-wrap items-center gap-3 p-4 text-sm">
-      <span className="text-ink-faint">Project</span>
+      <span className="text-ink-faint">Project <NewBadge className="ml-1" /></span>
       {editable ? (
         <select className="input w-auto min-w-[14rem]" value={current ?? ""} disabled={saving} onChange={(e) => pick(e.target.value)} aria-label="Project folder">
           <option value="">No project</option>
