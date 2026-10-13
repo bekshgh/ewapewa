@@ -1,6 +1,8 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { uniqueClicksByLink } from "@/lib/analytics";
 import { conversionRate } from "@/lib/utils";
+import { manualNumbersSchema, type ManualNumbers } from "@/lib/projectNumbers";
 import { groupCampaigns, personKeys, type CampaignRole, type ProjectGroup } from "@/lib/projectGroups";
 
 const campaignFields = { id: true, name: true, label: true, status: true, createdAt: true } as const;
@@ -179,4 +181,22 @@ function countShared(leads: { email: string | null; phone: string | null }[], pr
     if (keys.some((k) => projectPeople.has(k))) n += 1;
   }
   return n;
+}
+
+const numbersKey = (folder: string) => `project.numbers:${folder}`;
+
+/** Numbers the team typed in for a project folder (show-up, sign-ups, corrections). */
+export async function manualNumbers(folder: string): Promise<ManualNumbers> {
+  const row = await prisma.appSetting.findUnique({ where: { key: numbersKey(folder) } });
+  const parsed = manualNumbersSchema.safeParse(row?.value ?? {});
+  return parsed.success ? parsed.data : {};
+}
+
+export async function saveManualNumbers(folder: string, value: ManualNumbers) {
+  const json = value as Prisma.InputJsonValue;
+  await prisma.appSetting.upsert({
+    where: { key: numbersKey(folder) },
+    create: { key: numbersKey(folder), value: json },
+    update: { value: json },
+  });
 }
