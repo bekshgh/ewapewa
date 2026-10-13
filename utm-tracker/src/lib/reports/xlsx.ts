@@ -32,6 +32,8 @@ export interface RawCell {
   s: number;
   /** A formula cell whose cached value is missing. */
   noCache?: boolean;
+  /** Bold font: older templates mark section headings by bold alone, without indent. */
+  b?: true;
 }
 
 export interface Merge {
@@ -190,27 +192,38 @@ async function readSharedStrings(zip: JSZip): Promise<string[]> {
   return out;
 }
 
-async function readStyles(zip: JSZip): Promise<string[]> {
+interface Styles { fmts: string[]; bold: boolean[] }
+
+async function readStyles(zip: JSZip): Promise<Styles> {
   const xml = await readText(zip, "xl/styles.xml");
-  if (!xml) return [];
+  if (!xml) return { fmts: [], bold: [] };
   const custom: Record<number, string> = {};
   const xfFmt: string[] = [];
-  let inCellXfs = false;
+  const xfBold: boolean[] = [];
+  const fontBold: boolean[] = [];
+  let inCellXfs = false, inFonts = false;
   walkXml(xml, {
     open(n, a) {
       if (n === "numFmt") custom[Number(a.numFmtId)] = a.formatCode;
+      else if (n === "fonts") inFonts = true;
+      else if (n === "font" && inFonts) fontBold.push(false);
+      else if (n === "b" && inFonts && fontBold.length && a.val !== "0" && a.val !== "false") fontBold[fontBold.length - 1] = true;
       else if (n === "cellXfs") inCellXfs = true;
       else if (n === "xf" && inCellXfs) {
         const id = Number(a.numFmtId ?? 0);
         xfFmt.push(custom[id] ?? BUILTIN_FMT[id] ?? "General");
+        xfBold.push(!!fontBold[Number(a.fontId ?? 0)]);
       }
     },
-    close(n) { if (n === "cellXfs") inCellXfs = false; },
+    close(n) {
+      if (n === "cellXfs") inCellXfs = false;
+      else if (n === "fonts") inFonts = false;
+    },
   });
-  return xfFmt;
+  return { fmts: xfFmt, bold: xfBold };
 }
 
-function parseSheet(name: string, xml: string, strings: string[], fmts: string[]): Grid {
+function parseSheet(name: string, xml: string, strings: string[], { fmts, bold }: Styles): Grid {
   const grid: Grid = { name, maxRow: 0, maxCol: 0, cells: new Map(), merges: [], formulaCells: 0, formulaNoCache: 0 };
   let cur: { r: number; c: number; t: string; s: number; hasF: boolean; v: string | null; inline: string } | null = null;
   let field: "v" | "is" | null = null;
@@ -265,6 +278,7 @@ function parseSheet(name: string, xml: string, strings: string[], fmts: string[]
           fmt: fmts[c.s] ?? "General",
           s: c.s,
           ...(c.hasF && c.v === null ? { noCache: true } : {}),
+          ...(bold[c.s] ? { b: true as const } : {}),
         });
         grid.maxRow = Math.max(grid.maxRow, c.r);
         grid.maxCol = Math.max(grid.maxCol, c.c);
@@ -310,13 +324,13 @@ export async function readWorkbook(
   });
   if (sheets.length === 0) throw new ReportFileError("not_xlsx", "The workbook has no sheets.");
 
-  const [strings, fmts] = await Promise.all([readSharedStrings(zip), readStyles(zip)]);
+  const [strings, styles] = await Promise.all([readSharedStrings(zip), readStyles(zip)]);
   const grids: Grid[] = [];
   const skipped: Workbook["skipped"] = [];
   for (const s of sheets) {
     const xml = await readText(zip, s.path);
     if (xml === null) continue;
-    if (include(s.name, sheets.map((x) => x.name))) grids.push(parseSheet(s.name, xml, strings, fmts));
+    if (include(s.name, sheets.map((x) => x.name))) grids.push(parseSheet(s.name, xml, strings, styles));
     else skipped.push({ name: s.name, rows: dimensionRows(xml) });
   }
   return { sheetNames: sheets.map((s) => s.name), grids, skipped, date1904 };
