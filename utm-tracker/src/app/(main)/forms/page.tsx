@@ -2,6 +2,8 @@ import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { prisma } from "@/lib/db";
 import { formatNumber, formatPercent } from "@/lib/utils";
+import { formTitle } from "@/lib/formAnalytics/filters";
+import { allProjectGroups } from "@/lib/projectStats";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +14,8 @@ export default async function FormsPage() {
     where: { isTest: false },
     _count: { _all: true },
   });
+  const groups = await allProjectGroups();
+  const projectTitle = (k: string) => groups.find((g) => g.key === k)?.title ?? k;
   const per = (id: string) => {
     const rows = counts.filter((c) => c.formId === id);
     const total = rows.reduce((n, r) => n + r._count._all, 0);
@@ -24,7 +28,7 @@ export default async function FormsPage() {
       <PageHeader breadcrumb="Forms" title="Registration forms" subtitle="Where people drop off in the registration forms on the landings: funnel, every question, time and slices." />
       {forms.length === 0 ? (
         <div className="card p-6 text-sm text-ink-muted">
-          No data yet. It appears after the landing with the analytics script gets its first visitor.
+          No data yet. Forms appear here by themselves after the first visitor: any form on a page with the /t.js line (Webhook tab), and the TopTalents.Sprint landing.
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
@@ -32,8 +36,9 @@ export default async function FormsPage() {
             const c = per(f.id);
             return (
               <Link key={f.id} href={`/forms/${encodeURIComponent(f.id)}`} className="card block p-5 transition hover:border-accent/60">
-                <div className="font-medium text-ink">{f.id}</div>
-                {f.projectSlug && <div className="mt-0.5 text-xs text-ink-faint">project: {f.projectSlug}</div>}
+                <div className="font-medium text-ink">{formTitle(f)}</div>
+                {f.pageUrl && <div className="mt-0.5 truncate text-xs text-ink-faint">{f.pageUrl.replace(/^https?:\/\//, "")}</div>}
+                <div className="mt-0.5 text-xs text-ink-faint">{f.projectSlug ? `project: ${projectTitle(f.projectSlug)}` : "no project yet"}</div>
                 <div className="mt-3 flex gap-6 text-sm">
                   <span><b className="num text-ink">{formatNumber(c.total)}</b> <span className="text-ink-faint">sessions</span></span>
                   <span><b className="num text-leads">{formatNumber(c.success)}</b> <span className="text-ink-faint">sent</span></span>

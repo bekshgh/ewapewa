@@ -1,14 +1,17 @@
+import { FORMS_JS } from "@/lib/snippetForms";
+
 /**
  * The on-page tracking script, served from /t.js. Pages include it with a
  * single <script src> tag, so fixes here reach every page on the next deploy
  * without re-pasting anything on Tilda.
  */
 export function buildSnippetJs(base: string): string {
-  return `// Trackline — one script does two jobs:
+  return `// Trackline — one script does three jobs:
 //   1. copy click_id + UTM from the URL into hidden fields of every form;
 //   2. report a lead (with name / email / phone from the form) when the submit
 //      button ("Отправить заявку") is pressed, so leads are counted even
-//      without a server-side webhook.
+//      without a server-side webhook;
+//   3. form analytics: where people drop off in every form on the page.
 (function () {
   if (window.__trackline) return;
   window.__trackline = true;
@@ -126,6 +129,7 @@ export function buildSnippetJs(base: string): string {
     if (btn) window.tlConversion(btn.closest("form"));
   }, true);
   document.addEventListener("submit", function (e) { window.tlConversion(e.target); }, true);
+${FORMS_JS}
 })();
 `;
 }

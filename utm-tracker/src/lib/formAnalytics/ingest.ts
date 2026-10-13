@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { inferProject } from "@/lib/formAnalytics/project";
 
 /**
  * Ingests a batch of form-analytics events from the landing script
@@ -26,7 +27,14 @@ const slug = z.string().max(80).regex(/^[A-Za-z0-9_.:-]+$/);
 const fieldKey = z.string().max(40).regex(/^[A-Za-z0-9_]+$/);
 const short = z.string().trim().max(200);
 
-const fieldDef = z.object({ k: fieldKey, kind: z.enum(["text", "select", "check"]), cond: z.boolean().optional(), req: z.boolean().optional() });
+const fieldDef = z.object({
+  k: fieldKey,
+  kind: z.enum(["text", "select", "check"]),
+  cond: z.boolean().optional(),
+  req: z.boolean().optional(),
+  /** the question as the page shows it (forms found by /t.js) */
+  label: z.string().trim().max(120).optional(),
+});
 export type FieldDef = z.infer<typeof fieldDef>;
 
 const ctxSchema = z
@@ -38,6 +46,8 @@ const ctxSchema = z
     screen: z.number().int().min(0).max(20000),
     lang: z.string().max(8),
     fields: z.array(fieldDef).max(60),
+    /** heading of the form's block, or the page title (forms found by /t.js) */
+    title: short,
   })
   .partial();
 
@@ -77,7 +87,8 @@ const clean = (o: Record<string, unknown>) => {
 /** A category answer, or nothing: values of text fields never pass. */
 export function categoryValue(field: string | null | undefined, kind: FieldDef["kind"] | undefined, v: unknown): string | undefined {
   if (!field || TEXT_FIELDS.has(field.toLowerCase()) || kind === "text" || kind === undefined) return undefined;
-  if (typeof v !== "string" || !/^[a-z0-9_.-]{1,40}$/i.test(v)) return undefined;
+  // option values, Latin or Cyrillic ("almaty", "Алматы", "B2 Upper-Intermediate")
+  if (typeof v !== "string" || !/^[\p{L}0-9_.\- ]{1,40}$/u.test(v) || !v.trim()) return undefined;
   if (v.includes("@") || /\d{5,}/.test(v)) return undefined; // looks like an e-mail or a phone, not a category
   return v;
 }
@@ -126,12 +137,17 @@ export async function ingest(batch: Batch, net: { ipHash: string | null; country
   let fields = (existingForm?.fields as FieldDef[] | undefined) ?? [];
   const fieldsChanged = !!ctx.fields?.length && JSON.stringify(ctx.fields) !== JSON.stringify(fields);
   if (fieldsChanged) fields = ctx.fields!;
-  if (!existingForm || fieldsChanged || (batch.project && batch.project !== existingForm.projectSlug)) {
-    await prisma.analyticsForm.upsert({
-      where: { id: batch.form },
-      create: { id: batch.form, projectSlug: batch.project ?? null, fields: fields as unknown as Prisma.InputJsonValue },
-      update: { fields: fields as unknown as Prisma.InputJsonValue, ...(batch.project ? { projectSlug: batch.project } : {}) },
-    });
+  // The project: picked by hand in Forms > sent by the page > worked out from the page's links / UTM.
+  let project = existingForm?.projectSlug ?? null;
+  if (!existingForm?.projectSetByHand) {
+    if (batch.project) project = batch.project;
+    else if (!project) project = await inferProject(ctx.url, ctx.utm_campaign).catch(() => null);
+  }
+  const title = ctx.title || existingForm?.title || null;
+  const pageUrl = ctx.url ? ctx.url.split(/[?#]/)[0] : existingForm?.pageUrl ?? null;
+  if (!existingForm || fieldsChanged || project !== existingForm.projectSlug || title !== existingForm.title || (!existingForm.pageUrl && pageUrl)) {
+    const data = { projectSlug: project, title, pageUrl: existingForm?.pageUrl ?? pageUrl, fields: fields as unknown as Prisma.InputJsonValue };
+    await prisma.analyticsForm.upsert({ where: { id: batch.form }, create: { id: batch.form, ...data }, update: data });
   }
   const kinds = new Map(fields.map((f) => [f.k, f.kind]));
   const kindOf = (k: string) => kinds.get(k);
@@ -170,7 +186,7 @@ export async function ingest(batch: Batch, net: { ipHash: string | null; country
           id: batch.sid,
           visitorId: batch.vid,
           formId: batch.form,
-          projectSlug: batch.project ?? null,
+          projectSlug: project,
           utmSource: ctx.utm_source || null,
           utmMedium: ctx.utm_medium || null,
           utmCampaign: ctx.utm_campaign || null,

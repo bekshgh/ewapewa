@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { guard } from "@/lib/auth";
 import { fieldTable, sessions } from "@/lib/formAnalytics/report";
-import { fieldLabel, parseFilter } from "@/lib/formAnalytics/filters";
+import { fieldLabel, labelsOf, parseFilter } from "@/lib/formAnalytics/filters";
+import { formFields } from "@/lib/formAnalytics/report";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,7 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
   const id = decodeURIComponent((await props.params).id);
   const sp = Object.fromEntries(req.nextUrl.searchParams.entries());
   const f = parseFilter(id, sp);
+  const labels = labelsOf(await formFields(id));
   let body: string;
   if (sp.kind === "sessions") {
     const rows = await sessions(f, 10_000);
@@ -29,7 +31,7 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
     const rows = await fieldTable(f);
     body = csv([
       ["question", "field", "conditional", "shown", "reached", "filled", "left_here", "drop_off_pct", "error_rate_pct", "avg_ms", "median_ms", "revisits"],
-      ...rows.map((r) => [fieldLabel(r.k), r.k, r.conditional, r.shown ?? "", r.reached, r.filled, r.leftHere, r.dropOff.toFixed(1), r.errorRate.toFixed(1), r.avgMs ?? "", r.medianMs ?? "", r.refocus]),
+      ...rows.map((r) => [fieldLabel(r.k, labels), r.k, r.conditional, r.shown ?? "", r.reached, r.filled, r.leftHere, r.dropOff.toFixed(1), r.errorRate.toFixed(1), r.avgMs ?? "", r.medianMs ?? "", r.refocus]),
     ]);
   }
   const name = `${id}-${sp.kind === "sessions" ? "sessions" : "questions"}.csv`.replace(/[^A-Za-z0-9_.-]/g, "_");
