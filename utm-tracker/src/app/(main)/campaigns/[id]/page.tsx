@@ -7,6 +7,7 @@ import { BreakdownPanel } from "@/components/charts/Charts";
 import { CampaignActions } from "@/components/CampaignActions";
 import { formatNumber, formatPercent, conversionRate } from "@/lib/utils";
 import { uniqueClicksByLink } from "@/lib/analytics";
+import { allProjectGroups } from "@/lib/projectStats";
 
 export const dynamic = "force-dynamic";
 
@@ -21,13 +22,15 @@ export default async function CampaignDetailPage(props: { params: Promise<{ id: 
   });
   const linkIds = links.map((l) => l.id);
 
-  const [allByLink, uniqueByLink, totalLeads, srcLeads, cntLeads] = await Promise.all([
+  const [allByLink, uniqueByLink, totalLeads, srcLeads, cntLeads, groups] = await Promise.all([
     prisma.clickEvent.groupBy({ by: ["trackingLinkId"], where: { trackingLinkId: { in: linkIds } }, _count: { _all: true } }),
     uniqueClicksByLink(null, linkIds),
     prisma.lead.count({ where: { utmCampaign: campaign.name } }),
     prisma.lead.groupBy({ by: ["utmSource"], where: { utmCampaign: campaign.name }, _count: { _all: true } }),
     prisma.lead.groupBy({ by: ["utmContent"], where: { utmCampaign: campaign.name }, _count: { _all: true } }),
+    allProjectGroups(),
   ]);
+  const folder = groups.find((g) => g.campaigns.some((c) => c.id === campaign.id));
   const clicksOf = new Map(allByLink.map((r) => [r.trackingLinkId, r._count._all]));
   const totalClicks = allByLink.reduce((n, r) => n + r._count._all, 0);
   const uniqueClicks = Array.from(uniqueByLink.values()).reduce((n, v) => n + v, 0);
@@ -64,6 +67,7 @@ export default async function CampaignDetailPage(props: { params: Promise<{ id: 
         subtitle={[campaign.type, campaign.season, `utm: ${campaign.name}`].filter(Boolean).join(" · ")}
         action={
           <div className="flex flex-wrap items-center gap-3">
+            {folder && <Link href={`/campaigns/projects/${folder.key}`} className="btn-ghost text-sm">Project: {folder.title} →</Link>}
             <Link href={`/campaigns/${campaign.id}/utm-links`} className="btn-primary text-sm">Create UTM links</Link>
             <CampaignActions id={campaign.id} status={campaign.status} />
           </div>
