@@ -130,3 +130,12 @@ describe("detectType", () => {
     expect(detectType(["Trend Dashboard", "Sheet1"])).toBeNull();
   });
 });
+
+describe("older templates", () => {
+  it("take a bold upper-case line as a section heading, but not a short bold value", async () => {
+    const { parseHeading } = await import("@/lib/reports/extract");
+    expect(parseHeading("CAMPAIGN OVERVIEW", true)?.title).toBe("CAMPAIGN OVERVIEW");
+    expect(parseHeading("CAMPAIGN OVERVIEW", false)).toBeNull();
+    expect(parseHeading("NU", true)).toBeNull();
+  });
+});

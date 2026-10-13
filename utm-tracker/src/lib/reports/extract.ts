@@ -89,8 +89,9 @@ function mergeIndex(merges: Merge[]) {
 type Spans = ReturnType<typeof mergeIndex>;
 
 /** "  SCORE SUMMARY  —  ALL RESPONDENTS vs …" → heading. Indented + upper-case. */
-export function parseHeading(raw: string): { title: string; subtitle?: string } | null {
-  if (!/^\s{2,}\S/.test(raw)) return null;
+export function parseHeading(raw: string, bold = false): { title: string; subtitle?: string } | null {
+  // Older templates: no indent, but bold.
+  if (!/^\s{2,}\S/.test(raw) && !bold) return null;
   const t = raw.trim();
   // Title ends at " — ", at " (" or at "  ·  "; the rest is the subtitle.
   const m = /\s+[—–]\s+|\s+(?=\()|\s{2,}·\s{2,}/.exec(t);
@@ -103,6 +104,8 @@ export function parseHeading(raw: string): { title: string; subtitle?: string } 
   sub = sub ? cleanText(sub.replace(/^[·\s]+/, "")) : undefined;
   const letters = title.replace(/[^A-Za-zА-Яа-яЁё]/g, "");
   if (letters.length < 2) return null;
+  // a bold short value ("NU", "AITU") in a table is not a heading
+  if (!/^\s{2,}\S/.test(raw) && (letters.length < 6 || /^\s*[\d#▶]/.test(raw))) return null;
   const upper = letters.replace(/[^A-ZА-ЯЁ]/g, "").length;
   if (upper / letters.length < 0.7) return null;
   // Drop list markers like "A · " or "E1 · ".
@@ -111,10 +114,16 @@ export function parseHeading(raw: string): { title: string; subtitle?: string } 
 }
 
 function findHeadings(grid: Grid, spans: Spans): Heading[] {
+  const out = collectHeadings(grid, spans, false);
+  // Older templates have no indented headings at all: their headings are just bold.
+  return out.length ? out : collectHeadings(grid, spans, true);
+}
+
+function collectHeadings(grid: Grid, spans: Spans, byBold: boolean): Heading[] {
   const out: Heading[] = [];
   for (const [k, cell] of grid.cells) {
     if (typeof cell.v !== "string" || spans.covered.has(k)) continue;
-    const h = parseHeading(cell.v);
+    const h = parseHeading(cell.v, byBold && cell.b === true);
     if (!h) continue;
     const [r, c] = k.split(",").map(Number);
     const m = spans.master.get(k);

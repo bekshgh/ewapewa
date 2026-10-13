@@ -109,11 +109,11 @@ export const REGISTRATION: TypeConfig = {
   sheets: [
     { key: "overview", label: "Overview", match: /^KPI Dashboard$/i,
       expect: [/HEADLINE KPIs/i, /KEY SIGNALS/, /CHANNEL HEAD-TO-HEAD/] },
-    { key: "trend", label: "Trend", match: /^Trend Dashboard$/i,
+    { key: "trend", label: "Trend", match: /^(Trend Dashboard|Daily Trend)$/i,
       expect: [/MOMENTUM/, /DAY-BY-DAY/, /WEEKDAY/, /HOUR/] },
     { key: "channels", label: "Channels", match: /^Channel Dashboard$/i,
       expect: [/GROUP SUMMARY/, /AUDIENCE MIX/, /CHANNEL × UNIVERSITY/, /PERFORMANCE GAP/] },
-    { key: "audience", label: "Audience", match: /^Audience Dashboard$/i,
+    { key: "audience", label: "Audience", match: /^(Audience Dashboard|Segment Analysis)$/i,
       expect: [/WHO REGISTERED/, /STUDY LEVEL/, /UNIVERSITY/, /MAJOR/, /AGE BAND/, /HOW THEY HEARD/, /PAST AIESEC/] },
     { key: "patterns", label: "Patterns", match: /^Patterns? & Outliers$/i,
       expect: [/HEATMAP/, /BURSTINESS/, /AGE OUTLIERS/, /CONCENTRATION/, /ATTRIBUTION/] },
