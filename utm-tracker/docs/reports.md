@@ -81,6 +81,10 @@ two kit fixtures must be regenerated with the new kit.
 | *Expected section not found* | A sheet lacks an expected section heading | If the section was renamed, update `expect` in the config |
 | *Section content was not recognised* | There is content under a heading that doesn't look like cards / a table / insights | Check the block's layout; see "Adding a new block" |
 | *N formula cell(s) had no saved value* | Formulas without a saved result | Open the file in Excel / LibreOffice, let it recalculate, save |
+| *Heading 'X' (Sheet) lost its 2 leading spaces* | An expected heading is there but typed without the two leading spaces, so it was not read as a section | Retype it with two spaces in front |
+| *Column X holds percentages stored as text* | Cells like "22.6%" typed as text in a table column | Write 0.226 with a `0.0%` format |
+| *Column Date holds dates stored as text* | A `Date` column with text instead of real dates | Write real dates with a date format |
+| *N formula cell(s) have no saved value* | Some formulas in the analytics sheets have no saved result (the file is still accepted) | Recalculate in Excel / LibreOffice and save |
 
 A report with warnings can still be published: blocks that weren't found are not shown.
 

@@ -47,6 +47,8 @@ interface Heading {
 }
 
 const DECOR_CHARS = /[█░▓▒■□●○◉◯★☆]/;
+const PERCENT_TEXT = /^\s*[-+]?\d+(?:[.,]\d+)?\s*%\s*$/;
+const DATE_TEXT = /^\s*(\d{4}-\d{2}-\d{2}|\d{1,2}[./-]\d{1,2}[./-]\d{2,4}|\d{1,2}\s+[A-Za-z]{3,}(\s+\d{4})?)\s*$/;
 
 export function extractSheet(grid: Grid, date1904: boolean, warnings: ParseWarning[]): SheetExtract {
   const spans = mergeIndex(grid.merges);
@@ -111,6 +113,25 @@ export function parseHeading(raw: string, bold = false): { title: string; subtit
   // Drop list markers like "A · " or "E1 · ".
   title = title.replace(/^[A-Z]\d?\s*·\s*/, "");
   return { title, subtitle: sub || undefined };
+}
+
+/**
+ * An expected section that was not found: is its heading in the sheet without
+ * the two leading spaces? Returns the heading's title if so. A heading bar is
+ * alone on its row (or next to other headings) — KPI labels and table headers
+ * that merely contain the word come in rows.
+ */
+export function findUnindentedHeading(grid: Grid, re: RegExp): string | null {
+  for (const [k, cell] of grid.cells) {
+    if (typeof cell.v !== "string" || /^\s{2,}\S/.test(cell.v)) continue;
+    const h = parseHeading(`  ${cell.v.trimStart()}`);
+    if (!h || !re.test(h.title)) continue;
+    const row = k.split(",")[0];
+    const alone = [...grid.cells].every(([k2, o]) =>
+      k2 === k || k2.split(",")[0] !== row || o.v === null || o.v === "" || (typeof o.v === "string" && /^\s{2,}\S/.test(o.v)));
+    if (alone) return h.title;
+  }
+  return null;
 }
 
 function findHeadings(grid: Grid, spans: Spans): Heading[] {
@@ -344,6 +365,14 @@ function buildTable(block: Line[], h: Heading, sheet: string, warnings: ParseWar
     }
     // "●●●●○  4.43" — a glyph rating restating a number shown elsewhere: drop.
     if (strings.length > 0 && strings.every((s) => DECOR_CHARS.test(s))) return;
+
+    // Values typed as text are read as text: say so, the cell format is what carries the meaning.
+    if (ci > 0 && strings.some((s) => PERCENT_TEXT.test(s))) {
+      warnings.push({ sheet, section: h.title, message: `Column ${label} holds percentages stored as text; write numbers with a % format` });
+    }
+    if (/^date$/i.test(label) && strings.some((s) => DATE_TEXT.test(s))) {
+      warnings.push({ sheet, section: h.title, message: `Column ${label} holds dates stored as text; write real dates with a date format` });
+    }
 
     const numeric = cells.find((c) => c && typeof c.raw.v === "number");
     const format = numeric ? formatOf(numeric.raw) : { kind: "text" as const };
