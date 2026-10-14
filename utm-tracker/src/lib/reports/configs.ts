@@ -10,6 +10,8 @@ import type { ReportType, TableSection, TableView } from "./types";
 export interface SheetConfig {
   key: string;
   label: string;
+  /** Sheet name in the standard layout (report kit), without the "01 · " prefix. */
+  name: string;
   match: RegExp; // against the normalised sheet name
   methodology?: boolean;
   expect?: RegExp[]; // section headings that should be present
@@ -54,17 +56,17 @@ export const FEEDBACK: TypeConfig = {
   label: "Feedback",
   signature: [/^Satisfaction & Themes$/i, /^Operational Scorecard$/i, /^Segment Analysis$/i],
   sheets: [
-    { key: "overview", label: "Overview", match: /^KPI Dashboard$/i,
+    { key: "overview", label: "Overview", name: "KPI Dashboard", match: /^KPI Dashboard$/i,
       expect: [/CORE EVENT METRICS/, /OPERATIONAL SCORES/, /WHO ANSWERED/, /SCORE SUMMARY/, /KEY SIGNALS/] },
-    { key: "themes", label: "Themes & feedback", match: /^Satisfaction & Themes$/i,
+    { key: "themes", label: "Themes & feedback", name: "Satisfaction & Themes", match: /^Satisfaction & Themes$/i,
       expect: [/SCALES/, /WHAT THEY LIKED/, /PAIN POINTS/, /REQUESTS/] },
-    { key: "scorecard", label: "Operational scorecard", match: /^Operational Scorecard$/i,
+    { key: "scorecard", label: "Operational scorecard", name: "Operational Scorecard", match: /^Operational Scorecard$/i,
       expect: [/SCORE DISTRIBUTION/, /BY UNIVERSITY/, /NETWORKING/, /SPEAKERS/] },
-    { key: "segments", label: "Segments", match: /^Segment Analysis$/i,
+    { key: "segments", label: "Segments", name: "Segment Analysis", match: /^Segment Analysis$/i,
       expect: [/UNIVERSITY/, /STUDY STAGE/, /CHANNEL/, /AIESEC/, /TIMING/] },
-    { key: "patterns", label: "Patterns & outliers", match: /^Pattern(s)? & Outliers$/i,
+    { key: "patterns", label: "Patterns & outliers", name: "Patterns & Outliers", match: /^Pattern(s)? & Outliers$/i,
       expect: [/FREQUENCY/, /OUTLIER/, /RELATIONSHIPS/, /RESPONSE TIMING/, /PATTERNS/] },
-    { key: "methodology", label: "Methodology", match: /^Notes$/i, methodology: true },
+    { key: "methodology", label: "Methodology", name: "Notes", match: /^Notes$/i, methodology: true },
   ],
   views: [
     { sheet: "overview", title: /SCORE SUMMARY/, views: (t) => {
@@ -107,18 +109,18 @@ export const REGISTRATION: TypeConfig = {
   label: "Registration",
   signature: [/^Trend Dashboard$/i, /^Channel Dashboard$/i, /^Audience Dashboard$/i],
   sheets: [
-    { key: "overview", label: "Overview", match: /^KPI Dashboard$/i,
+    { key: "overview", label: "Overview", name: "KPI Dashboard", match: /^KPI Dashboard$/i,
       expect: [/HEADLINE KPIs/i, /KEY SIGNALS/, /CHANNEL HEAD-TO-HEAD/] },
-    { key: "trend", label: "Trend", match: /^(Trend Dashboard|Daily Trend)$/i,
+    { key: "trend", label: "Trend", name: "Trend Dashboard", match: /^(Trend Dashboard|Daily Trend)$/i,
       expect: [/MOMENTUM/, /DAY-BY-DAY/, /WEEKDAY/, /HOUR/] },
-    { key: "channels", label: "Channels", match: /^Channel Dashboard$/i,
+    { key: "channels", label: "Channels", name: "Channel Dashboard", match: /^Channel Dashboard$/i,
       expect: [/GROUP SUMMARY/, /AUDIENCE MIX/, /CHANNEL × UNIVERSITY/, /PERFORMANCE GAP/] },
-    { key: "audience", label: "Audience", match: /^(Audience Dashboard|Segment Analysis)$/i,
+    { key: "audience", label: "Audience", name: "Audience Dashboard", match: /^(Audience Dashboard|Segment Analysis)$/i,
       expect: [/WHO REGISTERED/, /STUDY LEVEL/, /UNIVERSITY/, /MAJOR/, /AGE BAND/, /HOW THEY HEARD/, /PAST AIESEC/] },
-    { key: "patterns", label: "Patterns", match: /^Patterns? & Outliers$/i,
+    { key: "patterns", label: "Patterns", name: "Patterns & Outliers", match: /^Patterns? & Outliers$/i,
       expect: [/HEATMAP/, /BURSTINESS/, /AGE OUTLIERS/, /CONCENTRATION/, /ATTRIBUTION/] },
-    { key: "tables", label: "Tables", match: /^Detailed Tables$/i, expect: [/UTM-LEVEL/] },
-    { key: "methodology", label: "Methodology", match: /^Notes$/i, methodology: true },
+    { key: "tables", label: "Tables", name: "Detailed Tables", match: /^Detailed Tables$/i, expect: [/UTM-LEVEL/] },
+    { key: "methodology", label: "Methodology", name: "Notes", match: /^Notes$/i, methodology: true },
   ],
   views: [
     { sheet: "overview", title: /HEAD-TO-HEAD/, views: (t) => {
