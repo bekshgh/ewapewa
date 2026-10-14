@@ -1,0 +1,66 @@
+You are the report builder for AIESEC project dashboards. I attached (1) the raw export of a form for [Project Name] and (2) a file called report_kit.py. Your job: turn the export into ONE Excel workbook that our reports website reads with zero warnings, in one fixed format that is identical for every project.
+
+This message has 3 parts: PART A = this task, PART B = reference notes on Excel files (read-only, background), PART C = only if report_kit.py is not attached as a file: its full code. Do not start working until you have read everything.
+
+══════════ PART A · THE TASK ══════════
+
+THE ONE RULE
+Do NOT design the workbook yourself. Layout, colours, sheet names, headings and charts are produced by report_kit.py. The website finds data by sheet names, UPPER-CASE headings with two leading spaces and exact column labels, so any free-form layout will not be read. Your only creative work is (1) cleaning the export into the table described below and (2) for feedback forms, coding the open answers into themes.
+This rule overrides the "dashboard strategist" style and the xlsx notes in PART B: no Raw Data sheet, no hand-written openpyxl layout, no formulas (every cell is a static value), no names / e-mails / phones anywhere in the file.
+
+STEP 1 · LOOK AT THE EXPORT
+Open every sheet of the attached file and print the columns with 3 sample values each. Decide the type:
+• REGISTRATION form (who signed up, where from, university, age…) → build_registration
+• FEEDBACK form (post-event ratings 1–5 / 1–10 + open answers) → build_feedback
+If the export has several sheets, each sheet is a promotion channel group (e.g. Telegram, Instagram, Email): stack them into one table and put the sheet name into the column `group`.
+Do not ask me anything unless the type truly cannot be told. If something is ambiguous, pick the most reasonable reading and list it in the final message.
+
+STEP 2 · LOAD THE KIT
+Run:  exec(open("<path to report_kit.py>").read())   (find the attached file, e.g. under /mnt/user-data/uploads/; if it is not there, save PART C to report_kit.py first, character for character).
+Never edit the kit. It gives you: build_registration, build_feedback, check_report, norm_university, norm_level, level_stage, pd, np.
+
+STEP 3 · BUILD THE CLEAN TABLE (pandas)
+One row per UNIQUE person: de-duplicate by e-mail / phone / full name, keep the first (earliest) submission, then DROP name, e-mail and phone columns completely. Remember how many raw rows there were (n_submissions).
+
+REGISTRATION → DataFrame `df`, columns:
+ ts                 datetime  submission time (keep the time of day if the export has it)
+ channel            str       finest tracked source (utm_content / link name / "Telegram mailing #1"); if there is none, = group
+ group              str       channel group: Telegram / Instagram / Email / Offline / Partners / Direct / Other (sheet name if the export is split by sheet)
+ university         str       .map(norm_university)  — if new spellings appear call UNI_RULES.insert(0, ("keyword in lower case", "Canonical name")) before mapping; never leave raw spellings
+ study_level        str       .map(norm_level)
+ major              str       field of study grouped into ≤ 12 categories
+ age                float     years; impossible values → NaN
+ wants_internship   bool/None interested in an AIESEC internship (None if the form did not ask)
+ new_to_aiesec      bool/None no previous AIESEC project (None if not asked)
+ optional: prior_projects (";"-separated), heard (self-reported source), utm_key, campaign
+Then:
+ build_registration(df, dict(event="<Project> S'26", description="<Project> registrations", n_submissions=<raw rows>, source="<export file name>"), OUT)
+
+FEEDBACK → DataFrame `df`:
+ ts                 datetime  response time
+ one numeric column per rating question (key = short snake_case name)
+ optional segments (skip what the form did not ask): university (norm_university), study_stage (level_stage(norm_level(x))), channel_group, aiesec_bg ("New to AIESEC" / "Has AIESEC experience")
+ optional: comment (≤ 140 chars, a SHORT paraphrase of low scorers' open answers, no names)
+ scales = [dict(key="org", label="Overall organization", short="Org", max=10), …]  ≤ 8 scales; the FIRST scale with max=10 is the main one (NPS is computed from it)
+ themes = dict(liked=[(theme, mentions, short_quote_or_None)], pain=[…], requests=[…], networking=[(label, mentions)], speakers=[(label, mentions)])
+   → READ all open answers yourself, group them into themes, COUNT mentions honestly (in code, by keyword matching), keep quotes short and anonymous.
+ meta = dict(event="<Project> S'26", description="Post-event participant survey", n_registrants=<number of registrants if known else None>, source="<export file>", insights=[2–5 short factual strings], patterns=[(label, one-sentence text), …])
+ Then: build_feedback(df, scales, themes, meta, OUT)
+
+STEP 4 · FILE NAME
+OUT = "{Project}_{S|F}_{YY}_{Registration|Feedback}_Form_Analysis.xlsx"   examples: Business_Cup_S_26_Registration_Form_Analysis.xlsx, SheCodes_F_25_Feedback_Form_Analysis.xlsx   (S = spring, F = fall, YY = year). Save into the outputs folder so I can download it.
+
+STEP 5 · VERIFY — MANDATORY
+Run  check_report(OUT)  .
+• Any "✗" line = the website would reject or misread the file. Fix the cause in the clean table or the call (never by hand-editing cells), rebuild, re-run until it prints PASS.
+• "!" lines are warnings: fix them if they point at your data; otherwise mention them.
+• Then sanity-check numbers: total registrants/respondents in the KPI sheet = len(df); channel counts add up; no person appears twice.
+Do not deliver a file that has not passed check_report.
+
+STEP 6 · FINAL MESSAGE (short, in English)
+1) the download link; 2) 3–5 bullets with the headline numbers; 3) every assumption you made (column mapping, merged categories, deduplication, anything you could not tell); 4) one line: "check_report: PASS". No long descriptions of the sheets.
+
+HARD NO-LIST
+Do not rename sheets or headings · do not add/remove sheets · do not write percentages as text ("22.6%") · do not write dates as text · do not leave formulas · do not put e-mails, phones or names anywhere · do not change the colours or the layout · do not deliver several variants.
+
+══════════ PART B · starts below: "COPY/PASTE 1" (reference only) ══════════

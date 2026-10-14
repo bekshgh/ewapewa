@@ -1,0 +1,4924 @@
+{
+  "schemaVersion": 1,
+  "parserVersion": "1.0.0",
+  "type": "registration",
+  "title": "ICY S'26 — Registration Form Analysis",
+  "subtitle": "Inspire & Connect Youth registrations · 23 May – 6 Jun · 424 unique registrants · 424 form submissions",
+  "meta": {
+    "eventName": "ICY S'26",
+    "period": "23 May – 6 Jun",
+    "sampleSize": 424
+  },
+  "sheets": [
+    {
+      "key": "overview",
+      "label": "Overview",
+      "title": "ICY S'26 — KPI Dashboard",
+      "subtitle": "Inspire & Connect Youth registrations · 23 May – 6 Jun · 424 unique registrants · 424 form submissions",
+      "sections": [
+        {
+          "kind": "kpiGroup",
+          "id": "headline-kpis",
+          "title": "HEADLINE KPIs",
+          "cards": [
+            {
+              "label": "UNIQUE REGISTRANTS",
+              "value": 424,
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              },
+              "subtext": "after removing 0 duplicates"
+            },
+            {
+              "label": "FORM SUBMISSIONS",
+              "value": 424,
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              },
+              "subtext": "duplicate rate 0.0%"
+            },
+            {
+              "label": "CAMPAIGN DAYS",
+              "value": 15,
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              },
+              "subtext": "23 May → 6 Jun"
+            },
+            {
+              "label": "AVG REGS / DAY",
+              "value": 28.26666666666667,
+              "format": {
+                "kind": "number",
+                "decimals": 1
+              },
+              "subtext": "median day: 15"
+            },
+            {
+              "label": "PEAK DAY REGS",
+              "value": 132,
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              },
+              "subtext": "5 Jun · 31% of all regs"
+            },
+            {
+              "label": "ACTIVE CHANNELS",
+              "value": 12,
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              },
+              "subtext": "in 4 channel groups"
+            },
+            {
+              "label": "TOP CHANNEL SHARE",
+              "value": 0.4292452830188679,
+              "format": {
+                "kind": "percent",
+                "decimals": 0
+              },
+              "subtext": "telegram_announcement-2"
+            },
+            {
+              "label": "TOP-3 CHANNEL SHARE",
+              "value": 0.8490566037735849,
+              "format": {
+                "kind": "percent",
+                "decimals": 0
+              },
+              "subtext": "effective # channels: 3.6"
+            },
+            {
+              "label": "TOP GROUP SHARE",
+              "value": 0.4929245283018868,
+              "format": {
+                "kind": "percent",
+                "decimals": 0
+              },
+              "subtext": "Telegram"
+            },
+            {
+              "label": "AVERAGE AGE",
+              "value": 20.00222772277228,
+              "format": {
+                "kind": "number",
+                "decimals": 1
+              },
+              "subtext": "median 20 · max 46"
+            },
+            {
+              "label": "TOP UNIVERSITY",
+              "value": 0.3396226415094339,
+              "format": {
+                "kind": "percent",
+                "decimals": 0
+              },
+              "subtext": "share of registrants from Nazarbayev University"
+            },
+            {
+              "label": "NEW TO AIESEC",
+              "value": 0.5613207547169812,
+              "format": {
+                "kind": "percent",
+                "decimals": 0
+              },
+              "subtext": "no previous AIESEC project"
+            }
+          ]
+        },
+        {
+          "kind": "callouts",
+          "id": "key-signals",
+          "title": "KEY SIGNALS",
+          "items": [
+            {
+              "text": "telegram_announcement-2 is the #1 channel → 43% of registrations (182 people)",
+              "tone": "info"
+            },
+            {
+              "text": "Concentration: top-3 channels = 85% · HHI 0.28 · effective # of channels = 3.6",
+              "tone": "info"
+            },
+            {
+              "text": "Telegram is the dominant group (49%) · top-2 groups = 76%",
+              "tone": "info"
+            },
+            {
+              "text": "Peak 5 Jun: 132 regs = 4.7× the daily average",
+              "tone": "info"
+            },
+            {
+              "text": "Nazarbayev University = 34% of registrants; share by channel ranges from 0% to 67%",
+              "tone": "info"
+            }
+          ]
+        },
+        {
+          "kind": "table",
+          "id": "channel-head-to-head",
+          "title": "CHANNEL HEAD-TO-HEAD",
+          "subtitle": "volume + audience quality · top univ. = Nazarbayev University",
+          "columns": [
+            {
+              "key": "channel",
+              "label": "Channel",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "group",
+              "label": "Group",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "regs",
+              "label": "Regs",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "share",
+              "label": "Share",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "rank",
+              "label": "Rank",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "avg-age",
+              "label": "Avg age",
+              "format": {
+                "kind": "number",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "pct-top-univ",
+              "label": "% Top univ.",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "pct-year-1-2",
+              "label": "% Year 1–2",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "pct-want-internship",
+              "label": "% Want internship",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "pct-new-to-aiesec",
+              "label": "% New to AIESEC",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            }
+          ],
+          "rows": [
+            [
+              "telegram_announcement-2",
+              "Telegram",
+              182,
+              0.4292452830188679,
+              1,
+              19.82171428571429,
+              0.2692307692307692,
+              0.5439560439560439,
+              0.8791208791208791,
+              0.6098901098901099
+            ],
+            [
+              "tapter",
+              "Telegram",
+              96,
+              0.2264150943396226,
+              2,
+              19.96593406593407,
+              0.3958333333333333,
+              0.5520833333333334,
+              0.78125,
+              0.6041666666666666
+            ],
+            [
+              "mailing",
+              "Telegram",
+              82,
+              0.1933962264150944,
+              3,
+              20.26125,
+              0.4146341463414634,
+              0.5121951219512195,
+              0.7804878048780488,
+              0.4634146341463415
+            ],
+            [
+              "telegram_announcement-1",
+              "Telegram",
+              27,
+              0.06367924528301887,
+              4,
+              20.96,
+              0.4074074074074074,
+              0.4814814814814815,
+              0.7777777777777778,
+              0.4074074074074074
+            ],
+            [
+              "story_may30",
+              "Telegram",
+              10,
+              0.02358490566037736,
+              5,
+              19.67,
+              0.3,
+              0.3,
+              0.6,
+              0.6
+            ],
+            [
+              "Telegram",
+              "Telegram",
+              7,
+              0.01650943396226415,
+              6,
+              19.6,
+              0.5714285714285714,
+              0.8571428571428571,
+              0.4285714285714285,
+              0.2857142857142857
+            ],
+            [
+              "Email",
+              "Email",
+              4,
+              0.009433962264150943,
+              7,
+              19.95,
+              0,
+              0.5,
+              1,
+              0.5
+            ],
+            [
+              "Instagram",
+              "Instagram",
+              4,
+              0.009433962264150943,
+              8,
+              19.2,
+              0.25,
+              0.25,
+              1,
+              0.75
+            ],
+            [
+              "Other",
+              "Other",
+              3,
+              0.007075471698113208,
+              9,
+              21.2,
+              0,
+              0.6666666666666666,
+              0.6666666666666666,
+              0.3333333333333333
+            ],
+            [
+              "inst-target",
+              "Telegram",
+              3,
+              0.007075471698113208,
+              10,
+              19.83333333333333,
+              0.3333333333333333,
+              0.3333333333333333,
+              1,
+              1
+            ],
+            [
+              "inst-target-2",
+              "Telegram",
+              3,
+              0.007075471698113208,
+              11,
+              20.45,
+              0.3333333333333333,
+              0.6666666666666666,
+              1,
+              0.6666666666666666
+            ],
+            [
+              "infopartners",
+              "Telegram",
+              3,
+              0.007075471698113208,
+              12,
+              18.6,
+              0.6666666666666666,
+              0.6666666666666666,
+              1,
+              0.3333333333333333
+            ],
+            [
+              "All channels",
+              null,
+              424,
+              1,
+              null,
+              20.00222772277228,
+              0.3396226415094339,
+              0.5330188679245284,
+              0.8207547169811321,
+              0.5613207547169812
+            ]
+          ],
+          "totalRow": 12,
+          "views": [
+            {
+              "type": "bars",
+              "label": 0,
+              "values": [
+                2
+              ],
+              "horizontal": true
+            },
+            {
+              "type": "heat",
+              "from": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "trend",
+      "label": "Trend",
+      "title": "ICY S'26 — Trend Dashboard",
+      "subtitle": "Inspire & Connect Youth registrations · 23 May – 6 Jun · 424 unique registrants · 424 form submissions",
+      "sections": [
+        {
+          "kind": "kpiGroup",
+          "id": "campaign-momentum-snapshot",
+          "title": "CAMPAIGN MOMENTUM SNAPSHOT",
+          "cards": [
+            {
+              "label": "PEAK DAY",
+              "value": "5 Jun",
+              "format": {
+                "kind": "text"
+              },
+              "subtext": "132 regs · 4.7× daily avg"
+            },
+            {
+              "label": "AVG REGS / DAY",
+              "value": 28.26666666666667,
+              "format": {
+                "kind": "number",
+                "decimals": 1
+              },
+              "subtext": "across 15 calendar days"
+            },
+            {
+              "label": "DAYS TO 50% OF VOLUME",
+              "value": 12,
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              },
+              "subtext": "of 15 days — front- vs back-loaded"
+            },
+            {
+              "label": "STRONGEST WEEKDAY",
+              "value": "Fri",
+              "format": {
+                "kind": "text"
+              },
+              "subtext": "76.0 regs per occurrence"
+            },
+            {
+              "label": "PEAK HOUR",
+              "value": "18:00",
+              "format": {
+                "kind": "text"
+              },
+              "subtext": "12% of regs in that hour"
+            },
+            {
+              "label": "SPIKE DAYS (Z ≥ 1.5)",
+              "value": 1,
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              },
+              "subtext": "0 zero-registration days"
+            }
+          ]
+        },
+        {
+          "kind": "table",
+          "id": "day-by-day-table",
+          "title": "DAY-BY-DAY TABLE",
+          "subtitle": "group split · cumulative · momentum · spike detection (z ≥ 1.5)",
+          "columns": [
+            {
+              "key": "date",
+              "label": "Date",
+              "format": {
+                "kind": "date"
+              }
+            },
+            {
+              "key": "day",
+              "label": "Day",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "wkday",
+              "label": "Wkday",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "telegram",
+              "label": "Telegram",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "instagram",
+              "label": "Instagram",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "email",
+              "label": "Email",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "other",
+              "label": "Other",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "total",
+              "label": "Total",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "cumul",
+              "label": "Cumul.",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "cumul-pct",
+              "label": "Cumul. %",
+              "format": {
+                "kind": "percent",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "dod",
+              "label": "DoD Δ",
+              "format": {
+                "kind": "number",
+                "decimals": 0,
+                "signed": true
+              }
+            },
+            {
+              "key": "3-day-avg",
+              "label": "3-day avg",
+              "format": {
+                "kind": "number",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "z-score",
+              "label": "z-score",
+              "format": {
+                "kind": "number",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "flag",
+              "label": "Flag",
+              "format": {
+                "kind": "text"
+              }
+            }
+          ],
+          "rows": [
+            [
+              "2026-05-23",
+              "23 May",
+              "Sat",
+              1,
+              0,
+              0,
+              2,
+              3,
+              3,
+              0.007075471698113208,
+              0,
+              3,
+              -0.7666443514602447,
+              null
+            ],
+            [
+              "2026-05-24",
+              "24 May",
+              "Sun",
+              0,
+              4,
+              0,
+              0,
+              4,
+              7,
+              0.01650943396226415,
+              1,
+              3.5,
+              -0.7363022267322666,
+              null
+            ],
+            [
+              "2026-05-25",
+              "25 May",
+              "Mon",
+              0,
+              1,
+              7,
+              0,
+              8,
+              15,
+              0.03537735849056604,
+              4,
+              5,
+              -0.6149337278203546,
+              null
+            ],
+            [
+              "2026-05-26",
+              "26 May",
+              "Tue",
+              0,
+              2,
+              8,
+              0,
+              10,
+              25,
+              0.0589622641509434,
+              2,
+              7.333333333333333,
+              -0.5542494783643985,
+              null
+            ],
+            [
+              "2026-05-27",
+              "27 May",
+              "Wed",
+              6,
+              5,
+              4,
+              0,
+              15,
+              40,
+              0.09433962264150944,
+              5,
+              11,
+              -0.4025388547245084,
+              null
+            ],
+            [
+              "2026-05-28",
+              "28 May",
+              "Thu",
+              6,
+              13,
+              8,
+              0,
+              27,
+              67,
+              0.1580188679245283,
+              12,
+              17.33333333333333,
+              -0.03843335798877213,
+              null
+            ],
+            [
+              "2026-05-29",
+              "29 May",
+              "Fri",
+              15,
+              1,
+              3,
+              1,
+              20,
+              87,
+              0.205188679245283,
+              -7,
+              20.66666666666667,
+              -0.2508282310846183,
+              null
+            ],
+            [
+              "2026-05-30",
+              "30 May",
+              "Sat",
+              7,
+              5,
+              3,
+              0,
+              15,
+              102,
+              0.2405660377358491,
+              -5,
+              20.66666666666667,
+              -0.4025388547245084,
+              null
+            ],
+            [
+              "2026-05-31",
+              "31 May",
+              "Sun",
+              8,
+              0,
+              0,
+              0,
+              8,
+              110,
+              0.2594339622641509,
+              -7,
+              14.33333333333333,
+              -0.6149337278203546,
+              null
+            ],
+            [
+              "2026-06-01",
+              "1 Jun",
+              "Mon",
+              16,
+              6,
+              5,
+              0,
+              27,
+              137,
+              0.3231132075471698,
+              19,
+              16.66666666666667,
+              -0.03843335798877213,
+              null
+            ],
+            [
+              "2026-06-02",
+              "2 Jun",
+              "Tue",
+              36,
+              11,
+              10,
+              3,
+              60,
+              197,
+              0.4646226415094339,
+              33,
+              31.66666666666667,
+              0.9628567580345025,
+              null
+            ],
+            [
+              "2026-06-03",
+              "3 Jun",
+              "Wed",
+              27,
+              1,
+              4,
+              1,
+              33,
+              230,
+              0.5424528301886793,
+              -27,
+              40,
+              0.143619390379096,
+              null
+            ],
+            [
+              "2026-06-04",
+              "4 Jun",
+              "Thu",
+              23,
+              15,
+              14,
+              8,
+              60,
+              290,
+              0.6839622641509434,
+              27,
+              51,
+              0.9628567580345025,
+              null
+            ],
+            [
+              "2026-06-05",
+              "5 Jun",
+              "Fri",
+              63,
+              47,
+              16,
+              6,
+              132,
+              422,
+              0.9952830188679245,
+              72,
+              75,
+              3.14748973844892,
+              "Spike"
+            ],
+            [
+              "2026-06-06",
+              "6 Jun",
+              "Sat",
+              1,
+              1,
+              0,
+              0,
+              2,
+              424,
+              1,
+              -130,
+              64.66666666666667,
+              -0.7969864761882227,
+              null
+            ]
+          ],
+          "views": [
+            {
+              "type": "bars",
+              "label": 1,
+              "values": [
+                3,
+                4,
+                5,
+                6
+              ],
+              "stacked": true
+            },
+            {
+              "type": "line",
+              "label": 1,
+              "values": [
+                8
+              ]
+            },
+            {
+              "type": "table"
+            }
+          ]
+        },
+        {
+          "kind": "table",
+          "id": "weekday-profile",
+          "title": "WEEKDAY PROFILE",
+          "columns": [
+            {
+              "key": "weekday",
+              "label": "Weekday",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "regs",
+              "label": "Regs",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "days-in-window",
+              "label": "Days in window",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "avg-day",
+              "label": "Avg / day",
+              "format": {
+                "kind": "number",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "share",
+              "label": "Share",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            }
+          ],
+          "rows": [
+            [
+              "Mon",
+              35,
+              2,
+              17.5,
+              0.08254716981132075
+            ],
+            [
+              "Tue",
+              70,
+              2,
+              35,
+              0.1650943396226415
+            ],
+            [
+              "Wed",
+              48,
+              2,
+              24,
+              0.1132075471698113
+            ],
+            [
+              "Thu",
+              87,
+              2,
+              43.5,
+              0.205188679245283
+            ],
+            [
+              "Fri",
+              152,
+              2,
+              76,
+              0.3584905660377358
+            ],
+            [
+              "Sat",
+              20,
+              3,
+              6.666666666666667,
+              0.04716981132075472
+            ],
+            [
+              "Sun",
+              12,
+              2,
+              6,
+              0.02830188679245283
+            ]
+          ],
+          "views": [
+            {
+              "type": "bars",
+              "label": 0,
+              "values": [
+                3
+              ]
+            },
+            {
+              "type": "table"
+            }
+          ]
+        },
+        {
+          "kind": "table",
+          "id": "hour-of-day-profile",
+          "title": "HOUR-OF-DAY PROFILE",
+          "subtitle": "local time of the form submission",
+          "columns": [
+            {
+              "key": "hour",
+              "label": "Hour",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "regs",
+              "label": "Regs",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "share",
+              "label": "Share",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            }
+          ],
+          "rows": [
+            [
+              "00:00",
+              0,
+              0
+            ],
+            [
+              "01:00",
+              1,
+              0.002358490566037736
+            ],
+            [
+              "02:00",
+              2,
+              0.004716981132075472
+            ],
+            [
+              "03:00",
+              1,
+              0.002358490566037736
+            ],
+            [
+              "04:00",
+              8,
+              0.01886792452830189
+            ],
+            [
+              "05:00",
+              13,
+              0.03066037735849057
+            ],
+            [
+              "06:00",
+              10,
+              0.02358490566037736
+            ],
+            [
+              "07:00",
+              22,
+              0.05188679245283019
+            ],
+            [
+              "08:00",
+              20,
+              0.04716981132075472
+            ],
+            [
+              "09:00",
+              26,
+              0.06132075471698113
+            ],
+            [
+              "10:00",
+              12,
+              0.02830188679245283
+            ],
+            [
+              "11:00",
+              32,
+              0.07547169811320754
+            ],
+            [
+              "12:00",
+              18,
+              0.04245283018867924
+            ],
+            [
+              "13:00",
+              34,
+              0.08018867924528301
+            ],
+            [
+              "14:00",
+              34,
+              0.08018867924528301
+            ],
+            [
+              "15:00",
+              33,
+              0.07783018867924528
+            ],
+            [
+              "16:00",
+              24,
+              0.05660377358490566
+            ],
+            [
+              "17:00",
+              47,
+              0.1108490566037736
+            ],
+            [
+              "18:00",
+              49,
+              0.1155660377358491
+            ],
+            [
+              "19:00",
+              17,
+              0.04009433962264151
+            ],
+            [
+              "20:00",
+              9,
+              0.02122641509433962
+            ],
+            [
+              "21:00",
+              4,
+              0.009433962264150943
+            ],
+            [
+              "22:00",
+              7,
+              0.01650943396226415
+            ],
+            [
+              "23:00",
+              1,
+              0.002358490566037736
+            ]
+          ],
+          "views": [
+            {
+              "type": "bars",
+              "label": 0,
+              "values": [
+                1
+              ]
+            },
+            {
+              "type": "table"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "channels",
+      "label": "Channels",
+      "title": "ICY S'26 — Channel Dashboard",
+      "subtitle": "Inspire & Connect Youth registrations · 23 May – 6 Jun · 424 unique registrants · 424 form submissions",
+      "sections": [
+        {
+          "kind": "table",
+          "id": "channel-group-summary",
+          "title": "CHANNEL GROUP SUMMARY",
+          "columns": [
+            {
+              "key": "group",
+              "label": "Group",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "channels",
+              "label": "Channels",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "regs",
+              "label": "Regs",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "share",
+              "label": "Share",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "avg-age",
+              "label": "Avg age",
+              "format": {
+                "kind": "number",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "pct-top-univ",
+              "label": "% Top univ.",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "pct-year-1-2",
+              "label": "% Year 1–2",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "pct-want-internship",
+              "label": "% Want internship",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "pct-new-to-aiesec",
+              "label": "% New to AIESEC",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            }
+          ],
+          "rows": [
+            [
+              "Telegram",
+              9,
+              209,
+              0.4929245283018868,
+              19.95566502463054,
+              0.4832535885167464,
+              0.6507177033492823,
+              0.8086124401913876,
+              0.5406698564593302
+            ],
+            [
+              "Instagram",
+              7,
+              112,
+              0.2641509433962264,
+              19.44411764705882,
+              0.1696428571428572,
+              0.3660714285714285,
+              0.8482142857142857,
+              0.6160714285714286
+            ],
+            [
+              "Email",
+              7,
+              82,
+              0.1933962264150944,
+              20.38375,
+              0.2317073170731707,
+              0.4146341463414634,
+              0.8292682926829268,
+              0.5
+            ],
+            [
+              "Other",
+              5,
+              21,
+              0.04952830188679246,
+              21.88947368421053,
+              0.2380952380952381,
+              0.7142857142857143,
+              0.7619047619047619,
+              0.7142857142857143
+            ],
+            [
+              "Total",
+              12,
+              424,
+              1,
+              20.00222772277228,
+              0.3396226415094339,
+              0.5330188679245284,
+              0.8207547169811321,
+              0.5613207547169812
+            ]
+          ],
+          "totalRow": 4,
+          "views": [
+            {
+              "type": "doughnut",
+              "label": 0,
+              "value": 2
+            },
+            {
+              "type": "heat",
+              "from": 4
+            }
+          ]
+        },
+        {
+          "kind": "table",
+          "id": "audience-mix-by-group",
+          "title": "AUDIENCE MIX BY GROUP",
+          "subtitle": "STUDY STAGE (row %)",
+          "columns": [
+            {
+              "key": "group",
+              "label": "Group",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "n",
+              "label": "n",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "early-y1-y2",
+              "label": "Early (Y1–Y2)",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "senior-y3-y4",
+              "label": "Senior (Y3–Y4)",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "grad-postgrad",
+              "label": "Grad / Postgrad",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "pre-uni-other",
+              "label": "Pre-uni / Other",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            }
+          ],
+          "rows": [
+            [
+              "Telegram",
+              209,
+              0.6507177033492823,
+              0.1674641148325359,
+              0.09569377990430622,
+              0.0861244019138756
+            ],
+            [
+              "Instagram",
+              112,
+              0.3660714285714285,
+              0.1607142857142857,
+              0.08928571428571429,
+              0.3839285714285715
+            ],
+            [
+              "Email",
+              82,
+              0.4146341463414634,
+              0.2317073170731707,
+              0.1463414634146341,
+              0.2073170731707317
+            ],
+            [
+              "Other",
+              21,
+              0.7142857142857143,
+              0.04761904761904762,
+              0.1428571428571428,
+              0.09523809523809523
+            ],
+            [
+              "All",
+              424,
+              0.5330188679245284,
+              0.1721698113207547,
+              0.1061320754716981,
+              0.1886792452830189
+            ]
+          ],
+          "totalRow": 4,
+          "views": [
+            {
+              "type": "bars",
+              "label": 0,
+              "values": [
+                2,
+                3,
+                4,
+                5
+              ],
+              "stacked": true,
+              "horizontal": true,
+              "percent": true
+            },
+            {
+              "type": "table"
+            }
+          ]
+        },
+        {
+          "kind": "table",
+          "id": "channel-university",
+          "title": "CHANNEL × UNIVERSITY",
+          "subtitle": "top 5 (row %, heat = concentration)",
+          "columns": [
+            {
+              "key": "channel",
+              "label": "Channel",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "n",
+              "label": "n",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "nazarbayev-university",
+              "label": "Nazarbayev University",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "astana-it-university",
+              "label": "Astana IT University",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "maqsut-narikbayev-univ",
+              "label": "Maqsut Narikbayev Univ.",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "enu-gumilyov",
+              "label": "ENU (Gumilyov)",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "non-astana-university",
+              "label": "Non-Astana University",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "other",
+              "label": "Other",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            }
+          ],
+          "rows": [
+            [
+              "telegram_announcement-2",
+              182,
+              0.2692307692307692,
+              0.2747252747252747,
+              0.0989010989010989,
+              0.07692307692307693,
+              0.02747252747252747,
+              0.2527472527472527
+            ],
+            [
+              "tapter",
+              96,
+              0.3958333333333333,
+              0.21875,
+              0.04166666666666666,
+              0.04166666666666666,
+              0.04166666666666666,
+              0.2604166666666667
+            ],
+            [
+              "mailing",
+              82,
+              0.4146341463414634,
+              0.2560975609756098,
+              0.0975609756097561,
+              0.01219512195121951,
+              0.02439024390243903,
+              0.1951219512195122
+            ],
+            [
+              "telegram_announcement-1",
+              27,
+              0.4074074074074074,
+              0.2962962962962963,
+              0.07407407407407407,
+              0.03703703703703703,
+              0.03703703703703703,
+              0.1481481481481481
+            ],
+            [
+              "story_may30",
+              10,
+              0.3,
+              0.2,
+              0,
+              0,
+              0.1,
+              0.4
+            ],
+            [
+              "Telegram",
+              7,
+              0.5714285714285714,
+              0.4285714285714285,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              "Email",
+              4,
+              0,
+              0.5,
+              0.25,
+              0,
+              0,
+              0.25
+            ],
+            [
+              "Instagram",
+              4,
+              0.25,
+              0.25,
+              0,
+              0.25,
+              0,
+              0.25
+            ],
+            [
+              "Other",
+              3,
+              0,
+              0.3333333333333333,
+              0,
+              0,
+              0,
+              0.6666666666666666
+            ],
+            [
+              "inst-target",
+              3,
+              0.3333333333333333,
+              0.6666666666666666,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              "inst-target-2",
+              3,
+              0.3333333333333333,
+              0,
+              0,
+              0,
+              0,
+              0.6666666666666666
+            ],
+            [
+              "infopartners",
+              3,
+              0.6666666666666666,
+              0,
+              0,
+              0,
+              0,
+              0.3333333333333333
+            ],
+            [
+              "All channels",
+              424,
+              0.3396226415094339,
+              0.2617924528301887,
+              0.07783018867924528,
+              0.04952830188679246,
+              0.03066037735849057,
+              0.2405660377358491
+            ]
+          ],
+          "totalRow": 12,
+          "views": [
+            {
+              "type": "heat",
+              "from": 2
+            }
+          ]
+        },
+        {
+          "kind": "table",
+          "id": "performance-gap-vs-campaign-average",
+          "title": "PERFORMANCE GAP vs CAMPAIGN AVERAGE",
+          "subtitle": "percentage points; blue = above avg, orange = below",
+          "columns": [
+            {
+              "key": "channel",
+              "label": "Channel",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "n",
+              "label": "n",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "pct-top-univ",
+              "label": "Δ % Top univ.",
+              "format": {
+                "kind": "number",
+                "decimals": 1,
+                "signed": true,
+                "unit": " pp"
+              }
+            },
+            {
+              "key": "pct-year-1-2",
+              "label": "Δ % Year 1–2",
+              "format": {
+                "kind": "number",
+                "decimals": 1,
+                "signed": true,
+                "unit": " pp"
+              }
+            },
+            {
+              "key": "pct-want-internship",
+              "label": "Δ % Want internship",
+              "format": {
+                "kind": "number",
+                "decimals": 1,
+                "signed": true,
+                "unit": " pp"
+              }
+            },
+            {
+              "key": "pct-new-to-aiesec",
+              "label": "Δ % New to AIESEC",
+              "format": {
+                "kind": "number",
+                "decimals": 1,
+                "signed": true,
+                "unit": " pp"
+              }
+            },
+            {
+              "key": "avg-age",
+              "label": "Δ Avg age",
+              "format": {
+                "kind": "number",
+                "decimals": 1,
+                "signed": true,
+                "unit": " y"
+              }
+            }
+          ],
+          "rows": [
+            [
+              "telegram_announcement-2",
+              182,
+              -7.039187227866472,
+              1.093717603151556,
+              5.836616213974699,
+              4.856935517312877,
+              -0.1805134370579893
+            ],
+            [
+              "tapter",
+              96,
+              5.621069182389937,
+              1.906446540880502,
+              -3.950471698113212,
+              4.284591194968545,
+              -0.03629365683820751
+            ],
+            [
+              "mailing",
+              82,
+              7.501150483202945,
+              -2.082374597330883,
+              -4.02669121030833,
+              -9.790612057063969,
+              0.2590222772277251
+            ],
+            [
+              "telegram_announcement-1",
+              27,
+              6.778476589797345,
+              -5.153738644304689,
+              -4.297693920335433,
+              -15.39133473095738,
+              0.9577722772277255
+            ],
+            [
+              "story_may30",
+              10,
+              -3.962264150943395,
+              -23.30188679245284,
+              -22.07547169811321,
+              3.86792452830188,
+              -0.3322277227722736
+            ],
+            [
+              "Telegram",
+              7,
+              23.18059299191374,
+              32.41239892183287,
+              -39.21832884097036,
+              -27.56064690026955,
+              -0.4022277227722739
+            ],
+            [
+              "Email",
+              4,
+              -33.9622641509434,
+              -3.301886792452835,
+              17.92452830188679,
+              -6.132075471698117,
+              -0.05222772277227605
+            ],
+            [
+              "Instagram",
+              4,
+              -8.962264150943394,
+              -28.30188679245283,
+              17.92452830188679,
+              18.86792452830188,
+              -0.802227722772276
+            ],
+            [
+              "Other",
+              3,
+              -33.9622641509434,
+              13.36477987421383,
+              -15.40880503144655,
+              -22.79874213836479,
+              1.197772277227724
+            ],
+            [
+              "inst-target",
+              3,
+              -0.6289308176100628,
+              -19.96855345911951,
+              17.92452830188679,
+              43.86792452830188,
+              -0.1688943894389432
+            ],
+            [
+              "inst-target-2",
+              3,
+              -0.6289308176100628,
+              13.36477987421383,
+              17.92452830188679,
+              10.53459119496855,
+              0.4477722772277275
+            ],
+            [
+              "infopartners",
+              3,
+              32.70440251572327,
+              13.36477987421383,
+              17.92452830188679,
+              -22.79874213836479,
+              -1.402227722772277
+            ]
+          ],
+          "views": [
+            {
+              "type": "heat",
+              "from": 2,
+              "diverging": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "audience",
+      "label": "Audience",
+      "title": "ICY S'26 — Audience Dashboard",
+      "subtitle": "Inspire & Connect Youth registrations · 23 May – 6 Jun · 424 unique registrants · 424 form submissions",
+      "sections": [
+        {
+          "kind": "kpiGroup",
+          "id": "who-registered",
+          "title": "WHO REGISTERED",
+          "cards": [
+            {
+              "label": "AVERAGE AGE",
+              "value": 20.00222772277228,
+              "format": {
+                "kind": "number",
+                "decimals": 1
+              },
+              "subtext": "IQR 19–21 yrs"
+            },
+            {
+              "label": "MEDIAN AGE",
+              "value": 19.6,
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              },
+              "subtext": "youngest 15 · oldest 46"
+            },
+            {
+              "label": "DISTINCT UNIVERSITIES",
+              "value": 8,
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              },
+              "subtext": "incl. Other / non-listed"
+            },
+            {
+              "label": "TOP UNIVERSITY SHARE",
+              "value": 0.3396226415094339,
+              "format": {
+                "kind": "percent",
+                "decimals": 0
+              },
+              "subtext": "Nazarbayev University"
+            },
+            {
+              "label": "TOP FIELD SHARE",
+              "value": 0.3797169811320755,
+              "format": {
+                "kind": "percent",
+                "decimals": 0
+              },
+              "subtext": "IT & Tech"
+            },
+            {
+              "label": "WANT AN INTERNSHIP",
+              "value": 0.8207547169811321,
+              "format": {
+                "kind": "percent",
+                "decimals": 0
+              },
+              "subtext": "new to AIESEC 56%"
+            }
+          ]
+        },
+        {
+          "kind": "table",
+          "id": "study-level",
+          "title": "STUDY LEVEL",
+          "columns": [
+            {
+              "key": "col",
+              "label": "#",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "level",
+              "label": "Level",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "regs",
+              "label": "Regs",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "share",
+              "label": "Share",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "cumul",
+              "label": "Cumul.",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            }
+          ],
+          "rows": [
+            [
+              1,
+              "Bachelor Y1",
+              133,
+              0.3136792452830189,
+              0.3136792452830189
+            ],
+            [
+              2,
+              "Bachelor Y2",
+              93,
+              0.2193396226415094,
+              0.5330188679245284
+            ],
+            [
+              3,
+              "Bachelor Y3",
+              55,
+              0.1297169811320755,
+              0.6627358490566038
+            ],
+            [
+              4,
+              "Bachelor Y4",
+              18,
+              0.04245283018867924,
+              0.7051886792452831
+            ],
+            [
+              5,
+              "Masters",
+              16,
+              0.03773584905660377,
+              0.7429245283018868
+            ],
+            [
+              6,
+              "Graduate",
+              27,
+              0.06367924528301887,
+              0.8066037735849056
+            ],
+            [
+              7,
+              "PhD",
+              2,
+              0.004716981132075472,
+              0.8113207547169812
+            ],
+            [
+              8,
+              "College",
+              29,
+              0.06839622641509434,
+              0.8797169811320755
+            ],
+            [
+              9,
+              "Foundation",
+              11,
+              0.0259433962264151,
+              0.9056603773584906
+            ],
+            [
+              10,
+              "Other",
+              40,
+              0.09433962264150944,
+              1
+            ]
+          ],
+          "views": [
+            {
+              "type": "ranked",
+              "label": 1,
+              "value": 2,
+              "share": 3
+            }
+          ]
+        },
+        {
+          "kind": "table",
+          "id": "university",
+          "title": "UNIVERSITY",
+          "columns": [
+            {
+              "key": "col",
+              "label": "#",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "university",
+              "label": "University",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "regs",
+              "label": "Regs",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "share",
+              "label": "Share",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "cumul",
+              "label": "Cumul.",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            }
+          ],
+          "rows": [
+            [
+              1,
+              "Nazarbayev University",
+              144,
+              0.3396226415094339,
+              0.3396226415094339
+            ],
+            [
+              2,
+              "Astana IT University",
+              111,
+              0.2617924528301887,
+              0.6014150943396226
+            ],
+            [
+              3,
+              "Other",
+              89,
+              0.2099056603773585,
+              0.8113207547169811
+            ],
+            [
+              4,
+              "Maqsut Narikbayev Univ.",
+              33,
+              0.07783018867924528,
+              0.8891509433962264
+            ],
+            [
+              5,
+              "ENU (Gumilyov)",
+              21,
+              0.04952830188679246,
+              0.9386792452830188
+            ],
+            [
+              6,
+              "Non-Astana University",
+              13,
+              0.03066037735849057,
+              0.9693396226415094
+            ],
+            [
+              7,
+              "Foreign University",
+              7,
+              0.01650943396226415,
+              0.9858490566037735
+            ],
+            [
+              8,
+              "Astana International Univ.",
+              6,
+              0.01415094339622642,
+              1
+            ]
+          ],
+          "views": [
+            {
+              "type": "ranked",
+              "label": 1,
+              "value": 2,
+              "share": 3
+            }
+          ]
+        },
+        {
+          "kind": "table",
+          "id": "major",
+          "title": "MAJOR",
+          "columns": [
+            {
+              "key": "col",
+              "label": "#",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "major",
+              "label": "Major",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "regs",
+              "label": "Regs",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "share",
+              "label": "Share",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "cumul",
+              "label": "Cumul.",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            }
+          ],
+          "rows": [
+            [
+              1,
+              "IT & Tech",
+              161,
+              0.3797169811320755,
+              0.3797169811320755
+            ],
+            [
+              2,
+              "Other",
+              74,
+              0.1745283018867924,
+              0.5542452830188679
+            ],
+            [
+              3,
+              "Engineering & Science",
+              67,
+              0.1580188679245283,
+              0.7122641509433962
+            ],
+            [
+              4,
+              "Business & Economics",
+              60,
+              0.1415094339622641,
+              0.8537735849056604
+            ],
+            [
+              5,
+              "Undeclared",
+              20,
+              0.04716981132075472,
+              0.9009433962264151
+            ],
+            [
+              6,
+              "Social Sciences & Law",
+              15,
+              0.03537735849056604,
+              0.9363207547169811
+            ],
+            [
+              7,
+              "Education & Humanities",
+              15,
+              0.03537735849056604,
+              0.9716981132075471
+            ],
+            [
+              8,
+              "Medicine & Biology",
+              9,
+              0.02122641509433962,
+              0.9929245283018867
+            ],
+            [
+              9,
+              "Design & Arts",
+              3,
+              0.007075471698113208,
+              0.9999999999999999
+            ]
+          ],
+          "views": [
+            {
+              "type": "ranked",
+              "label": 1,
+              "value": 2,
+              "share": 3
+            }
+          ]
+        },
+        {
+          "kind": "table",
+          "id": "age-band",
+          "title": "AGE BAND",
+          "columns": [
+            {
+              "key": "col",
+              "label": "#",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "age-band",
+              "label": "Age band",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "regs",
+              "label": "Regs",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "share",
+              "label": "Share",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "cumul",
+              "label": "Cumul.",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            }
+          ],
+          "rows": [
+            [
+              1,
+              "20–21",
+              174,
+              0.4306930693069307,
+              0.4306930693069307
+            ],
+            [
+              2,
+              "18–19",
+              116,
+              0.2871287128712871,
+              0.7178217821782178
+            ],
+            [
+              3,
+              "22–24",
+              74,
+              0.1831683168316832,
+              0.9009900990099009
+            ],
+            [
+              4,
+              "≤17",
+              28,
+              0.06930693069306931,
+              0.9702970297029703
+            ],
+            [
+              5,
+              "25+",
+              12,
+              0.0297029702970297,
+              1
+            ]
+          ],
+          "views": [
+            {
+              "type": "ranked",
+              "label": 1,
+              "value": 2,
+              "share": 3
+            }
+          ]
+        },
+        {
+          "kind": "table",
+          "id": "how-they-heard",
+          "title": "HOW THEY HEARD",
+          "subtitle": "self-reported",
+          "columns": [
+            {
+              "key": "col",
+              "label": "#",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "source",
+              "label": "Source",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "regs",
+              "label": "Regs",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "share",
+              "label": "Share",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "cumul",
+              "label": "Cumul.",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            }
+          ],
+          "rows": [
+            [
+              1,
+              "Word of mouth",
+              158,
+              0.3726415094339622,
+              0.3726415094339622
+            ],
+            [
+              2,
+              "Social networks",
+              101,
+              0.2382075471698113,
+              0.6108490566037735
+            ],
+            [
+              3,
+              "Insta @aieseckz",
+              85,
+              0.2004716981132076,
+              0.8113207547169811
+            ],
+            [
+              4,
+              "Mail",
+              43,
+              0.1014150943396226,
+              0.9127358490566038
+            ],
+            [
+              5,
+              "Other",
+              17,
+              0.04009433962264151,
+              0.9528301886792453
+            ],
+            [
+              6,
+              "Poster",
+              9,
+              0.02122641509433962,
+              0.9740566037735849
+            ],
+            [
+              7,
+              "Prev AIESEC projects",
+              6,
+              0.01415094339622642,
+              0.9882075471698114
+            ],
+            [
+              8,
+              "Instagram Ads",
+              5,
+              0.01179245283018868,
+              1
+            ]
+          ],
+          "views": [
+            {
+              "type": "ranked",
+              "label": 1,
+              "value": 2,
+              "share": 3
+            }
+          ]
+        },
+        {
+          "kind": "table",
+          "id": "past-aiesec-projects",
+          "title": "PAST AIESEC PROJECTS",
+          "subtitle": "multi-select: shares can add up to more than 100%",
+          "columns": [
+            {
+              "key": "col",
+              "label": "#",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "project",
+              "label": "Project",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "regs",
+              "label": "Regs",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "pct-of-regs",
+              "label": "% of regs",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            }
+          ],
+          "rows": [
+            [
+              1,
+              "None",
+              238,
+              0.5613207547169812
+            ],
+            [
+              2,
+              "Business Cup",
+              97,
+              0.2287735849056604
+            ],
+            [
+              3,
+              "AIESEC x Higgsfield",
+              82,
+              0.1933962264150944
+            ],
+            [
+              4,
+              "AIESEC Recruitment",
+              33,
+              0.07783018867924528
+            ],
+            [
+              5,
+              "CreativeOne",
+              27,
+              0.06367924528301887
+            ],
+            [
+              6,
+              "SheCodes",
+              23,
+              0.05424528301886793
+            ],
+            [
+              7,
+              "InnovateX",
+              22,
+              0.05188679245283019
+            ],
+            [
+              8,
+              "EmployMe",
+              17,
+              0.04009433962264151
+            ],
+            [
+              9,
+              "GO Exchanges",
+              12,
+              0.02830188679245283
+            ],
+            [
+              10,
+              "OZGE Forum",
+              10,
+              0.02358490566037736
+            ],
+            [
+              11,
+              "JARYQ",
+              8,
+              0.01886792452830189
+            ]
+          ],
+          "views": [
+            {
+              "type": "ranked",
+              "label": 1,
+              "value": 2,
+              "share": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "patterns",
+      "label": "Patterns",
+      "title": "ICY S'26 — Patterns & Outliers",
+      "subtitle": "Inspire & Connect Youth registrations · 23 May – 6 Jun · 424 unique registrants · 424 form submissions",
+      "sections": [
+        {
+          "kind": "table",
+          "id": "channel-day-heatmap",
+          "title": "CHANNEL × DAY HEATMAP",
+          "subtitle": "bursts (mailings) vs always-on channels",
+          "columns": [
+            {
+              "key": "channel",
+              "label": "Channel",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "23-may",
+              "label": "23 May",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "24-may",
+              "label": "24 May",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "25-may",
+              "label": "25 May",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "26-may",
+              "label": "26 May",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "27-may",
+              "label": "27 May",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "28-may",
+              "label": "28 May",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "29-may",
+              "label": "29 May",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "30-may",
+              "label": "30 May",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "31-may",
+              "label": "31 May",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "1-jun",
+              "label": "1 Jun",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "2-jun",
+              "label": "2 Jun",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "3-jun",
+              "label": "3 Jun",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "4-jun",
+              "label": "4 Jun",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "5-jun",
+              "label": "5 Jun",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "6-jun",
+              "label": "6 Jun",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "total",
+              "label": "Total",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            }
+          ],
+          "rows": [
+            [
+              "telegram_announcement-2",
+              0,
+              0,
+              0,
+              0,
+              6,
+              6,
+              15,
+              6,
+              8,
+              14,
+              34,
+              24,
+              22,
+              46,
+              1,
+              182
+            ],
+            [
+              "tapter",
+              0,
+              4,
+              1,
+              2,
+              5,
+              13,
+              1,
+              5,
+              0,
+              5,
+              7,
+              1,
+              10,
+              41,
+              1,
+              96
+            ],
+            [
+              "mailing",
+              0,
+              0,
+              7,
+              8,
+              4,
+              8,
+              3,
+              3,
+              0,
+              5,
+              10,
+              4,
+              14,
+              16,
+              0,
+              82
+            ],
+            [
+              "telegram_announcement-1",
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              2,
+              2,
+              3,
+              1,
+              17,
+              0,
+              27
+            ],
+            [
+              "story_may30",
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              6,
+              0,
+              10
+            ],
+            [
+              "Telegram",
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              1,
+              0,
+              1,
+              4,
+              0,
+              7
+            ],
+            [
+              "Email",
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              3,
+              1,
+              0,
+              4
+            ],
+            [
+              "Instagram",
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              3,
+              1,
+              0,
+              4
+            ],
+            [
+              "Other",
+              2,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              3
+            ],
+            [
+              "inst-target",
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              1,
+              0,
+              1,
+              0,
+              0,
+              3
+            ],
+            [
+              "inst-target-2",
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              3,
+              0,
+              0,
+              0,
+              0,
+              3
+            ],
+            [
+              "infopartners",
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              1,
+              0,
+              0,
+              0,
+              3
+            ],
+            [
+              "All channels",
+              3,
+              4,
+              8,
+              10,
+              15,
+              27,
+              20,
+              15,
+              8,
+              27,
+              60,
+              33,
+              60,
+              132,
+              2,
+              424
+            ]
+          ],
+          "totalRow": 12,
+          "views": [
+            {
+              "type": "heat",
+              "from": 1
+            }
+          ]
+        },
+        {
+          "kind": "table",
+          "id": "channel-burstiness",
+          "title": "CHANNEL BURSTINESS",
+          "subtitle": "how much of each channel's volume landed on its single best day",
+          "columns": [
+            {
+              "key": "channel",
+              "label": "Channel",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "regs",
+              "label": "Regs",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "active-days",
+              "label": "Active days",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "first-reg",
+              "label": "First reg",
+              "format": {
+                "kind": "date"
+              }
+            },
+            {
+              "key": "last-reg",
+              "label": "Last reg",
+              "format": {
+                "kind": "date"
+              }
+            },
+            {
+              "key": "best-day-regs",
+              "label": "Best-day regs",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "best-day-share",
+              "label": "Best-day share",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "profile",
+              "label": "Profile",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "active-span",
+              "label": "Active span",
+              "format": {
+                "kind": "number",
+                "decimals": 0,
+                "unit": " days"
+              }
+            }
+          ],
+          "rows": [
+            [
+              "telegram_announcement-2",
+              182,
+              11,
+              "2026-05-27",
+              "2026-06-06",
+              46,
+              0.2527472527472527,
+              "Wave",
+              11
+            ],
+            [
+              "tapter",
+              96,
+              13,
+              "2026-05-24",
+              "2026-06-06",
+              41,
+              0.4270833333333333,
+              "Wave",
+              14
+            ],
+            [
+              "mailing",
+              82,
+              11,
+              "2026-05-25",
+              "2026-06-05",
+              16,
+              0.1951219512195122,
+              "Steady",
+              12
+            ],
+            [
+              "telegram_announcement-1",
+              27,
+              7,
+              "2026-05-23",
+              "2026-06-05",
+              17,
+              0.6296296296296297,
+              "Burst",
+              14
+            ],
+            [
+              "story_may30",
+              10,
+              2,
+              "2026-06-04",
+              "2026-06-05",
+              6,
+              0.6,
+              "Burst",
+              2
+            ],
+            [
+              "Telegram",
+              7,
+              4,
+              "2026-05-29",
+              "2026-06-05",
+              4,
+              0.5714285714285714,
+              "Burst",
+              8
+            ],
+            [
+              "Email",
+              4,
+              2,
+              "2026-06-04",
+              "2026-06-05",
+              3,
+              0.75,
+              "Burst",
+              2
+            ],
+            [
+              "Instagram",
+              4,
+              2,
+              "2026-06-04",
+              "2026-06-05",
+              3,
+              0.75,
+              "Burst",
+              2
+            ],
+            [
+              "Other",
+              3,
+              2,
+              "2026-05-23",
+              "2026-06-04",
+              2,
+              0.6666666666666666,
+              "Burst",
+              13
+            ],
+            [
+              "inst-target",
+              3,
+              3,
+              "2026-06-01",
+              "2026-06-04",
+              1,
+              0.3333333333333333,
+              "Wave",
+              4
+            ],
+            [
+              "inst-target-2",
+              3,
+              1,
+              "2026-06-02",
+              "2026-06-02",
+              3,
+              1,
+              "Burst",
+              1
+            ],
+            [
+              "infopartners",
+              3,
+              2,
+              "2026-06-02",
+              "2026-06-03",
+              2,
+              0.6666666666666666,
+              "Burst",
+              2
+            ]
+          ],
+          "views": [
+            {
+              "type": "table"
+            }
+          ]
+        },
+        {
+          "kind": "table",
+          "id": "age-outliers",
+          "title": "AGE OUTLIERS",
+          "subtitle": "IQR rule",
+          "columns": [
+            {
+              "key": "metric",
+              "label": "Metric",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "value",
+              "label": "Value",
+              "format": {
+                "kind": "number",
+                "decimals": 1
+              },
+              "cellFormats": [
+                {
+                  "kind": "number",
+                  "decimals": 1
+                },
+                {
+                  "kind": "number",
+                  "decimals": 1
+                },
+                {
+                  "kind": "number",
+                  "decimals": 1
+                },
+                {
+                  "kind": "number",
+                  "decimals": 1
+                },
+                {
+                  "kind": "number",
+                  "decimals": 1
+                },
+                {
+                  "kind": "number",
+                  "decimals": 1
+                },
+                {
+                  "kind": "number",
+                  "decimals": 1
+                },
+                {
+                  "kind": "number",
+                  "decimals": 1
+                },
+                {
+                  "kind": "number",
+                  "decimals": 1
+                },
+                {
+                  "kind": "number",
+                  "decimals": 0
+                },
+                {
+                  "kind": "number",
+                  "decimals": 0
+                },
+                {
+                  "kind": "number",
+                  "decimals": 1
+                }
+              ]
+            }
+          ],
+          "rows": [
+            [
+              "Mean",
+              20.00222772277228
+            ],
+            [
+              "Median",
+              19.6
+            ],
+            [
+              "Std dev",
+              3.174068314503525
+            ],
+            [
+              "Min",
+              14.9
+            ],
+            [
+              "Q1",
+              18.6
+            ],
+            [
+              "Q3",
+              20.8
+            ],
+            [
+              "IQR",
+              2.199999999999999
+            ],
+            [
+              "Lower fence",
+              15.3
+            ],
+            [
+              "Upper fence",
+              24.1
+            ],
+            [
+              "Below lower fence",
+              3
+            ],
+            [
+              "Above upper fence",
+              12
+            ],
+            [
+              "Max",
+              46.3
+            ]
+          ],
+          "views": [
+            {
+              "type": "table"
+            }
+          ]
+        },
+        {
+          "kind": "table",
+          "id": "age-histogram",
+          "title": "AGE HISTOGRAM",
+          "columns": [
+            {
+              "key": "age",
+              "label": "Age",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "regs",
+              "label": "Regs",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            }
+          ],
+          "rows": [
+            [
+              "≤16",
+              9
+            ],
+            [
+              "17",
+              19
+            ],
+            [
+              "18",
+              30
+            ],
+            [
+              "19",
+              86
+            ],
+            [
+              "20",
+              107
+            ],
+            [
+              "21",
+              67
+            ],
+            [
+              "22",
+              43
+            ],
+            [
+              "23",
+              20
+            ],
+            [
+              "24",
+              11
+            ],
+            [
+              "25–29",
+              6
+            ],
+            [
+              "30+",
+              6
+            ]
+          ],
+          "views": [
+            {
+              "type": "bars",
+              "label": 0,
+              "values": [
+                1
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "table",
+          "id": "concentration",
+          "title": "CONCENTRATION",
+          "subtitle": "HHI: <0.15 low · 0.15–0.25 moderate · >0.25 high · effective # = 1 / HHI",
+          "columns": [
+            {
+              "key": "dimension",
+              "label": "Dimension",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "top-1-share",
+              "label": "Top-1 share",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "top-3-share",
+              "label": "Top-3 share",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "hhi",
+              "label": "HHI",
+              "format": {
+                "kind": "number",
+                "decimals": 3
+              }
+            },
+            {
+              "key": "effective",
+              "label": "Effective #",
+              "format": {
+                "kind": "number",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "concentration",
+              "label": "Concentration",
+              "format": {
+                "kind": "text"
+              }
+            }
+          ],
+          "rows": [
+            [
+              "Channels",
+              0.4292452830188679,
+              0.8490566037735849,
+              0.2781795122819509,
+              3.594801039792041,
+              "High"
+            ],
+            [
+              "Channel groups",
+              0.4929245283018868,
+              0.9504716981132075,
+              0.3526054645781416,
+              2.836030919703424,
+              "High"
+            ],
+            [
+              "Universities",
+              0.3396226415094339,
+              0.8113207547169812,
+              0.2378626735493058,
+              4.20410644965156,
+              "Moderate"
+            ],
+            [
+              "Majors",
+              0.3797169811320755,
+              0.7122641509433962,
+              0.2248687255250978,
+              4.447039034284868,
+              "Moderate"
+            ]
+          ],
+          "views": [
+            {
+              "type": "concentration",
+              "label": 0,
+              "value": 3,
+              "status": 5
+            },
+            {
+              "type": "table"
+            }
+          ]
+        },
+        {
+          "kind": "table",
+          "id": "attribution-check",
+          "title": "ATTRIBUTION CHECK",
+          "subtitle": "UTM channel group × self-reported source (row %)",
+          "columns": [
+            {
+              "key": "utm-group",
+              "label": "UTM group",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "n",
+              "label": "n",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "word-of-mouth",
+              "label": "Word of mouth",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "social-networks",
+              "label": "Social networks",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "insta-aieseckz",
+              "label": "Insta @aieseckz",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "mail",
+              "label": "Mail",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "other",
+              "label": "Other",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "poster",
+              "label": "Poster",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "self-report-confirms-utm",
+              "label": "Self-report confirms UTM",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            }
+          ],
+          "rows": [
+            [
+              "Telegram",
+              209,
+              0.3971291866028708,
+              0.3971291866028708,
+              0.1004784688995215,
+              0.004784688995215311,
+              0.03349282296650718,
+              0.02870813397129187,
+              0
+            ],
+            [
+              "Instagram",
+              112,
+              0.4107142857142857,
+              0.04464285714285714,
+              0.4732142857142857,
+              0.008928571428571428,
+              0.04464285714285714,
+              0,
+              0.008928571428571428
+            ],
+            [
+              "Email",
+              82,
+              0.2560975609756098,
+              0.1219512195121951,
+              0.07317073170731707,
+              0.4878048780487805,
+              0.03658536585365853,
+              0.02439024390243903,
+              0
+            ],
+            [
+              "Other",
+              21,
+              0.3809523809523809,
+              0.1428571428571428,
+              0.2380952380952381,
+              0.04761904761904762,
+              0.09523809523809523,
+              0.04761904761904762,
+              0.09523809523809523
+            ]
+          ],
+          "views": [
+            {
+              "type": "heat",
+              "from": 2
+            }
+          ]
+        },
+        {
+          "kind": "table",
+          "id": "study-stage-internship-interest",
+          "title": "STUDY STAGE × INTERNSHIP INTEREST",
+          "subtitle": "row %",
+          "columns": [
+            {
+              "key": "study-stage",
+              "label": "Study stage",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "n",
+              "label": "n",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "yes",
+              "label": "Yes",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "no",
+              "label": "No",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            }
+          ],
+          "rows": [
+            [
+              "Early (Y1–Y2)",
+              226,
+              0.827433628318584,
+              0.172566371681416
+            ],
+            [
+              "Senior (Y3–Y4)",
+              73,
+              0.7534246575342466,
+              0.2465753424657534
+            ],
+            [
+              "Grad / Postgrad",
+              45,
+              0.7555555555555555,
+              0.2444444444444445
+            ],
+            [
+              "Pre-uni / Other",
+              80,
+              0.9,
+              0.09999999999999998
+            ]
+          ],
+          "views": [
+            {
+              "type": "heat",
+              "from": 2
+            }
+          ]
+        },
+        {
+          "kind": "table",
+          "id": "duplicate-submissions",
+          "title": "DUPLICATE SUBMISSIONS",
+          "subtitle": "one registrant per person; earliest submission kept",
+          "columns": [
+            {
+              "key": "metric",
+              "label": "Metric",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "value",
+              "label": "Value",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              },
+              "cellFormats": [
+                {
+                  "kind": "number",
+                  "decimals": 0
+                },
+                {
+                  "kind": "number",
+                  "decimals": 0
+                },
+                {
+                  "kind": "number",
+                  "decimals": 0
+                },
+                {
+                  "kind": "percent",
+                  "decimals": 1
+                }
+              ]
+            }
+          ],
+          "rows": [
+            [
+              "Raw form submissions",
+              424
+            ],
+            [
+              "Unique registrants",
+              424
+            ],
+            [
+              "Duplicates removed",
+              0
+            ],
+            [
+              "Duplicate rate",
+              0
+            ]
+          ],
+          "views": [
+            {
+              "type": "table"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "tables",
+      "label": "Tables",
+      "title": "ICY S'26 — Detailed Tables",
+      "subtitle": "Inspire & Connect Youth registrations · 23 May – 6 Jun · 424 unique registrants · 424 form submissions",
+      "sections": [
+        {
+          "kind": "table",
+          "id": "utm-level-detail",
+          "title": "UTM-LEVEL DETAIL",
+          "subtitle": "every tracked link",
+          "columns": [
+            {
+              "key": "utm-key",
+              "label": "UTM key",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "channel",
+              "label": "Channel",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "group",
+              "label": "Group",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "regs",
+              "label": "Regs",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "share",
+              "label": "Share",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "rank",
+              "label": "Rank",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            }
+          ],
+          "rows": [
+            [
+              "telegram_announcement-2",
+              "telegram_announcement-2",
+              "Telegram",
+              99,
+              0.2334905660377359,
+              1
+            ],
+            [
+              "telegram_announcement-2",
+              "telegram_announcement-2",
+              "Instagram",
+              45,
+              0.1061320754716981,
+              2
+            ],
+            [
+              "tapter",
+              "tapter",
+              "Telegram",
+              44,
+              0.1037735849056604,
+              3
+            ],
+            [
+              "mailing",
+              "mailing",
+              "Telegram",
+              32,
+              0.07547169811320754,
+              4
+            ],
+            [
+              "telegram_announcement-2",
+              "telegram_announcement-2",
+              "Email",
+              32,
+              0.07547169811320754,
+              5
+            ],
+            [
+              "mailing",
+              "mailing",
+              "Instagram",
+              26,
+              0.06132075471698113,
+              6
+            ],
+            [
+              "tapter",
+              "tapter",
+              "Instagram",
+              26,
+              0.06132075471698113,
+              7
+            ],
+            [
+              "tapter",
+              "tapter",
+              "Email",
+              20,
+              0.04716981132075472,
+              8
+            ],
+            [
+              "mailing",
+              "mailing",
+              "Email",
+              19,
+              0.04481132075471698,
+              9
+            ],
+            [
+              "telegram_announcement-1",
+              "telegram_announcement-1",
+              "Telegram",
+              15,
+              0.03537735849056604,
+              10
+            ],
+            [
+              "telegram_announcement-1",
+              "telegram_announcement-1",
+              "Instagram",
+              8,
+              0.01886792452830189,
+              11
+            ],
+            [
+              "telegram",
+              "Telegram",
+              "Telegram",
+              7,
+              0.01650943396226415,
+              12
+            ],
+            [
+              "tapter",
+              "tapter",
+              "Other",
+              6,
+              0.01415094339622642,
+              13
+            ],
+            [
+              "telegram_announcement-2",
+              "telegram_announcement-2",
+              "Other",
+              6,
+              0.01415094339622642,
+              14
+            ],
+            [
+              "mailing",
+              "mailing",
+              "Other",
+              5,
+              0.01179245283018868,
+              15
+            ],
+            [
+              "story_may30",
+              "story_may30",
+              "Telegram",
+              5,
+              0.01179245283018868,
+              16
+            ],
+            [
+              "email",
+              "Email",
+              "Email",
+              4,
+              0.009433962264150943,
+              17
+            ],
+            [
+              "instagram",
+              "Instagram",
+              "Instagram",
+              4,
+              0.009433962264150943,
+              18
+            ],
+            [
+              "other",
+              "Other",
+              "Other",
+              3,
+              0.007075471698113208,
+              19
+            ],
+            [
+              "inst-target",
+              "inst-target",
+              "Telegram",
+              3,
+              0.007075471698113208,
+              20
+            ],
+            [
+              "telegram_announcement-1",
+              "telegram_announcement-1",
+              "Email",
+              3,
+              0.007075471698113208,
+              21
+            ],
+            [
+              "story_may30",
+              "story_may30",
+              "Email",
+              3,
+              0.007075471698113208,
+              22
+            ],
+            [
+              "infopartners",
+              "infopartners",
+              "Telegram",
+              2,
+              0.004716981132075472,
+              23
+            ],
+            [
+              "inst-target-2",
+              "inst-target-2",
+              "Telegram",
+              2,
+              0.004716981132075472,
+              24
+            ],
+            [
+              "story_may30",
+              "story_may30",
+              "Instagram",
+              2,
+              0.004716981132075472,
+              25
+            ],
+            [
+              "infopartners",
+              "infopartners",
+              "Instagram",
+              1,
+              0.002358490566037736,
+              26
+            ],
+            [
+              "inst-target-2",
+              "inst-target-2",
+              "Email",
+              1,
+              0.002358490566037736,
+              27
+            ],
+            [
+              "telegram_announcement-1",
+              "telegram_announcement-1",
+              "Other",
+              1,
+              0.002358490566037736,
+              28
+            ]
+          ],
+          "views": [
+            {
+              "type": "table",
+              "searchable": true
+            }
+          ]
+        },
+        {
+          "kind": "table",
+          "id": "university-channel-group",
+          "title": "UNIVERSITY × CHANNEL GROUP",
+          "subtitle": "counts · heat = where each segment comes from",
+          "columns": [
+            {
+              "key": "university",
+              "label": "University",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "telegram",
+              "label": "Telegram",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "instagram",
+              "label": "Instagram",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "email",
+              "label": "Email",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "other",
+              "label": "Other",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "total",
+              "label": "Total",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "share",
+              "label": "Share",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "cumul",
+              "label": "Cumul.",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            }
+          ],
+          "rows": [
+            [
+              "Nazarbayev University",
+              101,
+              19,
+              19,
+              5,
+              144,
+              0.3396226415094339,
+              0.3396226415094339
+            ],
+            [
+              "Astana IT University",
+              57,
+              30,
+              19,
+              5,
+              111,
+              0.2617924528301887,
+              0.6014150943396226
+            ],
+            [
+              "Other",
+              22,
+              35,
+              26,
+              6,
+              89,
+              0.2099056603773585,
+              0.8113207547169811
+            ],
+            [
+              "Maqsut Narikbayev Univ.",
+              13,
+              14,
+              6,
+              0,
+              33,
+              0.07783018867924528,
+              0.8891509433962264
+            ],
+            [
+              "ENU (Gumilyov)",
+              3,
+              10,
+              4,
+              4,
+              21,
+              0.04952830188679246,
+              0.9386792452830188
+            ],
+            [
+              "Non-Astana University",
+              9,
+              2,
+              2,
+              0,
+              13,
+              0.03066037735849057,
+              0.9693396226415094
+            ],
+            [
+              "Foreign University",
+              3,
+              1,
+              3,
+              0,
+              7,
+              0.01650943396226415,
+              0.9858490566037735
+            ],
+            [
+              "Astana International Univ.",
+              1,
+              1,
+              3,
+              1,
+              6,
+              0.01415094339622642,
+              1
+            ],
+            [
+              "Total",
+              209,
+              112,
+              82,
+              21,
+              424,
+              1,
+              null
+            ]
+          ],
+          "totalRow": 8,
+          "views": [
+            {
+              "type": "heat",
+              "from": 1
+            },
+            {
+              "type": "table",
+              "searchable": true
+            }
+          ]
+        },
+        {
+          "kind": "table",
+          "id": "major-channel-group",
+          "title": "MAJOR × CHANNEL GROUP",
+          "subtitle": "counts · heat = where each segment comes from",
+          "columns": [
+            {
+              "key": "major",
+              "label": "Major",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "telegram",
+              "label": "Telegram",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "instagram",
+              "label": "Instagram",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "email",
+              "label": "Email",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "other",
+              "label": "Other",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "total",
+              "label": "Total",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "share",
+              "label": "Share",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "cumul",
+              "label": "Cumul.",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            }
+          ],
+          "rows": [
+            [
+              "IT & Tech",
+              75,
+              38,
+              40,
+              8,
+              161,
+              0.3797169811320755,
+              0.3797169811320755
+            ],
+            [
+              "Other",
+              34,
+              24,
+              14,
+              2,
+              74,
+              0.1745283018867924,
+              0.5542452830188679
+            ],
+            [
+              "Engineering & Science",
+              45,
+              13,
+              6,
+              3,
+              67,
+              0.1580188679245283,
+              0.7122641509433962
+            ],
+            [
+              "Business & Economics",
+              24,
+              22,
+              9,
+              5,
+              60,
+              0.1415094339622641,
+              0.8537735849056604
+            ],
+            [
+              "Undeclared",
+              12,
+              3,
+              4,
+              1,
+              20,
+              0.04716981132075472,
+              0.9009433962264151
+            ],
+            [
+              "Social Sciences & Law",
+              7,
+              5,
+              3,
+              0,
+              15,
+              0.03537735849056604,
+              0.9363207547169811
+            ],
+            [
+              "Education & Humanities",
+              5,
+              3,
+              5,
+              2,
+              15,
+              0.03537735849056604,
+              0.9716981132075471
+            ],
+            [
+              "Medicine & Biology",
+              6,
+              2,
+              1,
+              0,
+              9,
+              0.02122641509433962,
+              0.9929245283018867
+            ],
+            [
+              "Design & Arts",
+              1,
+              2,
+              0,
+              0,
+              3,
+              0.007075471698113208,
+              0.9999999999999999
+            ],
+            [
+              "Total",
+              209,
+              112,
+              82,
+              21,
+              424,
+              1,
+              null
+            ]
+          ],
+          "totalRow": 9,
+          "views": [
+            {
+              "type": "heat",
+              "from": 1
+            },
+            {
+              "type": "table",
+              "searchable": true
+            }
+          ]
+        },
+        {
+          "kind": "table",
+          "id": "study-level-channel-group",
+          "title": "STUDY LEVEL × CHANNEL GROUP",
+          "subtitle": "counts · heat = where each segment comes from",
+          "columns": [
+            {
+              "key": "level",
+              "label": "Level",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "telegram",
+              "label": "Telegram",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "instagram",
+              "label": "Instagram",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "email",
+              "label": "Email",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "other",
+              "label": "Other",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "total",
+              "label": "Total",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "share",
+              "label": "Share",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "cumul",
+              "label": "Cumul.",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            }
+          ],
+          "rows": [
+            [
+              "Bachelor Y1",
+              86,
+              19,
+              16,
+              12,
+              133,
+              0.3136792452830189,
+              0.3136792452830189
+            ],
+            [
+              "Bachelor Y2",
+              50,
+              22,
+              18,
+              3,
+              93,
+              0.2193396226415094,
+              0.5330188679245284
+            ],
+            [
+              "Bachelor Y3",
+              28,
+              13,
+              13,
+              1,
+              55,
+              0.1297169811320755,
+              0.6627358490566038
+            ],
+            [
+              "Other",
+              10,
+              21,
+              7,
+              2,
+              40,
+              0.09433962264150944,
+              0.7570754716981132
+            ],
+            [
+              "College",
+              7,
+              17,
+              5,
+              0,
+              29,
+              0.06839622641509434,
+              0.8254716981132075
+            ],
+            [
+              "Graduate",
+              14,
+              6,
+              5,
+              2,
+              27,
+              0.06367924528301887,
+              0.8891509433962264
+            ],
+            [
+              "Bachelor Y4",
+              7,
+              5,
+              6,
+              0,
+              18,
+              0.04245283018867924,
+              0.9316037735849056
+            ],
+            [
+              "Masters",
+              6,
+              3,
+              6,
+              1,
+              16,
+              0.03773584905660377,
+              0.9693396226415094
+            ],
+            [
+              "Foundation",
+              1,
+              5,
+              5,
+              0,
+              11,
+              0.0259433962264151,
+              0.9952830188679245
+            ],
+            [
+              "PhD",
+              0,
+              1,
+              1,
+              0,
+              2,
+              0.004716981132075472,
+              1
+            ],
+            [
+              "Total",
+              209,
+              112,
+              82,
+              21,
+              424,
+              1,
+              null
+            ]
+          ],
+          "totalRow": 10,
+          "views": [
+            {
+              "type": "heat",
+              "from": 1
+            },
+            {
+              "type": "table",
+              "searchable": true
+            }
+          ]
+        },
+        {
+          "kind": "table",
+          "id": "self-reported-source-channel-group",
+          "title": "SELF-REPORTED SOURCE × CHANNEL GROUP",
+          "subtitle": "counts · heat = where each segment comes from",
+          "columns": [
+            {
+              "key": "source",
+              "label": "Source",
+              "format": {
+                "kind": "text"
+              }
+            },
+            {
+              "key": "telegram",
+              "label": "Telegram",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "instagram",
+              "label": "Instagram",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "email",
+              "label": "Email",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "other",
+              "label": "Other",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "total",
+              "label": "Total",
+              "format": {
+                "kind": "number",
+                "decimals": 0
+              }
+            },
+            {
+              "key": "share",
+              "label": "Share",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            },
+            {
+              "key": "cumul",
+              "label": "Cumul.",
+              "format": {
+                "kind": "percent",
+                "decimals": 1
+              }
+            }
+          ],
+          "rows": [
+            [
+              "Word of mouth",
+              83,
+              46,
+              21,
+              8,
+              158,
+              0.3726415094339622,
+              0.3726415094339622
+            ],
+            [
+              "Social networks",
+              83,
+              5,
+              10,
+              3,
+              101,
+              0.2382075471698113,
+              0.6108490566037735
+            ],
+            [
+              "Insta @aieseckz",
+              21,
+              53,
+              6,
+              5,
+              85,
+              0.2004716981132076,
+              0.8113207547169811
+            ],
+            [
+              "Mail",
+              1,
+              1,
+              40,
+              1,
+              43,
+              0.1014150943396226,
+              0.9127358490566038
+            ],
+            [
+              "Other",
+              7,
+              5,
+              3,
+              2,
+              17,
+              0.04009433962264151,
+              0.9528301886792453
+            ],
+            [
+              "Poster",
+              6,
+              0,
+              2,
+              1,
+              9,
+              0.02122641509433962,
+              0.9740566037735849
+            ],
+            [
+              "Prev AIESEC projects",
+              5,
+              1,
+              0,
+              0,
+              6,
+              0.01415094339622642,
+              0.9882075471698114
+            ],
+            [
+              "Instagram Ads",
+              3,
+              1,
+              0,
+              1,
+              5,
+              0.01179245283018868,
+              1
+            ],
+            [
+              "Total",
+              209,
+              112,
+              82,
+              21,
+              424,
+              1,
+              null
+            ]
+          ],
+          "totalRow": 8,
+          "views": [
+            {
+              "type": "heat",
+              "from": 1
+            },
+            {
+              "type": "table",
+              "searchable": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "methodology",
+      "label": "Methodology",
+      "title": "Assumptions, definitions & how to use this workbook",
+      "subtitle": "ICY S'26 · registration analysis",
+      "sections": [
+        {
+          "kind": "definitions",
+          "id": "scope-cleaning",
+          "title": "SCOPE & CLEANING",
+          "items": [
+            {
+              "term": "Source",
+              "definition": "ICY_S26_Registrations.xlsx (424 form submissions)."
+            },
+            {
+              "term": "De-duplication",
+              "definition": "One registrant per person (same e-mail / phone); the earliest submission is kept. 0 duplicates removed."
+            },
+            {
+              "term": "Fake & test rows",
+              "definition": "Rows that are obviously test or fake entries are excluded before any count."
+            },
+            {
+              "term": "Window",
+              "definition": "23 May – 6 Jun (15 calendar days), dates in the form's local time."
+            }
+          ]
+        },
+        {
+          "kind": "definitions",
+          "id": "channel-attribution",
+          "title": "CHANNEL ATTRIBUTION",
+          "items": [
+            {
+              "term": "Channel",
+              "definition": "The tracked source of the registration (UTM source / medium / content). Registrations without a tag are 'Direct / Other'."
+            },
+            {
+              "term": "Group",
+              "definition": "Channels are grouped into Telegram, Instagram, Email, Offline, Partners and Direct / Other for the group-level tables."
+            }
+          ]
+        },
+        {
+          "kind": "definitions",
+          "id": "metric-definitions",
+          "title": "METRIC DEFINITIONS",
+          "items": [
+            {
+              "term": "Share",
+              "definition": "Registrations of a channel or segment divided by all unique registrants."
+            },
+            {
+              "term": "HHI",
+              "definition": "Herfindahl index = sum of squared shares. 1 means everything came from one source; effective # = 1 / HHI."
+            },
+            {
+              "term": "z-score",
+              "definition": "Daily registrations minus the daily mean, divided by the standard deviation; z ≥ 1.5 is flagged as a spike."
+            },
+            {
+              "term": "Study stage",
+              "definition": "Early = Bachelor Y1–Y2; Senior = Bachelor Y3–Y4; Grad / Postgrad = Graduate, Masters, PhD; everything else = Pre-uni / Other."
+            },
+            {
+              "term": "Percent columns",
+              "definition": "Percent columns use only registrants who answered that question; empty answers are not counted as 'No'."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "methodology": [
+    {
+      "kind": "definitions",
+      "id": "scope-cleaning",
+      "title": "SCOPE & CLEANING",
+      "items": [
+        {
+          "term": "Source",
+          "definition": "ICY_S26_Registrations.xlsx (424 form submissions)."
+        },
+        {
+          "term": "De-duplication",
+          "definition": "One registrant per person (same e-mail / phone); the earliest submission is kept. 0 duplicates removed."
+        },
+        {
+          "term": "Fake & test rows",
+          "definition": "Rows that are obviously test or fake entries are excluded before any count."
+        },
+        {
+          "term": "Window",
+          "definition": "23 May – 6 Jun (15 calendar days), dates in the form's local time."
+        }
+      ]
+    },
+    {
+      "kind": "definitions",
+      "id": "channel-attribution",
+      "title": "CHANNEL ATTRIBUTION",
+      "items": [
+        {
+          "term": "Channel",
+          "definition": "The tracked source of the registration (UTM source / medium / content). Registrations without a tag are 'Direct / Other'."
+        },
+        {
+          "term": "Group",
+          "definition": "Channels are grouped into Telegram, Instagram, Email, Offline, Partners and Direct / Other for the group-level tables."
+        }
+      ]
+    },
+    {
+      "kind": "definitions",
+      "id": "metric-definitions",
+      "title": "METRIC DEFINITIONS",
+      "items": [
+        {
+          "term": "Share",
+          "definition": "Registrations of a channel or segment divided by all unique registrants."
+        },
+        {
+          "term": "HHI",
+          "definition": "Herfindahl index = sum of squared shares. 1 means everything came from one source; effective # = 1 / HHI."
+        },
+        {
+          "term": "z-score",
+          "definition": "Daily registrations minus the daily mean, divided by the standard deviation; z ≥ 1.5 is flagged as a spike."
+        },
+        {
+          "term": "Study stage",
+          "definition": "Early = Bachelor Y1–Y2; Senior = Bachelor Y3–Y4; Grad / Postgrad = Graduate, Masters, PhD; everything else = Pre-uni / Other."
+        },
+        {
+          "term": "Percent columns",
+          "definition": "Percent columns use only registrants who answered that question; empty answers are not counted as 'No'."
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "skippedSheets": [
+    {
+      "name": "08 · Charts",
+      "rows": 2
+    },
+    {
+      "name": "09 · Cleaned Data",
+      "rows": 425
+    }
+  ]
+}

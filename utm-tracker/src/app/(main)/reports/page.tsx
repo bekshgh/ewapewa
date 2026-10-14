@@ -32,7 +32,10 @@ export default async function ReportsPage() {
 
       {admin && (
         <section className="card mb-6 p-6">
-          <h2 className="mb-1 font-display text-lg font-semibold">Upload reports</h2>
+          <div className="mb-1 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <h2 className="font-display text-lg font-semibold">Upload reports</h2>
+            <Link href="/reports/guide" className="text-sm font-medium text-accent hover:underline">How to prepare a file →</Link>
+          </div>
           <p className="mb-4 text-sm text-ink-muted">One file or many at once. Each event becomes a project, ready to compare in Projects.</p>
           <BulkReportUpload projects={projects} types={types.map((t) => ({ value: t.key, label: t.name }))} />
         </section>

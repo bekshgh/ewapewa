@@ -1,5 +1,5 @@
 import { CONFIGS, detectType, normalizeSheetName, type TypeConfig } from "./configs";
-import { extractSheet } from "./extract";
+import { extractSheet, findUnindentedHeading } from "./extract";
 import { sanitizeDocument } from "./privacy";
 import {
   PARSER_VERSION,
@@ -76,6 +76,11 @@ export function buildDocument(wb: Workbook, type: ReportType): ReportDocument {
       "The workbook has formulas without saved results. Open it in Excel or LibreOffice, let it recalculate, save as .xlsx and upload again.",
     );
   }
+  if (noCache > 0) {
+    warnings.push({
+      message: `${noCache} formula cell(s) have no saved value. Open the file in Excel or LibreOffice, let it recalculate and save it again`,
+    });
+  }
 
   const sheets: SheetDoc[] = [];
   const methodology: DefinitionsSection[] = [];
@@ -89,7 +94,14 @@ export function buildDocument(wb: Workbook, type: ReportType): ReportDocument {
 
     for (const re of sc.expect ?? []) {
       if (!ex.sections.some((s) => re.test(s.title))) {
-        warnings.push({ sheet: grid.name, section: re.source, message: "Expected section not found" });
+        const lost = findUnindentedHeading(grid, re);
+        warnings.push({
+          sheet: grid.name,
+          section: re.source,
+          message: lost
+            ? `Heading '${lost}' (${normalizeSheetName(grid.name)}) lost its 2 leading spaces, so the section was not read`
+            : "Expected section not found",
+        });
       }
     }
     for (const s of ex.sections) {

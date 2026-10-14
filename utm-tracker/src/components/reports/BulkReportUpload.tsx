@@ -231,7 +231,16 @@ export function BulkReportUpload({ projects, types }: { projects: ProjectOption[
     </div>
   );
 
-  if (phase === "pick") return dropZone;
+  if (phase === "pick") {
+    return (
+      <>
+        {dropZone}
+        <p className="mt-2 text-xs text-ink-faint">
+          Making a new file? Build it with the report kit so it reads without warnings: <Link href="/reports/guide" className="text-accent hover:underline">How to prepare a file</Link>.
+        </p>
+      </>
+    );
+  }
 
   /* ─── result ────────────────────────────────────────────────── */
   if (phase === "done" && done) {
