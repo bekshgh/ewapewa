@@ -9,7 +9,7 @@ import { CONCENTRATION, channelGroupOf, stageOf, zoneOf } from "./dictionaries";
  * Bump METRICS_VERSION whenever a formula changes, then run
  * `npm run projects:recompute` to refresh every project.
  */
-export const METRICS_VERSION = 1;
+export const METRICS_VERSION = 2;
 
 export interface MetricsSettings {
   /** Peak-day share above which a campaign counts as "bursty". */
@@ -59,12 +59,21 @@ export interface ComputedMetrics {
 
 const num = (v: CellValue | undefined): number | null => (typeof v === "number" && Number.isFinite(v) ? v : null);
 
+/** Older templates write KPI values as text: "21.3 yrs" → 21.3, "53%" → 0.53. */
+function textNum(v: CellValue | undefined): number | null {
+  if (typeof v !== "string") return null;
+  const m = /^\s*(-?\d+(?:[.,]\d+)?)\s*(%?)/.exec(v);
+  if (!m) return null;
+  const n = Number(m[1].replace(",", "."));
+  return m[2] ? n / 100 : n;
+}
+
 function kpi(doc: ReportDocument | undefined, label: RegExp): number | null {
   for (const sh of doc?.sheets ?? [])
     for (const s of sh.sections)
       if (s.kind === "kpiGroup") {
         const card = (s as KpiSection).cards.find((c) => label.test(c.label));
-        if (card) return num(card.value);
+        if (card) return num(card.value) ?? textNum(card.value);
       }
   return null;
 }
@@ -147,9 +156,17 @@ export function computeMetrics(
   const themes: ThemeLookup = input.themes ?? (() => null);
 
   // Registration: scale
-  const registrants = kpi(reg, /UNIQUE REGISTRANTS/i);
+  const uniqueRegistrants = kpi(reg, /UNIQUE REGISTRANTS/i);
   const submissions = kpi(reg, /FORM SUBMISSIONS/i);
-  const peakRegs = kpi(reg, /PEAK DAY REGS/i);
+  // Older templates (2025) count only form submissions.
+  const registrants = uniqueRegistrants ?? submissions;
+  let peakRegs = kpi(reg, /PEAK DAY REGS/i);
+  if (peakRegs === null) {
+    const days = table(reg, "trend", /DAY-BY-DAY/);
+    const c = days ? col(days, /^(Submissions|Regs|Registrations)$/i) : -1;
+    const r = days && c >= 0 ? maxRow(days, c) : undefined;
+    peakRegs = r ? num(r[c]) : null;
+  }
   const peakDayShare = ratio(peakRegs, registrants);
 
   // Channel groups
@@ -177,6 +194,22 @@ export function computeMetrics(
     if (r) {
       topChannel = typeof r[0] === "string" ? r[0] : null;
       topChannelOwnShare = shareCol >= 0 ? num(r[shareCol]) : ratio(num(r[regsCol]), registrants);
+    }
+  }
+
+  // Older templates: one "HOW THEY FOUND …" table instead of channel tables
+  if (topChannel === null) {
+    const found = table(reg, "overview", /HOW THEY FOUND/);
+    const countCol = found ? col(found, /^(Count|Regs)$/i) : -1;
+    const shareCol = found ? col(found, /^Share$/i) : -1;
+    const r = found && countCol >= 0 ? maxRow(found, countCol, /^(unknown|other|\(not specified\))$/i) : undefined;
+    if (r) {
+      topChannel = typeof r[0] === "string" ? r[0] : null;
+      topChannelOwnShare = shareCol >= 0 ? num(r[shareCol]) : ratio(num(r[countCol]), registrants);
+      if (topChannelGroup === null && topChannel) {
+        topChannelGroup = channelGroupOf(topChannel) ?? null;
+        if (topChannelGroup) topChannelShare = topChannelOwnShare;
+      }
     }
   }
 
@@ -211,6 +244,19 @@ export function computeMetrics(
     }
   }
 
+  // Older templates: "UNIVERSITY BREAKDOWN" on the overview, "#" first, "Count" instead of "Regs"
+  if (topUniversityName === null) {
+    const old = table(reg, "overview", /UNIVERSITY BREAKDOWN/);
+    const label = old ? col(old, /University/i) : -1;
+    const countCol = old ? col(old, /^(Count|Regs)$/i) : -1;
+    const shareCol = old ? col(old, /^Share$/i) : -1;
+    const r = old && label >= 0 && countCol >= 0 ? maxRow(old, countCol, /^(other|\(not specified\)|school|college|non-|foreign)/i, label) : undefined;
+    if (r) {
+      topUniversityName = String(r[label]);
+      topUniversityShare = shareCol >= 0 ? num(r[shareCol]) : ratio(num(r[countCol]), registrants);
+    }
+  }
+
   // Duplicates
   const dup = table(reg, "patterns", /DUPLICATE/);
   let duplicateRate: number | null = null;
@@ -218,8 +264,8 @@ export function computeMetrics(
     const row = dataRows(dup).find((r) => /duplicate rate/i.test(String(r[0])));
     duplicateRate = row ? num(row[1]) : null;
   }
-  if (duplicateRate === null && submissions !== null && registrants !== null && submissions > 0) {
-    duplicateRate = (submissions - registrants) / submissions;
+  if (duplicateRate === null && submissions !== null && uniqueRegistrants !== null && submissions > 0) {
+    duplicateRate = (submissions - uniqueRegistrants) / submissions;
   }
 
   // Dominant study stage ("All" row of the audience mix)
@@ -288,8 +334,8 @@ export function computeMetrics(
     topUniversityName,
     topUniversityShare,
     newToOrgShare: kpi(reg, /NEW TO AIESEC/i),
-    internshipShare: kpi(reg, /WANT AN INTERNSHIP/i),
-    avgAge: kpi(reg, /AVERAGE AGE/i),
+    internshipShare: kpi(reg, /WANT AN INTERNSHIP|AIESEC INTEREST/i),
+    avgAge: kpi(reg, /AVERAGE AGE|AVG AGE/i),
     duplicateRate,
     audienceStage,
     ageBand,
