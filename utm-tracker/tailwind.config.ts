@@ -43,9 +43,20 @@ const config: Config = {
           "0%": { opacity: "0", transform: "translateY(8px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        "digit-in": {
+          "0%": { opacity: "0", transform: "translateY(85%)", filter: "blur(2px)" },
+          "60%": { opacity: "1", transform: "translateY(-8%)", filter: "blur(0)" },
+          "100%": { transform: "translateY(0)" },
+        },
+        colon: {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.45" },
+        },
       },
       animation: {
         "fade-up": "fade-up 0.5s cubic-bezier(0.16,1,0.3,1) both",
+        "digit-in": "digit-in 0.45s cubic-bezier(0.16,1,0.3,1) both",
+        colon: "colon 1s steps(2, jump-none) infinite",
       },
     },
   },

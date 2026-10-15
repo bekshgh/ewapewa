@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { LiveClock } from "@/components/ui/LiveClock";
 
 const NAV = [
   { href: "/", label: "Dashboard", icon: "grid" },
@@ -74,6 +75,7 @@ export function Sidebar() {
       {/* Mobile top bar */}
       <header className="fixed inset-x-0 top-0 z-40 flex items-center justify-between border-b border-line bg-bg-base/80 px-4 py-3 backdrop-blur lg:hidden">
         <Brand />
+        <LiveClock compact className="ml-auto mr-2" />
         <button onClick={() => setOpen((v) => !v)} className="btn-ghost px-3 py-2" aria-label="Menu">
           <svg width="20" height="20" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round">
             {open ? <path d="M6 6l12 12M18 6 6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}

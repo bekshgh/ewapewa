@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { computeRatios, formatFraction, formatShare, validateInputs } from "@/lib/conversions/compute";
 import type { ConversionState, InputState } from "@/lib/conversions/state";
 import { ru } from "./api";
@@ -10,6 +10,12 @@ type AutoKey = "projectRegs" | "regOgx";
 type ManualKey = "showUp" | "aiesecOrgSignup";
 
 const toNum = (s: string): number | null => (s.trim() === "" ? null : Number(s.replace(",", ".")));
+
+/** Today in the viewer's time zone, as YYYY-MM-DD (toISOString would give the UTC date). */
+function localToday(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 
 function sourceBadge(s: InputState): string {
   if (s.mode === "manual") return "вручную";
@@ -36,11 +42,10 @@ export function InputPanel({
   onSnapshot: (v: { asOfDate: string | null; note: string | null }) => Promise<void>;
 }) {
   const m = state.inputs;
-  const today = new Date().toISOString().slice(0, 10);
   const [manual, setManual] = useState({
     showUp: m.showUp.value === null ? "" : String(m.showUp.value),
     aiesecOrgSignup: m.aiesecOrgSignup.value === null ? "" : String(m.aiesecOrgSignup.value),
-    asOf: m.aiesecOrgSignup.manual?.asOf ?? m.showUp.manual?.asOf ?? today,
+    asOf: m.aiesecOrgSignup.manual?.asOf ?? m.showUp.manual?.asOf ?? "",
     note: m.aiesecOrgSignup.manual?.note ?? m.showUp.manual?.note ?? "",
   });
   const [editing, setEditing] = useState<AutoKey | null>(null);
@@ -127,7 +132,14 @@ export function InputPanel({
     );
   };
 
-  const [snap, setSnap] = useState({ asOfDate: today, note: "" });
+  const [snap, setSnap] = useState({ asOfDate: "", note: "" });
+
+  // Default dates come from the browser's clock, not the server's (which runs in UTC).
+  useEffect(() => {
+    const today = localToday();
+    setManual((v) => (v.asOf ? v : { ...v, asOf: today }));
+    setSnap((v) => (v.asOfDate ? v : { ...v, asOfDate: today }));
+  }, []);
 
   return (
     <div className="space-y-5">
