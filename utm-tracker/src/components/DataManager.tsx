@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { formatNumber } from "@/lib/utils";
 
 type Campaign = { id: string; name: string; label: string | null };
 type Stats = { clicks: number; leads: number; links: number; campaigns: number; webhookLogs: number };
@@ -55,7 +56,7 @@ export function DataManager({ stats, campaigns }: { stats: Stats; campaigns: Cam
             { label: "Webhook logs", value: stats.webhookLogs },
           ].map((s) => (
             <div key={s.label} className="card p-4">
-              <div className="text-2xl font-bold text-ink">{s.value.toLocaleString()}</div>
+              <div className="text-2xl font-bold text-ink">{formatNumber(s.value)}</div>
               <div className="mt-1 text-xs text-ink-muted">{s.label}</div>
             </div>
           ))}

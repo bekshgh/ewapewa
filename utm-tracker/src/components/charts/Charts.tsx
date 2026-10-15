@@ -62,7 +62,7 @@ export function Funnel({ clicks, leads, cr }: { clicks: number; leads: number; c
       <div>
         <div className="mb-2 flex items-center justify-between text-sm">
           <span className="text-ink-muted">Unique clicks</span>
-          <span className="num font-medium text-ink">{clicks.toLocaleString()} · 100%</span>
+          <span className="num font-medium text-ink">{formatNumber(clicks)} · 100%</span>
         </div>
         <div className="flex h-12 items-center rounded-xl bg-clicks px-4 font-medium text-white">Top of funnel</div>
       </div>
@@ -70,7 +70,7 @@ export function Funnel({ clicks, leads, cr }: { clicks: number; leads: number; c
       <div>
         <div className="mb-2 flex items-center justify-between text-sm">
           <span className="text-ink-muted">Leads</span>
-          <span className="num font-medium text-ink">{leads.toLocaleString()} · {cr.toFixed(1)}%</span>
+          <span className="num font-medium text-ink">{formatNumber(leads)} · {cr.toFixed(1)}%</span>
         </div>
         <div
           className="flex h-12 min-w-[120px] items-center rounded-xl bg-leads px-4 font-medium text-white transition-all"

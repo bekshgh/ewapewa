@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { formatNumber } from "@/lib/utils";
 
 type Count = { table: string; rows: number };
 type TableResult = { table: string; found: number; imported: number; merged: number };
@@ -104,7 +105,7 @@ export function LegacyImport() {
               {counts.map((c) => (
                 <li key={c.table} className="flex justify-between gap-3">
                   <span className="text-ink-muted">{LABELS[c.table] ?? c.table}</span>
-                  <span className="font-mono text-ink">{c.rows.toLocaleString()}</span>
+                  <span className="font-mono text-ink">{formatNumber(c.rows)}</span>
                 </li>
               ))}
             </ul>
@@ -129,15 +130,15 @@ export function LegacyImport() {
                       {LABELS[t.table] ?? t.table}
                       {t.merged > 0 && <span className="text-ink-faint"> ({t.merged} merged with existing)</span>}
                     </td>
-                    <td className="py-1 text-right font-mono">{t.found.toLocaleString()}</td>
-                    <td className="py-1 text-right font-mono text-ink">{t.imported.toLocaleString()}</td>
+                    <td className="py-1 text-right font-mono">{formatNumber(t.found)}</td>
+                    <td className="py-1 text-right font-mono text-ink">{formatNumber(t.imported)}</td>
                   </tr>
                 ))}
                 {result.formSubmitsAsLeads !== undefined && (
                   <tr className="border-t border-line">
                     <td className="py-1 text-ink-muted">Form submits → leads</td>
                     <td />
-                    <td className="py-1 text-right font-mono text-ink">{result.formSubmitsAsLeads.toLocaleString()}</td>
+                    <td className="py-1 text-right font-mono text-ink">{formatNumber(result.formSubmitsAsLeads)}</td>
                   </tr>
                 )}
               </tbody>
