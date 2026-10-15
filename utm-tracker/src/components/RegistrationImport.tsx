@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { APP_TIME_ZONE, formatNumber } from "@/lib/utils";
 
 type Summary = {
   sheet: string;
@@ -25,7 +26,8 @@ type Summary = {
 
 type Options = { city: string; onePerPerson: boolean };
 
-const day = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString() : "—");
+const day = (iso: string | null) =>
+  iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: APP_TIME_ZONE }) : "—";
 
 /** Upload a landing page's registrations sheet and turn its rows into leads (see lib/registrationImport). */
 export function RegistrationImport() {
@@ -100,10 +102,10 @@ export function RegistrationImport() {
               <div>
                 <label className="label">City</label>
                 <select className="input" value={opts.city} disabled={!!busy} onChange={(e) => change({ city: e.target.value })}>
-                  <option value="">All cities ({check.totalRows.toLocaleString()})</option>
+                  <option value="">All cities ({formatNumber(check.totalRows)})</option>
                   {check.cities.map((c) => (
                     <option key={c.city} value={c.city}>
-                      {c.city} ({c.rows.toLocaleString()})
+                      {c.city} ({formatNumber(c.rows)})
                     </option>
                   ))}
                 </select>
@@ -130,7 +132,7 @@ export function RegistrationImport() {
             disabled={!file || !check || check.created === 0 || !!result || !!busy}
             onClick={() => run("import")}
           >
-            {busy === "import" ? "Importing…" : `2. Import ${check ? check.created.toLocaleString() : ""} leads`}
+            {busy === "import" ? "Importing…" : `2. Import ${check ? formatNumber(check.created) : ""} leads`}
           </button>
         </div>
 
@@ -140,8 +142,8 @@ export function RegistrationImport() {
           <div className="space-y-3 text-sm">
             <p className="font-medium text-ink">
               {result
-                ? `Import finished: ${result.created.toLocaleString()} leads added.`
-                : `Sheet «${s.sheet}»: ${s.totalRows.toLocaleString()} registrations, ${day(s.dateFrom)} – ${day(s.dateTo)}. Selected: ${s.rows.toLocaleString()}.`}
+                ? `Import finished: ${formatNumber(result.created)} leads added.`
+                : `Sheet «${s.sheet}»: ${formatNumber(s.totalRows)} registrations, ${day(s.dateFrom)} – ${day(s.dateTo)}. Selected: ${formatNumber(s.rows)}.`}
             </p>
             <ul className="grid max-w-xl grid-cols-2 gap-x-6 gap-y-1">
               {[
@@ -157,7 +159,7 @@ export function RegistrationImport() {
               ].map(([label, n]) => (
                 <li key={label as string} className="flex justify-between gap-3">
                   <span className="text-ink-muted">{label}</span>
-                  <span className="font-mono text-ink">{(n as number).toLocaleString()}</span>
+                  <span className="font-mono text-ink">{formatNumber(n as number)}</span>
                 </li>
               ))}
             </ul>
@@ -168,7 +170,7 @@ export function RegistrationImport() {
                   {s.byCampaign.map((c) => (
                     <li key={c.campaign} className="flex justify-between gap-3">
                       <span className="truncate text-ink">{c.campaign}</span>
-                      <span className="font-mono text-ink">{c.leads.toLocaleString()}</span>
+                      <span className="font-mono text-ink">{formatNumber(c.leads)}</span>
                     </li>
                   ))}
                 </ul>

@@ -58,9 +58,16 @@ export function conversionRate(leads: number, clicks: number): number {
   return (leads / clicks) * 100;
 }
 
+/**
+ * The team's time zone. Dates are formatted in it everywhere, so the server
+ * (UTC) and a browser in any zone render the same text.
+ */
+export const APP_TIME_ZONE = "Asia/Almaty";
+
 export function formatDateTime(d: Date | string): string {
   const date = typeof d === "string" ? new Date(d) : d;
   return date.toLocaleString("en-GB", {
+    timeZone: APP_TIME_ZONE,
     day: "numeric",
     month: "short",
     year: "numeric",
