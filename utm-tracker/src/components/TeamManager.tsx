@@ -64,6 +64,7 @@ function UserRow({ user, folders, me }: { user: User; folders: Folder[]; me: str
     setBusy(false);
     if (!res.ok) { setError(data?.error ?? "Could not save"); return null; }
     router.refresh();
+    window.dispatchEvent(new Event("team:changed")); // the sidebar's sign-ups badge
     return data;
   }
   const save = (extra: Partial<{ status: Status }> = {}) =>

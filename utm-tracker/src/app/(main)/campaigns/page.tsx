@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { LiveRefresh } from "@/components/ui/LiveRefresh";
 import { CampaignManager } from "@/components/CampaignManager";
 import { prisma } from "@/lib/db";
 import { groupCampaigns } from "@/lib/projectGroups";
@@ -25,7 +26,7 @@ export default async function CampaignsPage() {
 
   return (
     <>
-      <PageHeader breadcrumb="Campaigns" title="Campaigns" subtitle={`${rows.length} campaign${rows.length === 1 ? "" : "s"} total`} />
+      <PageHeader breadcrumb="Campaigns" title="Campaigns" subtitle={`${rows.length} campaign${rows.length === 1 ? "" : "s"} total`} action={<LiveRefresh />} />
 
       {folders.length > 0 && (
         <section className="mb-8">

@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { NewBadge } from "@/components/ui/NewBadge";
 
 type Access = "all" | "editors" | "admins";
 
-const NAV: { href: string; label: string; icon: string; access?: Access; isNew?: boolean }[] = [
+type Item = { href: string; label: string; icon: string; access?: Access; isNew?: boolean };
+
+const NAV: Item[] = [
   { href: "/", label: "Dashboard", icon: "grid" },
   { href: "/links", label: "Links", icon: "link" },
   { href: "/links/new", label: "Create link", icon: "plus", access: "editors" },
@@ -18,12 +20,18 @@ const NAV: { href: string; label: string; icon: string; access?: Access; isNew?:
   { href: "/forms", label: "Forms", icon: "form", isNew: true },
   { href: "/projects", label: "Projects", icon: "stack" },
   { href: "/reports", label: "Reports", icon: "doc" },
+  { href: "/users", label: "Team", icon: "team", access: "admins" },
+];
+
+/** Tucked under "Others". */
+const OTHERS: Item[] = [
   { href: "/webhooks", label: "Webhook", icon: "bolt", access: "admins" },
   { href: "/guide", label: "Guideline", icon: "book" },
-  { href: "/users", label: "Team", icon: "team", access: "admins", isNew: true },
   { href: "/data", label: "Data", icon: "trash", access: "admins" },
   { href: "/settings", label: "Settings", icon: "cog", access: "admins" },
 ];
+
+const PENDING_POLL_MS = 60_000;
 
 export interface SidebarUser {
   name: string;
@@ -51,6 +59,8 @@ function Icon({ name }: { name: string }) {
     bolt: <path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" />,
     book: <><path d="M5 4a2 2 0 0 1 2-2h12v18H7a2 2 0 0 0-2 2V4Z" /><path d="M5 18h14" /></>,
     cog: <><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" /></>,
+    more: <><circle cx="5" cy="12" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="19" cy="12" r="1.5" /></>,
+    chevron: <path d="m9 6 6 6-6 6" />,
     trash: <><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" /></>,
   };
   return <svg {...common}>{paths[name]}</svg>;
@@ -58,35 +68,83 @@ function Icon({ name }: { name: string }) {
 
 export function Sidebar({ user }: { user: SidebarUser }) {
   const pathname = usePathname();
-  const items = NAV.filter((i) => !i.access || i.access === "all" || (i.access === "admins" ? user.admin : user.editor));
+  const allowed = (i: Item) => !i.access || i.access === "all" || (i.access === "admins" ? user.admin : user.editor);
+  const items = NAV.filter(allowed);
+  const others = OTHERS.filter(allowed);
   const [open, setOpen] = useState(false);
 
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+  const inOthers = others.some((i) => isActive(i.href));
+  const [othersOpen, setOthersOpen] = useState(inOthers);
+  useEffect(() => { if (inOthers) setOthersOpen(true); }, [inOthers]);
+
+  // Sign-ups waiting for approval: the layout's count, then kept fresh without a reload.
+  const [pending, setPending] = useState(user.pending);
+  useEffect(() => {
+    if (!user.admin) return;
+    let stop = false;
+    const load = () =>
+      fetch("/api/users/pending", { cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => { if (!stop && d && typeof d.pending === "number") setPending(d.pending); })
+        .catch(() => {});
+    load();
+    const t = setInterval(() => { if (document.visibilityState === "visible") load(); }, PENDING_POLL_MS);
+    window.addEventListener("team:changed", load);
+    return () => { stop = true; clearInterval(t); window.removeEventListener("team:changed", load); };
+  }, [user.admin, pathname]);
+
+  const row = (item: Item, nested = false) => (
+    <Link
+      key={item.href}
+      href={item.href}
+      onClick={() => setOpen(false)}
+      className={cn(
+        "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition",
+        nested && "py-2 pl-6",
+        isActive(item.href)
+          ? "bg-bg-hover text-ink font-medium"
+          : "text-ink-muted hover:bg-bg-raised hover:text-ink"
+      )}
+    >
+      <span className={cn("transition", isActive(item.href) ? "text-accent" : "text-ink-faint group-hover:text-ink-muted")}>
+        <Icon name={item.icon} />
+      </span>
+      {item.label}
+      {item.isNew && <NewBadge className="ml-auto" />}
+      {item.href === "/users" && pending > 0 && (
+        <span className="ml-auto rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold text-bg-base" title={`${pending} sign-up${pending === 1 ? "" : "s"} waiting for approval`}>
+          {pending}
+        </span>
+      )}
+    </Link>
+  );
 
   const Nav = (
     <nav className="flex flex-col gap-1">
-      {items.map((item) => (
-        <Link
-          key={item.href}
-          href={item.href}
-          onClick={() => setOpen(false)}
-          className={cn(
-            "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition",
-            isActive(item.href)
-              ? "bg-bg-hover text-ink font-medium"
-              : "text-ink-muted hover:bg-bg-raised hover:text-ink"
-          )}
-        >
-          <span className={cn("transition", isActive(item.href) ? "text-accent" : "text-ink-faint group-hover:text-ink-muted")}>
-            <Icon name={item.icon} />
-          </span>
-          {item.label}
-          {item.isNew && !(item.href === "/users" && user.pending > 0) && <NewBadge className="ml-auto" />}
-          {item.href === "/users" && user.pending > 0 && (
-            <span className="ml-auto rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold text-bg-base">{user.pending}</span>
-          )}
-        </Link>
-      ))}
+      {items.map((item) => row(item))}
+      {others.length > 0 && (
+        <>
+          <button
+            type="button"
+            onClick={() => setOthersOpen((v) => !v)}
+            aria-expanded={othersOpen}
+            className={cn(
+              "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition",
+              inOthers && !othersOpen ? "bg-bg-hover text-ink font-medium" : "text-ink-muted hover:bg-bg-raised hover:text-ink"
+            )}
+          >
+            <span className={cn("transition", inOthers ? "text-accent" : "text-ink-faint group-hover:text-ink-muted")}>
+              <Icon name="more" />
+            </span>
+            Others
+            <span className={cn("ml-auto text-ink-faint transition-transform", othersOpen && "rotate-90")}>
+              <Icon name="chevron" />
+            </span>
+          </button>
+          {othersOpen && others.map((item) => row(item, true))}
+        </>
+      )}
     </nav>
   );
 

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { LiveRefresh } from "@/components/ui/LiveRefresh";
 import { StatCard } from "@/components/ui/StatCard";
 import { BreakdownPanel } from "@/components/charts/Charts";
 import { CampaignActions } from "@/components/CampaignActions";
@@ -77,6 +78,7 @@ export default async function CampaignDetailPage(props: { params: Promise<{ id: 
         subtitle={[campaign.type, campaign.season, `utm: ${campaign.name}`].filter(Boolean).join(" · ")}
         action={
           <div className="flex flex-wrap items-center gap-3">
+            <LiveRefresh />
             {folder && <Link href={`/campaigns/projects/${folder.key}`} className="btn-ghost text-sm">Project: {folder.title} →</Link>}
             {editable && <Link href={`/campaigns/${campaign.id}/utm-links`} className="btn-primary text-sm">Create UTM links</Link>}
             {editable && <CampaignActions id={campaign.id} status={campaign.status} canDelete={isAdmin(actor)} />}
