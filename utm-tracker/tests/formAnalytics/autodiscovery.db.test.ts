@@ -19,6 +19,22 @@ describe("categoryValue", () => {
   });
 });
 
+describe("mergeFields (multi-step forms)", () => {
+  const f = (k: string, label = k) => ({ k, kind: "text" as const, label });
+  it("adds a step's new questions after the one they followed, keeps the rest", async () => {
+    const { mergeFields } = await import("@/lib/formAnalytics/ingest");
+    expect(mergeFields([], [f("type"), f("fullName")]).map((x) => x.k)).toEqual(["type", "fullName"]);
+    // a visit that left on step 1 drops nothing
+    expect(mergeFields([f("type"), f("fullName"), f("email")], [f("type")]).map((x) => x.k)).toEqual(["type", "fullName", "email"]);
+    // step 3 seen for the first time
+    expect(mergeFields([f("type"), f("fullName")], [f("type"), f("fullName"), f("idea")]).map((x) => x.k)).toEqual(["type", "fullName", "idea"]);
+    // a question between known ones lands in its place; labels follow the page
+    const m = mergeFields([f("a"), f("c")], [f("a", "A!"), f("b"), f("c")]);
+    expect(m.map((x) => x.k)).toEqual(["a", "b", "c"]);
+    expect(m[0].label).toBe("A!");
+  });
+});
+
 /** Forms found by /t.js on any page: project from the page's links, by hand wins, team sites only. */
 describe.skipIf(!url)("forms found on any page (database)", () => {
   const db = new PrismaClient({ datasourceUrl: url });
@@ -84,6 +100,17 @@ describe.skipIf(!url)("forms found on any page (database)", () => {
     await ingest.ingest({ ...batch(id, `${tag}s3`, {}), project: "from-page" }, { ipHash: null, country: null });
     expect((await db.analyticsForm.findUniqueOrThrow({ where: { id } })).projectSlug).toBe("picked");
     expect((await db.analyticsSession.findUniqueOrThrow({ where: { id: `${tag}s3` } })).projectSlug).toBe("picked");
+  });
+
+  it("a multi-step form adds to its field list; a one-page form replaces it", async () => {
+    const id = `${tag}.tilda.ws.camp:steps`;
+    const fl = (...ks: string[]) => ks.map((k) => ({ k, kind: "text" as const }));
+    const keys = async () => ((await db.analyticsForm.findUniqueOrThrow({ where: { id } })).fields as { k: string }[]).map((x) => x.k);
+    await ingest.ingest(batch(id, `${tag}s5`, { fields: fl("type", "fullName", "email"), steps: true }), { ipHash: null, country: null });
+    await ingest.ingest(batch(id, `${tag}s6`, { fields: fl("type"), steps: true }), { ipHash: null, country: null });
+    expect(await keys()).toEqual(["type", "fullName", "email"]);
+    await ingest.ingest(batch(id, `${tag}s7`, { fields: fl("type") }), { ipHash: null, country: null });
+    expect(await keys()).toEqual(["type"]);
   });
 
   it("refuses sites the team's links don't lead to", async () => {

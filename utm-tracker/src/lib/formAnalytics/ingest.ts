@@ -48,6 +48,8 @@ const ctxSchema = z
     fields: z.array(fieldDef).max(60),
     /** heading of the form's block, or the page title (forms found by /t.js) */
     title: short,
+    /** a multi-step form: the visit saw only some steps, so `fields` adds to the list instead of replacing it */
+    steps: z.boolean(),
   })
   .partial();
 
@@ -115,6 +117,27 @@ export function sanitizeMeta(type: EventType, field: string | null | undefined, 
   }
 }
 
+/**
+ * A multi-step form's field list: what is stored, plus the questions this visit
+ * saw for the first time, each placed right after the question it followed on
+ * the page. Known questions take the visit's label / kind; none is dropped.
+ */
+export function mergeFields(stored: FieldDef[], seen: FieldDef[]): FieldDef[] {
+  const out = [...stored];
+  let at = -1;
+  for (const f of seen) {
+    const i = out.findIndex((x) => x.k === f.k);
+    if (i >= 0) {
+      out[i] = { ...out[i], ...f };
+      at = i;
+    } else {
+      out.splice(at + 1, 0, f);
+      at++;
+    }
+  }
+  return out.slice(0, 60);
+}
+
 /** sha256(ip + salt + day): changes every day, so visitors can't be followed across days by IP. */
 export function hashIpDaily(ip: string | null, day = new Date().toISOString().slice(0, 10)): string | null {
   if (!ip) return null;
@@ -135,8 +158,9 @@ export async function ingest(batch: Batch, net: { ipHash: string | null; country
   // The form and its field order (the page reports them with every batch; the latest wins).
   const existingForm = await prisma.analyticsForm.findUnique({ where: { id: batch.form } });
   let fields = (existingForm?.fields as FieldDef[] | undefined) ?? [];
-  const fieldsChanged = !!ctx.fields?.length && JSON.stringify(ctx.fields) !== JSON.stringify(fields);
-  if (fieldsChanged) fields = ctx.fields!;
+  const incoming = ctx.fields?.length ? (ctx.steps ? mergeFields(fields, ctx.fields) : ctx.fields) : null;
+  const fieldsChanged = !!incoming && JSON.stringify(incoming) !== JSON.stringify(fields);
+  if (fieldsChanged) fields = incoming!;
   // The project: picked by hand in Forms > sent by the page > worked out from the page's links / UTM.
   let project = existingForm?.projectSlug ?? null;
   if (!existingForm?.projectSetByHand) {

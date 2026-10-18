@@ -59,17 +59,27 @@ export function buildSnippetJs(base: string): string {
     return (form && form.getAttribute && (form.getAttribute("name") || form.getAttribute("data-formactiontype"))) || "";
   }
   // Visitor's contact fields: Tilda marks them with data-tilda-rule, else match by name.
-  var CONTACT = { name: /^(name|имя|fio|фио)$/i, email: /^(e-?mail|почта)$/i, phone: /^(phone|tel|телефон)$/i };
-  function contacts(form, data) {
-    if (!form || !form.querySelectorAll) return;
-    form.querySelectorAll("input, textarea").forEach(function (el) {
-      var v = (el.value || "").trim();
-      if (!v) return;
-      var rule = el.getAttribute("data-tilda-rule") || "";
-      Object.keys(CONTACT).forEach(function (k) {
-        if (!data[k] && (rule === k || CONTACT[k].test(el.name || ""))) data[k] = v.slice(0, 200);
-      });
+  var CONTACT = { name: /^(name|full_?name|имя|fio|фио)$/i, email: /^(e-?mail|почта)$/i, phone: /^(phone|tel|телефон)$/i };
+  function contactOf(el, data) {
+    var v = (el.value || "").trim();
+    if (!v) return;
+    var rule = el.getAttribute("data-tilda-rule") || "";
+    Object.keys(CONTACT).forEach(function (k) {
+      if (!data[k] && (rule === k || CONTACT[k].test(el.name || ""))) data[k] = v.slice(0, 200);
     });
+  }
+  // A multi-step form drops a step's inputs when it moves on: keep the contacts typed so far (in memory only).
+  var typed = {};
+  document.addEventListener("focusout", function (e) {
+    var el = e.target;
+    if (el && el.form && /^(INPUT|TEXTAREA)$/.test(el.tagName)) { var d = {}; contactOf(el, d); Object.keys(d).forEach(function (k) { typed[k] = d[k]; }); }
+  }, true);
+  function contacts(form, data) {
+    if (form && form.querySelectorAll) form.querySelectorAll("input, textarea").forEach(function (el) { contactOf(el, data); });
+    Object.keys(typed).forEach(function (k) { if (!data[k]) data[k] = typed[k]; });
+  }
+  function isTilda(form) {
+    return !!form && !!form.closest && (/(^|\\s)t-form(\\s|$)/.test(form.className || "") || !!form.closest(".t-rec, .t-popup"));
   }
 
   // 2. Report the lead on a press of the submit button, and again on Tilda's
@@ -83,12 +93,13 @@ export function buildSnippetJs(base: string): string {
     if (!sid) sid = Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
     return sid;
   }
-  window.tlConversion = function ($form) {
+  // force: a confirmed send (a non-Tilda form's thank-you screen), never skipped as a repeat
+  window.tlConversion = function ($form, force) {
     try {
       var clickId = val("click_id");
       var now = Date.now();
       // the button click and the form's submit event fire together — send once
-      if (now - last < 1500) return;
+      if (!force && now - last < 1500) return;
       var form = unwrap($form);
       var data = { pageUrl: location.href, formname: formName(form) };
       FIELDS.forEach(function (n) { var v = val(n); if (v) data[n] = v; });
@@ -124,11 +135,16 @@ export function buildSnippetJs(base: string): string {
   setTimeout(attach, 3000);
   // Current Tilda forms (no jQuery) fire this native event on the form after a successful send.
   document.addEventListener("tildaform:aftersuccess", function (e) { last = 0; window.tlConversion(e.target); }, true);
+  // Tilda forms: on the button press. Other forms ("Continue" of a multi-step form is a submit
+  // button too): only a send that leaves the page here; one handled by the page's script counts
+  // once its thank-you screen shows (part 3 below calls tlConversion then).
   document.addEventListener("click", function (e) {
     var btn = e.target && e.target.closest && e.target.closest('.t-submit, button[type="submit"], input[type="submit"]');
-    if (btn) window.tlConversion(btn.closest("form"));
+    if (btn && isTilda(btn.closest("form"))) window.tlConversion(btn.closest("form"));
   }, true);
-  document.addEventListener("submit", function (e) { window.tlConversion(e.target); }, true);
+  document.addEventListener("submit", function (e) { if (isTilda(e.target)) window.tlConversion(e.target); }, true);
+  // bubbling, after the page's own handlers: not prevented = the browser leaves with the form
+  window.addEventListener("submit", function (e) { if (!isTilda(e.target) && !e.defaultPrevented) window.tlConversion(e.target, true); });
 ${FORMS_JS}
 })();
 `;
