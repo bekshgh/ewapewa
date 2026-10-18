@@ -93,7 +93,7 @@ export function buildDestinationUrl(
     utmTerm?: string | null;
   },
   customParams: Record<string, string> | null,
-  clickId: string
+  clickId: string | null
 ): string {
   let url: URL;
   try {
@@ -111,6 +111,6 @@ export function buildDestinationUrl(
   set("utm_content", utm.utmContent);
   set("utm_term", utm.utmTerm);
   if (customParams) for (const [k, v] of Object.entries(customParams)) set(k, v);
-  url.searchParams.set("click_id", clickId);
+  if (clickId) url.searchParams.set("click_id", clickId);
   return url.toString();
 }

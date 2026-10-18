@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { UAParser } from "ua-parser-js";
 import { prisma } from "@/lib/db";
 import { generateClickId, hashIp, buildDestinationUrl } from "@/lib/utils";
+import { isBotRequest, REPEAT_WINDOW_MS } from "@/lib/bots";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -9,7 +10,9 @@ export const runtime = "nodejs";
 /**
  * GET /r/{slug}
  * 1. Look up the tracking link.
- * 2. Record a server-side ClickEvent (so ad blockers / JS-off still count).
+ * 2. Record a server-side ClickEvent (so ad blockers / JS-off still count) —
+ *    not for link previews / crawlers / prefetches (lib/bots.ts), and only once
+ *    for the same device tapping again within seconds.
  * 3. Generate a clickId and forward it + UTM to the destination (Tilda).
  * 4. 302 redirect the visitor instantly.
  */
@@ -45,6 +48,34 @@ export async function GET(req: NextRequest, props: { params: Promise<{ slug: str
   const rawParams: Record<string, string> = {};
   req.nextUrl.searchParams.forEach((v, k) => (rawParams[k] = v));
 
+  const utm = {
+    utmSource: link.utmSource,
+    utmMedium: link.utmMedium,
+    utmCampaign: link.utmCampaign,
+    utmContent: link.utmContent,
+    utmTerm: link.utmTerm,
+  };
+  const custom = (link.customParams as Record<string, string> | null) ?? null;
+
+  // Link previews, crawlers, scripts, prefetches: redirect, but don't count a click.
+  const bot = isBotRequest({
+    method: req.method,
+    userAgent: ua,
+    acceptLanguage: req.headers.get("accept-language"),
+    purpose: req.headers.get("sec-purpose") || req.headers.get("purpose"),
+  });
+  if (bot) return NextResponse.redirect(buildDestinationUrl(link.destinationUrl, utm, custom, null), 302);
+
+  // The same device tapping the link again within seconds is still one click: reuse its click_id.
+  if (ipHash) {
+    const recent = await prisma.clickEvent.findFirst({
+      where: { trackingLinkId: link.id, ipHash, userAgent: ua || null, timestamp: { gte: new Date(Date.now() - REPEAT_WINDOW_MS) } },
+      orderBy: { timestamp: "desc" },
+      select: { clickId: true },
+    }).catch(() => null);
+    if (recent) return NextResponse.redirect(buildDestinationUrl(link.destinationUrl, utm, custom, recent.clickId), 302);
+  }
+
   const clickId = generateClickId();
 
   // Unique = first time we see this ipHash for this link (best-effort).
@@ -79,18 +110,5 @@ export async function GET(req: NextRequest, props: { params: Promise<{ slug: str
     console.error("click_record_failed", err);
   }
 
-  const destination = buildDestinationUrl(
-    link.destinationUrl,
-    {
-      utmSource: link.utmSource,
-      utmMedium: link.utmMedium,
-      utmCampaign: link.utmCampaign,
-      utmContent: link.utmContent,
-      utmTerm: link.utmTerm,
-    },
-    (link.customParams as Record<string, string> | null) ?? null,
-    clickId
-  );
-
-  return NextResponse.redirect(destination, 302);
+  return NextResponse.redirect(buildDestinationUrl(link.destinationUrl, utm, custom, clickId), 302);
 }
