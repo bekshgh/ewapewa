@@ -1,11 +1,20 @@
 import { z } from "zod";
+import { NAME_RULE, normalizeProjectName } from "@/lib/naming";
+
+/** "<Project> F'26" / "<Project> S'26", stored in its canonical spelling. */
+export const projectName = z
+  .string()
+  .trim()
+  .max(120)
+  .refine((v) => normalizeProjectName(v) !== null, NAME_RULE)
+  .transform((v) => normalizeProjectName(v)!);
 
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional();
 const text = (max: number) =>
   z.string().trim().max(max).nullable().optional().transform((v) => (v ? v : null));
 
 export const projectSchema = z.object({
-  name: z.string().trim().min(2).max(120),
+  name: projectName,
   typeKey: z.string().trim().min(1).max(40),
   format: z.enum(["offline", "online", "hybrid"]).nullable().optional(),
   status: z.enum(["planned", "registration", "done", "archived"]).default("planned"),
@@ -18,6 +27,15 @@ export const projectSchema = z.object({
 });
 
 export const projectPatchSchema = projectSchema.partial();
+
+/** Creating a project also creates its campaign, unless the caller says not to (past events from report files). */
+export const projectCreateSchema = projectSchema.extend({ campaign: z.boolean().default(true) });
+
+/** The first field error, readable: the naming rule rather than "Validation failed". */
+export const validationError = (e: z.ZodError) => {
+  const f = e.flatten().fieldErrors as Record<string, string[] | undefined>;
+  return f.name?.[0] ?? "Validation failed";
+};
 
 export const projectTypeSchema = z.object({
   name: z.string().trim().min(2).max(60),

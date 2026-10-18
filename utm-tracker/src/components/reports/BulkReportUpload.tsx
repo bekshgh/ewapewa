@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { eventKey, type UploadSummary } from "@/lib/projects/grouping";
 import { MAX_COMPARE } from "@/lib/projects/filters/state";
 import { cn } from "@/lib/utils";
+import { withTerm } from "@/lib/naming";
 
 const MAX_MB = 4;
 const PARALLEL = 3;
@@ -67,13 +68,13 @@ export function BulkReportUpload({ projects, types }: { projects: ProjectOption[
       const g = gs[key];
       if (g) {
         // Prefer the feedback report's name and the event day from feedback.
-        if (s.type === "feedback" && g.target === "new") return { ...gs, [key]: { ...g, name: s.eventName, date: s.eventDate ?? g.date } };
+        if (s.type === "feedback" && g.target === "new") return { ...gs, [key]: { ...g, name: withTerm(s.eventName, s.eventDate ?? g.date), date: s.eventDate ?? g.date } };
         return gs;
       }
       const match = projects.find((p) => eventKey(p.name) === s.eventKey && s.eventKey);
       return {
         ...gs,
-        [key]: { key, target: match?.id ?? "new", name: s.eventName, typeKey: types[0]?.value ?? "", date: s.eventDate ?? "" },
+        [key]: { key, target: match?.id ?? "new", name: withTerm(s.eventName, s.eventDate), typeKey: types[0]?.value ?? "", date: s.eventDate ?? "" },
       };
     });
   }
@@ -125,7 +126,7 @@ export function BulkReportUpload({ projects, types }: { projects: ProjectOption[
     if (to === "__own") {
       const key = `file-${item.id}`;
       if (!groups[key] && item.summary) {
-        setGroups((gs) => ({ ...gs, [key]: { key, target: "new", name: item.summary!.eventName, typeKey: types[0]?.value ?? "", date: item.summary!.eventDate ?? "" } }));
+        setGroups((gs) => ({ ...gs, [key]: { key, target: "new", name: withTerm(item.summary!.eventName, item.summary!.eventDate), typeKey: types[0]?.value ?? "", date: item.summary!.eventDate ?? "" } }));
       }
       return patchItem(item.id, { group: key });
     }
@@ -146,7 +147,8 @@ export function BulkReportUpload({ projects, types }: { projects: ProjectOption[
         const res = await fetch("/api/projects", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: g.name, typeKey: g.typeKey, status: "done", startDate: g.date || null, endDate: g.date || null }),
+          // a past event: no campaign for UTM links
+          body: JSON.stringify({ name: g.name, typeKey: g.typeKey, status: "done", startDate: g.date || null, endDate: g.date || null, campaign: false }),
         }).catch(() => null);
         const body = res ? await res.json().catch(() => ({})) : {};
         if (!res?.ok) {
@@ -338,7 +340,7 @@ export function BulkReportUpload({ projects, types }: { projects: ProjectOption[
                 <>
                   <div>
                     <label className="label text-xs" htmlFor={`g-${key}-n`}>Name</label>
-                    <input id={`g-${key}-n`} className="input py-2 text-sm" value={g.name} maxLength={120} onChange={(e) => setGroup(key, { name: e.target.value })} />
+                    <input id={`g-${key}-n`} className="input py-2 text-sm" value={g.name} maxLength={120} placeholder="SheCodes F'26" title="Project name, then the term: F'26 (fall) or S'26 (spring)" onChange={(e) => setGroup(key, { name: e.target.value })} />
                   </div>
                   <div>
                     <label className="label text-xs" htmlFor={`g-${key}-y`}>Type</label>

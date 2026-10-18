@@ -2,6 +2,7 @@ import { canCreateCampaign, guard } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { createCampaignSchema } from "@/lib/validation";
+import { parseProjectName, seasonOf, utmCampaignOf } from "@/lib/naming";
 
 export async function GET() {
   const actor = await guard("active");
@@ -19,11 +20,18 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const parsed = createCampaignSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Validation failed", issues: parsed.error.flatten().fieldErrors }, { status: 422 });
+    const f = parsed.error.flatten().fieldErrors;
+    return NextResponse.json({ error: f.label?.[0] ?? "Validation failed", issues: f }, { status: 422 });
   }
-  if (!(await canCreateCampaign(actor, parsed.data))) {
-    return NextResponse.json({ error: "Name the campaign after one of your projects, e.g. \"<project> EwA2oGX\"" }, { status: 403 });
+  const term = parseProjectName(parsed.data.label)?.term;
+  const data = {
+    ...parsed.data,
+    name: parsed.data.name || utmCampaignOf(parsed.data.label),
+    season: parsed.data.season || (term ? seasonOf(term) : null),
+  };
+  if (!(await canCreateCampaign(actor, data))) {
+    return NextResponse.json({ error: "Name the campaign after one of your projects, e.g. \"<project> EwA2oGX F'26\"" }, { status: 403 });
   }
-  const campaign = await prisma.campaign.create({ data: parsed.data });
+  const campaign = await prisma.campaign.create({ data });
   return NextResponse.json(campaign, { status: 201 });
 }

@@ -3,7 +3,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isTeamMember, newSlug, unauthorized } from "@/lib/reports/store";
 import { queryProjects } from "@/lib/projects/query";
-import { projectSchema, toDate } from "@/lib/projects/validation";
+import { projectCreateSchema, toDate, validationError } from "@/lib/projects/validation";
+import { ensureProjectCampaign } from "@/lib/projects/campaign";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,9 +22,9 @@ export async function POST(req: Request) {
   const actor = await guard("admin");
   if (actor instanceof NextResponse) return actor;
   if (!(await isTeamMember())) return unauthorized();
-  const parsed = projectSchema.safeParse(await req.json().catch(() => null));
+  const parsed = projectCreateSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Validation failed", issues: parsed.error.flatten().fieldErrors }, { status: 422 });
+    return NextResponse.json({ error: validationError(parsed.error), issues: parsed.error.flatten().fieldErrors }, { status: 422 });
   }
   const d = parsed.data;
   const type = await prisma.projectType.findUnique({ where: { key: d.typeKey } });
@@ -44,5 +45,7 @@ export async function POST(req: Request) {
     },
     select: { id: true, slug: true },
   });
-  return NextResponse.json(project, { status: 201 });
+  // Its campaign, ready for UTM links (not for past events added from report files).
+  const campaign = d.campaign ? await ensureProjectCampaign(prisma, { name: d.name, typeName: type.name }) : null;
+  return NextResponse.json({ ...project, campaignId: campaign?.id ?? null }, { status: 201 });
 }

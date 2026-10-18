@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Pill } from "@/components/ui/Pill";
+import { NameWithTerm } from "@/components/ui/NameWithTerm";
+import { utmCampaignOf } from "@/lib/naming";
 
 type Row = {
   id: string; name: string; label: string | null; description: string | null;
@@ -15,23 +17,25 @@ export function CampaignManager({ campaigns, canCreate, editable }: { campaigns:
   const canEdit = new Set(editable);
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ name: "", label: "", description: "", funnel: "", season: "", type: "" });
+  const EMPTY = { name: "", label: "", description: "", funnel: "", type: "" };
+  const [form, setForm] = useState(EMPTY);
+  const [nameKey, setNameKey] = useState(0); // remounts the name field after a save
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [patching, setPatching] = useState<string | null>(null);
 
   async function add() {
-    if (!form.name.trim()) { setError("A campaign name is required"); return; }
+    if (!form.label) { setError("Enter the campaign name and pick its term (F'26 / S'26)"); return; }
     setSaving(true); setError("");
     const res = await fetch("/api/campaigns", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, status: "active" }),
+      body: JSON.stringify({ ...form, name: form.name || utmCampaignOf(form.label), status: "active" }),
     });
     setSaving(false);
-    if (res.ok) { setForm({ name: "", label: "", description: "", funnel: "", season: "", type: "" }); setOpen(false); router.refresh(); }
+    if (res.ok) { setForm(EMPTY); setNameKey((k) => k + 1); setOpen(false); router.refresh(); }
     else {
       const err = (await res.json().catch(() => null))?.error;
-      setError(res.status === 403 && err ? err : "Could not save. Check the campaign name is unique and valid.");
+      setError((res.status === 403 || res.status === 422) && err && err !== "Validation failed" ? err : "Could not save. Check the campaign name is unique and valid.");
     }
   }
 
@@ -58,14 +62,13 @@ export function CampaignManager({ campaigns, canCreate, editable }: { campaigns:
       {open && (
         <div className="card mb-6 p-6">
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="utm_campaign value *" hint="Lowercase, no spaces — e.g. icy_s26">
-              <input className="input" value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="icy_s26" />
-            </Field>
-            <Field label="Display label" hint="Human-friendly name — ICY S'26">
-              <input className="input" value={form.label} onChange={(e) => set("label", e.target.value)} placeholder="ICY S'26" />
+            <div className="sm:col-span-2">
+              <NameWithTerm key={nameKey} id="c-name" label="Campaign name" placeholder="ICY  ·  or  TopTalents Sprint EwA2oGX" value={form.label} onChange={(label) => set("label", label)} />
+            </div>
+            <Field label="utm_campaign value" hint="Made from the name; change only if you need another value">
+              <input className="input" value={form.name} onChange={(e) => set("name", e.target.value)} placeholder={form.label ? utmCampaignOf(form.label) : "icy_s26"} />
             </Field>
             <Field label="Funnel / project"><input className="input" value={form.funnel} onChange={(e) => set("funnel", e.target.value)} placeholder="Projects" /></Field>
-            <Field label="Term"><input className="input" value={form.season} onChange={(e) => set("season", e.target.value)} placeholder="spring 2026" /></Field>
             <Field label="Type">
               <select className="input" value={form.type} onChange={(e) => set("type", e.target.value)}>
                 <option value="">Select type…</option>

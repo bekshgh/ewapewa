@@ -11,6 +11,7 @@ import { getProjectSettings } from "@/lib/projects/settings";
 import { formatDateTime } from "@/lib/utils";
 import { currentActor } from "@/lib/auth";
 import { isAdmin } from "@/lib/permissions";
+import { utmCampaignOf } from "@/lib/naming";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,11 @@ export default async function ProjectPage(props: { params: Promise<{ slug: strin
     getProjectSettings(prisma),
   ]);
   if (!project) notFound();
+  // its campaign (UTM links, leads): the one named like the project
+  const campaign = await prisma.campaign.findFirst({
+    where: { OR: [{ label: { equals: project.name, mode: "insensitive" } }, { name: utmCampaignOf(project.name) }] },
+    select: { id: true },
+  });
   const r = toRow(project);
   const small = r.responses !== null && r.responses < settings.smallSampleN;
   const pct = (v: number | null, d = 0) => fmtMetric(v, { unit: "%", scale: 100, decimals: d });
@@ -84,6 +90,7 @@ export default async function ProjectPage(props: { params: Promise<{ slug: strin
         subtitle={[project.type.name, STATUS_LABEL[project.status], fmtDate(r.startDate), project.city, project.ownerTeam].filter(Boolean).join(" · ")}
         action={
           <div className="flex flex-wrap gap-2">
+            {campaign && <Link href={`/campaigns/${campaign.id}`} className="btn-primary">Campaign & UTM links →</Link>}
             <Link href={`/projects?${similarQuery(project.type.key, r.registrants)}`} className="btn-ghost">Similar projects →</Link>
             <Link href="/projects" className="btn-ghost">← All projects</Link>
           </div>

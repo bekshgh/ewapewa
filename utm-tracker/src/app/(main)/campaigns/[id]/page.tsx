@@ -10,8 +10,12 @@ import { uniqueClicksByLink } from "@/lib/analytics";
 import { allProjectGroups } from "@/lib/projectStats";
 import { canEditCampaign, currentActor } from "@/lib/auth";
 import { isAdmin } from "@/lib/permissions";
+import { campaignLinksWhere, linkLabel } from "@/lib/linkKitServer";
+import { CampaignLinks } from "@/components/CampaignLinks";
 
 export const dynamic = "force-dynamic";
+
+const BASE = process.env.NEXT_PUBLIC_BASE_URL || "https://aieseckz.vercel.app";
 
 export default async function CampaignDetailPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -19,22 +23,25 @@ export default async function CampaignDetailPage(props: { params: Promise<{ id: 
   if (!campaign) notFound();
 
   const links = await prisma.trackingLink.findMany({
-    where: { utmCampaign: campaign.name },
-    select: { id: true, utmSource: true, utmContent: true },
+    where: campaignLinksWhere(campaign),
+    select: { id: true, name: true, slug: true, utmSource: true, utmMedium: true, utmContent: true, destinationUrl: true, isArchived: true },
+    orderBy: { createdAt: "asc" },
   });
   const linkIds = links.map((l) => l.id);
 
-  const [allByLink, uniqueByLink, totalLeads, srcLeads, cntLeads, groups] = await Promise.all([
+  const [allByLink, uniqueByLink, totalLeads, srcLeads, cntLeads, leadsByLink, groups] = await Promise.all([
     prisma.clickEvent.groupBy({ by: ["trackingLinkId"], where: { trackingLinkId: { in: linkIds } }, _count: { _all: true } }),
     uniqueClicksByLink(null, linkIds),
     prisma.lead.count({ where: { utmCampaign: campaign.name } }),
     prisma.lead.groupBy({ by: ["utmSource"], where: { utmCampaign: campaign.name }, _count: { _all: true } }),
     prisma.lead.groupBy({ by: ["utmContent"], where: { utmCampaign: campaign.name }, _count: { _all: true } }),
+    prisma.lead.groupBy({ by: ["trackingLinkId"], where: { trackingLinkId: { in: linkIds } }, _count: { _all: true } }),
     allProjectGroups(),
   ]);
   const folder = groups.find((g) => g.campaigns.some((c) => c.id === campaign.id));
   const editable = await canEditCampaign(actor, campaign.id);
   const clicksOf = new Map(allByLink.map((r) => [r.trackingLinkId, r._count._all]));
+  const leadsOf = new Map(leadsByLink.map((r) => [r.trackingLinkId, r._count._all]));
   const totalClicks = allByLink.reduce((n, r) => n + r._count._all, 0);
   const uniqueClicks = Array.from(uniqueByLink.values()).reduce((n, v) => n + v, 0);
 
@@ -86,6 +93,22 @@ export default async function CampaignDetailPage(props: { params: Promise<{ id: 
         <BreakdownPanel title="By source"  head="Source"  rows={bySource}  />
         <BreakdownPanel title="By content" head="Content" rows={byContent} />
       </section>
+      <CampaignLinks
+        base={BASE}
+        file={campaign.slugPrefix || campaign.name}
+        createHref={editable ? `/campaigns/${campaign.id}/utm-links` : null}
+        rows={links.filter((l) => !l.isArchived).map((l) => ({
+          id: l.id,
+          label: linkLabel(l.name, campaign),
+          slug: l.slug,
+          utmSource: l.utmSource,
+          utmMedium: l.utmMedium,
+          utmContent: l.utmContent,
+          destinationUrl: l.destinationUrl,
+          clicks: clicksOf.get(l.id) ?? 0,
+          leads: leadsOf.get(l.id) ?? 0,
+        }))}
+      />
     </>
   );
 }

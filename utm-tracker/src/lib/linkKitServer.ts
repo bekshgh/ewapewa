@@ -56,7 +56,13 @@ export async function deleteTemplate(name: string) {
   await writeTemplates((await savedTemplates()).filter((x) => x.name !== name));
 }
 
-const campaignLinksWhere = (c: { id: string; name: string }) => ({ OR: [{ campaignId: c.id }, { utmCampaign: c.name }] });
+/** A campaign's links: attached to it, or naming it in utm_campaign. */
+export const campaignLinksWhere = (c: { id: string; name: string }) => ({ OR: [{ campaignId: c.id }, { utmCampaign: c.name }] });
+
+/** "TopTalents Sprint F'26 — Tapter" → "Tapter": a link's name without its campaign in front. */
+export function linkLabel(name: string, c: { name: string; label: string | null }): string {
+  return name.replace(new RegExp(`^\\s*(${escapeRe(c.label ?? "")}|${escapeRe(c.name)})\\s*[—–-]\\s*`, "i"), "") || name;
+}
 
 /** The source / medium / content rows of a campaign's links, oldest first, without repeats. */
 export async function campaignStructure(campaignId: string): Promise<KitRow[]> {
@@ -70,9 +76,7 @@ export async function campaignStructure(campaignId: string): Promise<KitRow[]> {
   const seen = new Set<string>();
   const rows: KitRow[] = [];
   for (const l of links) {
-    // "TopTalents Sprint F'26 — Tapter" → "Tapter"
-    const label = l.name.replace(new RegExp(`^\\s*(${escapeRe(c.label ?? "")}|${escapeRe(c.name)})\\s*[—–-]\\s*`, "i"), "");
-    const r = cleanRow({ label, source: l.utmSource ?? "", medium: l.utmMedium ?? "", content: l.utmContent ?? "" });
+    const r = cleanRow({ label: linkLabel(l.name, c), source: l.utmSource ?? "", medium: l.utmMedium ?? "", content: l.utmContent ?? "" });
     if (!r.source || seen.has(rowKey(r))) continue;
     seen.add(rowKey(r));
     rows.push(r);

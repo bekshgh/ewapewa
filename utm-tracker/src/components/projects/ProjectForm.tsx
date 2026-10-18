@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { NameWithTerm } from "@/components/ui/NameWithTerm";
 
 export interface ProjectFormValue {
   id?: string;
@@ -47,6 +48,7 @@ export function ProjectForm({ initial, types }: { initial: ProjectFormValue; typ
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!v.name) return setError("Enter the project name and pick its term (F'26 / S'26).");
     setBusy(true);
     setError(null);
     const payload = {
@@ -68,7 +70,7 @@ export function ProjectForm({ initial, types }: { initial: ProjectFormValue; typ
     }).catch(() => null);
     const body = res ? await res.json().catch(() => ({})) : {};
     setBusy(false);
-    if (!res?.ok) return setError(body.error === "Validation failed" ? "Check the fields: name (2+ characters) and type are required." : body.error ?? "Could not save");
+    if (!res?.ok) return setError(body.error === "Validation failed" ? "Check the fields: the name with its term and the type are required." : body.error ?? "Could not save");
     router.push(`/projects/${body.slug}`);
     router.refresh();
   }
@@ -84,8 +86,8 @@ export function ProjectForm({ initial, types }: { initial: ProjectFormValue; typ
     <form onSubmit={submit} className="space-y-5">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
-          <label className="label" htmlFor="p-name">Name</label>
-          <input id="p-name" className="input" required minLength={2} maxLength={120} placeholder="ÖZGE Forum S'26" {...field("name")} />
+          <NameWithTerm id="p-name" value={v.name} onChange={(name) => setV((cur) => ({ ...cur, name }))} placeholder="ÖZGE Forum" />
+          {!v.id && <p className="hint">A campaign with the same name is created too, ready for UTM links.</p>}
         </div>
         <div>
           <label className="label" htmlFor="p-type">Project type</label>

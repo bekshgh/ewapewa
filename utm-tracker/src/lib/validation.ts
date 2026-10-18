@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { projectName } from "@/lib/projects/validation";
 
 const slugRegex = /^[a-zA-Z0-9_-]+$/;
 
@@ -28,9 +29,10 @@ export const updateLinkSchema = createLinkSchema.partial().extend({
   isArchived: z.boolean().optional(),
 });
 
+/** The label follows the naming rule ("SheCodes F'26", "TopTalents Sprint EwA2oGX F'26"); utm_campaign defaults to it. */
 export const createCampaignSchema = z.object({
-  name: z.string().min(1).max(80),
-  label: z.string().max(120).optional().nullable(),
+  name: z.string().trim().max(80).optional().default(""),
+  label: projectName,
   description: z.string().max(300).optional().nullable(),
   funnel: z.string().max(80).optional().nullable(),
   season: z.string().max(80).optional().nullable(),

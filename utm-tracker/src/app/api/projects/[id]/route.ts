@@ -2,7 +2,7 @@ import { guard } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isTeamMember, unauthorized } from "@/lib/reports/store";
-import { projectPatchSchema, toDate } from "@/lib/projects/validation";
+import { projectPatchSchema, toDate, validationError } from "@/lib/projects/validation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,7 +14,7 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
   if (!(await isTeamMember())) return unauthorized();
   const parsed = projectPatchSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Validation failed", issues: parsed.error.flatten().fieldErrors }, { status: 422 });
+    return NextResponse.json({ error: validationError(parsed.error), issues: parsed.error.flatten().fieldErrors }, { status: 422 });
   }
   const d = parsed.data;
   let typeId: string | undefined;
