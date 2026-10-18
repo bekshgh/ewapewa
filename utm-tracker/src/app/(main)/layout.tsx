@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/Sidebar";
-import { LiveClock } from "@/components/ui/LiveClock";
 import { currentActor } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { ROLE_LABEL, isAdmin } from "@/lib/permissions";
@@ -23,8 +22,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
           pending,
         }}
       />
-      <main className="relative flex-1 min-w-0 px-5 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10">
-        <LiveClock className="absolute right-12 top-4 z-10 hidden lg:flex" />
+      <main className="flex-1 min-w-0 px-5 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10">
         <div className="mx-auto w-full max-w-[1180px] animate-fade-up">{children}</div>
       </main>
     </div>
