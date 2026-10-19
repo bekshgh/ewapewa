@@ -14,6 +14,7 @@ import {
   type KitTemplate,
   type PlannedRow,
 } from "@/lib/linkKit";
+import { shortUrl, storedDomain } from "@/lib/linkDomains";
 
 type Props = {
   campaign: { id: string; name: string; label: string | null; slugPrefix: string | null };
@@ -25,6 +26,8 @@ type Props = {
   templates: KitTemplate[];
   commonDestination: string;
   base: string;
+  /** Short-link domains, the main one first (Settings → Short link domains). */
+  domains: string[];
   sources: string[];
   mediums: string[];
 };
@@ -49,6 +52,8 @@ export function LinkKitBuilder(p: Props) {
     return code;
   });
   const [destination, setDestination] = useState(p.commonDestination);
+  const [domain, setDomain] = useState(p.domains[0] ?? "");
+  const extraDomain = storedDomain(p.base, domain);
   const [templates, setTemplates] = useState(p.templates);
   const [choice, setChoice] = useState(`t:${DEFAULT_TEMPLATE.name}`);
   const [rows, setRows] = useState<KitRow[]>(DEFAULT_TEMPLATE.rows);
@@ -62,11 +67,11 @@ export function LinkKitBuilder(p: Props) {
   const prefixOwner = p.usedPrefixes[prefix];
   const prefixOk = PREFIX_RE.test(prefix) && !prefixOwner;
   const plan = useMemo(
-    () => planKit(prefixOk ? prefix : "xx", rows.filter((r) => r.source.trim()), p.links, p.takenSlugs),
-    [prefix, prefixOk, rows, p.links, p.takenSlugs],
+    () => planKit(prefixOk ? prefix : "xx", rows.filter((r) => r.source.trim()), p.links, p.takenSlugs, extraDomain),
+    [prefix, prefixOk, rows, p.links, p.takenSlugs, extraDomain],
   );
   const toCreate = plan.filter((r) => r.status === "new").length;
-  const short = (slug: string) => `${p.base}/r/${slug}`;
+  const short = (slug: string) => shortUrl(p.base, slug, extraDomain);
 
   async function choose(value: string) {
     setChoice(value);
@@ -121,7 +126,7 @@ export function LinkKitBuilder(p: Props) {
       const res = await fetch(`/api/campaigns/${p.campaign.id}/utm-links`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slugPrefix: prefix, destinationUrl: destination, rows: rows.filter((r) => r.source.trim()) }),
+        body: JSON.stringify({ slugPrefix: prefix, destinationUrl: destination, shortDomain: extraDomain, rows: rows.filter((r) => r.source.trim()) }),
       });
       const data = await res.json().catch(() => ({ error: `Request failed (${res.status})` }));
       if (!res.ok) throw new Error(data.error ?? `Request failed (${res.status})`);
@@ -196,6 +201,19 @@ export function LinkKitBuilder(p: Props) {
           <input className="input" placeholder="https://aiesecinkz.tilda.ws/…" value={destination} onChange={(e) => setDestination(e.target.value)} />
           <p className="hint mt-1">Where every link leads. A single link can have its own address in the table.</p>
         </div>
+        {p.domains.length > 1 && (
+          <div className="md:col-span-2">
+            <label className="label" htmlFor="kit-domain">Short link domain</label>
+            <select id="kit-domain" className="input max-w-md" value={domain} onChange={(e) => setDomain(e.target.value)}>
+              {p.domains.map((d, i) => <option key={d} value={d}>{d}{i === 0 ? " (main)" : ""}</option>)}
+            </select>
+            <p className="hint mt-1">
+              {extraDomain
+                ? <>The rows become a separate set of links on {extraDomain}, even if the campaign already has them on another domain. To tell the sets apart in &quot;By content&quot;, give the rows their own utm_content.</>
+                : "Links are handed out as " + short("…").replace("…", "slug") + "."}
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="card space-y-4 p-6">

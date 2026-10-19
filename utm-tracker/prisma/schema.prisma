@@ -84,6 +84,7 @@ model TrackingLink {
   campaignId     String?
   name           String // description for the team
   slug           String   @unique // short id used in /r/{slug}
+  shortDomain    String? // domain the short link is handed out with, e.g. "zimran-aiesec.vercel.app"; null = the main one (every domain opens every slug)
   destinationUrl String
   utmSource      String?
   utmMedium      String?

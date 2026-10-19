@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { canEditLink, forbidden, guard } from "@/lib/auth";
 import { updateLinkSchema } from "@/lib/validation";
+import { checkedDomain, linkDomains } from "@/lib/linkDomainsServer";
 
 /** GET /api/links/{id} — the link's editable fields (for the edit dialog). */
 export async function GET(_req: NextRequest, props: { params: Promise<{ id: string }> }) {
@@ -11,12 +12,12 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ id: stri
   const link = await prisma.trackingLink.findUnique({
     where: { id },
     select: {
-      id: true, name: true, slug: true, destinationUrl: true, campaignId: true,
+      id: true, name: true, slug: true, shortDomain: true, destinationUrl: true, campaignId: true,
       utmSource: true, utmMedium: true, utmCampaign: true, utmContent: true, utmTerm: true, notes: true,
     },
   });
   if (!link) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json({ ...link, editable: await canEditLink(actor, link) });
+  return NextResponse.json({ ...link, editable: await canEditLink(actor, link), domains: await linkDomains() });
 }
 
 export async function PATCH(req: NextRequest, props: { params: Promise<{ id: string }> }) {
@@ -29,6 +30,12 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
   const d = parsed.data;
   const actor = await guard("active");
   if (actor instanceof NextResponse) return actor;
+  let shortDomain: string | null | undefined;
+  try {
+    shortDomain = d.shortDomain !== undefined ? await checkedDomain(d.shortDomain) : undefined;
+  } catch (e) {
+    return NextResponse.json({ error: "Validation failed", issues: { shortDomain: [(e as Error).message] } }, { status: 422 });
+  }
   const current = await prisma.trackingLink.findUnique({ where: { id: params.id }, select: { campaignId: true, utmCampaign: true } });
   if (!current) return NextResponse.json({ error: "Not found" }, { status: 404 });
   // Both where the link is now and where the change would put it must be the manager's.
@@ -42,6 +49,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     data: {
       ...(d.name !== undefined && { name: d.name }),
       ...(d.destinationUrl !== undefined && { destinationUrl: d.destinationUrl }),
+      ...(shortDomain !== undefined && { shortDomain }),
       ...(d.campaignId !== undefined && { campaignId: d.campaignId || null }),
       ...(d.utmSource !== undefined && { utmSource: d.utmSource || null }),
       ...(d.utmMedium !== undefined && { utmMedium: d.utmMedium || null }),

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { UTM_MEDIUMS, UTM_SOURCES } from "@/lib/constants";
 
 type Form = {
+  shortDomain: string;
   name: string;
   destinationUrl: string;
   utmSource: string;
@@ -30,6 +31,7 @@ const FIELDS: { k: keyof Form; label: string; list?: string; hint?: string }[] =
 export function EditLinkDialog({ id, onClose }: { id: string; onClose: () => void }) {
   const router = useRouter();
   const [slug, setSlug] = useState("");
+  const [domains, setDomains] = useState<string[]>([]);
   const [form, setForm] = useState<Form | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +44,9 @@ export function EditLinkDialog({ id, onClose }: { id: string; onClose: () => voi
         if (stop) return;
         if (!ok) return setError(body.error ?? "Could not load the link");
         setSlug(body.slug);
+        setDomains(body.domains ?? []);
         setForm({
+          shortDomain: body.shortDomain ?? body.domains?.[0] ?? "",
           name: body.name ?? "", destinationUrl: body.destinationUrl ?? "",
           utmSource: body.utmSource ?? "", utmMedium: body.utmMedium ?? "", utmCampaign: body.utmCampaign ?? "",
           utmContent: body.utmContent ?? "", utmTerm: body.utmTerm ?? "", notes: body.notes ?? "",
@@ -66,7 +70,8 @@ export function EditLinkDialog({ id, onClose }: { id: string; onClose: () => voi
     const res = await fetch(`/api/links/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, name: form.name.trim(), destinationUrl: form.destinationUrl.trim() }),
+      // the main domain is stored as empty
+      body: JSON.stringify({ ...form, shortDomain: form.shortDomain === domains[0] ? null : form.shortDomain, name: form.name.trim(), destinationUrl: form.destinationUrl.trim() }),
     }).catch(() => null);
     const body = res ? await res.json().catch(() => ({})) : {};
     setBusy(false);
@@ -78,7 +83,7 @@ export function EditLinkDialog({ id, onClose }: { id: string; onClose: () => voi
     onClose();
   }
 
-  const set = (k: keyof Form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+  const set = (k: keyof Form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((f) => (f ? { ...f, [k]: e.target.value } : f));
 
   return (
@@ -93,7 +98,7 @@ export function EditLinkDialog({ id, onClose }: { id: string; onClose: () => voi
       >
         <div>
           <h2 id="edit-link-title" className="font-display text-lg font-semibold">Edit link</h2>
-          {slug && <p className="mt-1 text-xs text-ink-faint">Short address <span className="font-mono text-clicks">/r/{slug}</span> stays the same, so printed QR codes keep working.</p>}
+          {slug && <p className="mt-1 text-xs text-ink-faint">The slug <span className="font-mono text-clicks">/r/{slug}</span> stays the same, so printed QR codes keep working (every domain opens it).</p>}
         </div>
 
         {!form && !error && <p className="text-sm text-ink-muted">Loading…</p>}
@@ -104,6 +109,15 @@ export function EditLinkDialog({ id, onClose }: { id: string; onClose: () => voi
               <label className="label" htmlFor="el-name">Description</label>
               <input id="el-name" className="input" required maxLength={120} value={form.name} onChange={set("name")} />
             </div>
+            {domains.length > 1 && (
+              <div>
+                <label className="label" htmlFor="el-domain">Short link domain</label>
+                <select id="el-domain" className="input" value={form.shortDomain} onChange={set("shortDomain")}>
+                  {domains.map((d, i) => <option key={d} value={d}>{d}{i === 0 ? " (main)" : ""}</option>)}
+                </select>
+                <p className="hint">The domain the link is shown and copied with: https://{form.shortDomain}/r/{slug}</p>
+              </div>
+            )}
             <div>
               <label className="label" htmlFor="el-dest">Landing page</label>
               <input id="el-dest" className="input" type="url" required value={form.destinationUrl} onChange={set("destinationUrl")} placeholder="https://…" />

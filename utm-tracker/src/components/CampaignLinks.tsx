@@ -4,11 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { EditLinkDialog } from "@/components/EditLinkDialog";
+import { shortUrl } from "@/lib/linkDomains";
 
 export interface CampaignLinkRow {
   id: string;
   label: string;
   slug: string;
+  shortDomain: string | null;
   utmSource: string | null;
   utmMedium: string | null;
   utmContent: string | null;
@@ -21,10 +23,10 @@ export interface CampaignLinkRow {
 export function CampaignLinks({ rows, base, file, createHref, editable = false }: { rows: CampaignLinkRow[]; base: string; file: string; createHref: string | null; editable?: boolean }) {
   const [info, setInfo] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
-  const short = (slug: string) => `${base}/r/${slug}`;
+  const short = (r: { slug: string; shortDomain: string | null }) => shortUrl(base, r.slug, r.shortDomain);
 
   async function copyAll() {
-    const text = rows.map((r) => `${r.label} — ${short(r.slug)}`).join("\n");
+    const text = rows.map((r) => `${r.label} — ${short(r)}`).join("\n");
     try {
       await navigator.clipboard.writeText(text);
       setInfo("All links copied");
@@ -36,7 +38,7 @@ export function CampaignLinks({ rows, base, file, createHref, editable = false }
   function downloadCsv() {
     const esc = (v: string | number | null) => `"${String(v ?? "").replace(/"/g, '""')}"`;
     const lines = [["name", "utm_source", "utm_medium", "utm_content", "short_url", "destination", "clicks", "leads"].join(",")];
-    for (const r of rows) lines.push([r.label, r.utmSource, r.utmMedium, r.utmContent, short(r.slug), r.destinationUrl, r.clicks, r.leads].map(esc).join(","));
+    for (const r of rows) lines.push([r.label, r.utmSource, r.utmMedium, r.utmContent, short(r), r.destinationUrl, r.clicks, r.leads].map(esc).join(","));
     const url = URL.createObjectURL(new Blob(["﻿" + lines.join("\n")], { type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a");
     a.href = url;
@@ -82,8 +84,8 @@ export function CampaignLinks({ rows, base, file, createHref, editable = false }
                   <td className="px-6 py-3 text-ink">{r.label}</td>
                   <td className="px-6 py-3">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs text-accent">{short(r.slug)}</span>
-                      <CopyButton value={short(r.slug)} />
+                      <span className="font-mono text-xs text-accent">{short(r)}</span>
+                      <CopyButton value={short(r)} />
                     </div>
                   </td>
                   <td className="px-6 py-3 text-xs text-ink-muted">{[r.utmSource, r.utmContent || r.utmMedium].filter(Boolean).join(" · ") || "—"}</td>

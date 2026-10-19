@@ -5,12 +5,13 @@ import { useRouter } from "next/navigation";
 import { UTM_SOURCES, UTM_MEDIUMS } from "@/lib/constants";
 import { generateSlug } from "@/lib/utils";
 import { CopyButton } from "@/components/ui/CopyButton";
+import { shortUrl as buildShortUrl, storedDomain } from "@/lib/linkDomains";
 
 type Campaign = { id: string; name: string; label: string | null };
 
 const BASE = process.env.NEXT_PUBLIC_BASE_URL || "";
 
-export function CreateLinkForm({ campaigns }: { campaigns: Campaign[] }) {
+export function CreateLinkForm({ campaigns, domains = [] }: { campaigns: Campaign[]; domains?: string[] }) {
   const router = useRouter();
   const [form, setForm] = useState({
     name: "",
@@ -23,6 +24,7 @@ export function CreateLinkForm({ campaigns }: { campaigns: Campaign[] }) {
     utmContent: "",
     utmTerm: "",
     notes: "",
+    shortDomain: domains[0] ?? "",
   });
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [saving, setSaving] = useState(false);
@@ -35,7 +37,7 @@ export function CreateLinkForm({ campaigns }: { campaigns: Campaign[] }) {
     setForm((f) => ({ ...f, campaignId: id, utmCampaign: c ? c.name : f.utmCampaign }));
   };
 
-  const shortUrl = `${BASE || "https://aieseckz.vercel.app"}/r/${form.slug || "[slug]"}`;
+  const shortUrl = buildShortUrl(BASE, form.slug || "[slug]", storedDomain(BASE, form.shortDomain));
 
   const fullUtmUrl = useMemo(() => {
     if (!form.destinationUrl) return "—";
@@ -64,6 +66,7 @@ export function CreateLinkForm({ campaigns }: { campaigns: Campaign[] }) {
         ...form,
         slug: form.slug || generateSlug(),
         campaignId: form.campaignId || null,
+        shortDomain: storedDomain(BASE, form.shortDomain),
       }),
     });
     if (res.ok) {
@@ -86,7 +89,15 @@ export function CreateLinkForm({ campaigns }: { campaigns: Campaign[] }) {
           <input className="input" placeholder="ICY Spring'26 — Instagram story" value={form.name} onChange={(e) => set("name", e.target.value)} />
         </Field>
 
-        <Field label="Short link slug" hint={`Your tracking link: ${BASE || "aieseckz.vercel.app"}/r/${form.slug || "[slug]"}`} error={err("slug")}>
+        {domains.length > 1 && (
+          <Field label="Short link domain" hint="Every domain opens the link; this is the one it is shown and copied with." error={err("shortDomain")}>
+            <select className="input" value={form.shortDomain} onChange={(e) => set("shortDomain", e.target.value)}>
+              {domains.map((d, i) => <option key={d} value={d}>{d}{i === 0 ? " (main)" : ""}</option>)}
+            </select>
+          </Field>
+        )}
+
+        <Field label="Short link slug" hint={`Your tracking link: ${shortUrl.replace(/^https?:\/\//, "")}`} error={err("slug")}>
           <div className="flex gap-2">
             <input className="input" placeholder="leave empty for auto" value={form.slug} onChange={(e) => set("slug", e.target.value)} />
             <button type="button" className="btn-ghost shrink-0" onClick={() => set("slug", generateSlug())}>Generate</button>
@@ -137,7 +148,7 @@ export function CreateLinkForm({ campaigns }: { campaigns: Campaign[] }) {
           <button className="btn-primary" disabled={saving} onClick={submit}>
             {saving ? "Creating…" : "Create link"}
           </button>
-          <button className="btn-ghost" onClick={() => { setForm({ name: "", slug: "", destinationUrl: "", campaignId: "", utmSource: "", utmMedium: "", utmCampaign: "", utmContent: "", utmTerm: "", notes: "" }); setErrors({}); }}>
+          <button className="btn-ghost" onClick={() => { setForm({ name: "", slug: "", destinationUrl: "", campaignId: "", utmSource: "", utmMedium: "", utmCampaign: "", utmContent: "", utmTerm: "", notes: "", shortDomain: domains[0] ?? "" }); setErrors({}); }}>
             Reset
           </button>
         </div>

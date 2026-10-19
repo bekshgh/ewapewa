@@ -58,3 +58,34 @@ describe("partnerRows", () => {
     expect(rows.map((r) => [r.label, r.content])).toEqual([["Info partner 4", "infopartner4"], ["Info partner 5", "infopartner5"]]);
   });
 });
+
+describe("planKit on another domain", () => {
+  const existing = [{ slug: "bc2-tg-telegram", utmSource: "telegram", utmMedium: "social", utmContent: "telegram", shortDomain: null }];
+  const row = { source: "telegram", medium: "social", content: "telegram" };
+
+  it("makes a second set of the same rows, slugs tagged with the domain", async () => {
+    const { domainTag } = await import("@/lib/linkKit");
+    expect(domainTag("zimran-aiesec.vercel.app")).toBe("zimran");
+    expect(domainTag("go.aiesec.kz")).toBe("go");
+    const plan = planKit("bc2", [row], existing, ["bc2-tg-telegram"], "zimran-aiesec.vercel.app");
+    expect(plan).toEqual([{ ...row, slug: "bc2-tg-telegram-zimran", status: "new" }]);
+    // on the main domain the row still exists
+    expect(planKit("bc2", [row], existing, ["bc2-tg-telegram"])[0].status).toBe("exists");
+  });
+
+  it("does not repeat a set already made on that domain", () => {
+    const both = [...existing, { slug: "bc2-tg-telegram-zimran", utmSource: "telegram", utmMedium: "social", utmContent: "telegram", shortDomain: "zimran-aiesec.vercel.app" }];
+    expect(planKit("bc2", [row], both, [], "zimran-aiesec.vercel.app")[0]).toMatchObject({ slug: "bc2-tg-telegram-zimran", status: "exists" });
+  });
+});
+
+describe("short link domains", () => {
+  it("build the URL on the link's domain, the main one when none", async () => {
+    const { shortUrl, storedDomain, hostOf } = await import("@/lib/linkDomains");
+    expect(shortUrl("https://aieseckz.vercel.app/", "bc2-qr", null)).toBe("https://aieseckz.vercel.app/r/bc2-qr");
+    expect(shortUrl("https://aieseckz.vercel.app", "bc2-qr", "zimran-aiesec.vercel.app")).toBe("https://zimran-aiesec.vercel.app/r/bc2-qr");
+    expect(storedDomain("https://aieseckz.vercel.app", "aieseckz.vercel.app")).toBeNull();
+    expect(storedDomain("https://aieseckz.vercel.app", "https://Zimran-AIESEC.vercel.app/")).toBe("zimran-aiesec.vercel.app");
+    expect(hostOf("https://go.aiesec.kz/r/x")).toBe("go.aiesec.kz");
+  });
+});

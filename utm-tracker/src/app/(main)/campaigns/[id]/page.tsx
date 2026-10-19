@@ -25,7 +25,7 @@ export default async function CampaignDetailPage(props: { params: Promise<{ id: 
 
   const links = await prisma.trackingLink.findMany({
     where: campaignLinksWhere(campaign),
-    select: { id: true, name: true, slug: true, utmSource: true, utmMedium: true, utmContent: true, destinationUrl: true, isArchived: true },
+    select: { id: true, name: true, slug: true, shortDomain: true, utmSource: true, utmMedium: true, utmContent: true, destinationUrl: true, isArchived: true },
     orderBy: { createdAt: "asc" },
   });
   const linkIds = links.map((l) => l.id);
@@ -104,6 +104,7 @@ export default async function CampaignDetailPage(props: { params: Promise<{ id: 
           id: l.id,
           label: linkLabel(l.name, campaign),
           slug: l.slug,
+          shortDomain: l.shortDomain,
           utmSource: l.utmSource,
           utmMedium: l.utmMedium,
           utmContent: l.utmContent,

@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { checkedDomain, linkDomains } from "@/lib/linkDomainsServer";
 import { DEFAULT_TEMPLATE, PREFIX_RE, cleanRow, planKit, rowKey, type KitRow, type KitTemplate, type PlannedRow } from "@/lib/linkKit";
 
 const TEMPLATES_KEY = "links.templates";
@@ -19,6 +20,8 @@ export const templateSchema = z.object({
 export const kitSchema = z.object({
   slugPrefix: z.string().trim().toLowerCase().regex(PREFIX_RE, "Project code: 2–12 latin letters or digits, e.g. tts"),
   destinationUrl: z.string().trim().url("Enter the landing page address, https://…"),
+  /** One of the tracker's domains; empty = the main one. */
+  shortDomain: z.string().trim().max(253).optional().nullable(),
   rows: z.array(rowSchema).min(1, "Add at least one link").max(100),
 });
 
@@ -88,10 +91,10 @@ export async function campaignStructure(campaignId: string): Promise<KitRow[]> {
 export async function kitContext(campaignId: string) {
   const campaign = await prisma.campaign.findUnique({ where: { id: campaignId } });
   if (!campaign) return null;
-  const [links, slugs, campaigns, templates] = await Promise.all([
+  const [links, slugs, campaigns, templates, domains] = await Promise.all([
     prisma.trackingLink.findMany({
       where: campaignLinksWhere(campaign),
-      select: { slug: true, utmSource: true, utmMedium: true, utmContent: true, destinationUrl: true, isArchived: true },
+      select: { slug: true, utmSource: true, utmMedium: true, utmContent: true, shortDomain: true, destinationUrl: true, isArchived: true },
       orderBy: { createdAt: "asc" },
     }),
     prisma.trackingLink.findMany({ select: { slug: true } }),
@@ -101,12 +104,13 @@ export async function kitContext(campaignId: string) {
       orderBy: { createdAt: "desc" },
     }),
     allTemplates(),
+    linkDomains(),
   ]);
   // The landing most of the campaign's links already point to, as a starting value.
   const dest = new Map<string, number>();
   for (const l of links) dest.set(l.destinationUrl, (dest.get(l.destinationUrl) ?? 0) + 1);
   const commonDestination = [...dest.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "";
-  return { campaign, links, takenSlugs: slugs.map((s) => s.slug), campaigns, templates, commonDestination };
+  return { campaign, links, takenSlugs: slugs.map((s) => s.slug), campaigns, templates, commonDestination, domains };
 }
 
 export interface KitResult {
@@ -127,6 +131,13 @@ export async function createKit(campaignId: string, input: z.infer<typeof kitSch
     throw new KitError(`Project code «${input.slugPrefix}» is already used by «${owner.label || owner.name}». Pick another one.`);
   }
 
+  let domain: string | null;
+  try {
+    domain = await checkedDomain(input.shortDomain);
+  } catch (e) {
+    throw new KitError((e as Error).message);
+  }
+
   return prisma.$transaction(async (tx) => {
     if (campaign.slugPrefix !== input.slugPrefix) {
       await tx.campaign.update({ where: { id: campaign.id }, data: { slugPrefix: input.slugPrefix } });
@@ -134,11 +145,11 @@ export async function createKit(campaignId: string, input: z.infer<typeof kitSch
     const [links, slugs] = await Promise.all([
       tx.trackingLink.findMany({
         where: campaignLinksWhere(campaign),
-        select: { slug: true, utmSource: true, utmMedium: true, utmContent: true },
+        select: { slug: true, utmSource: true, utmMedium: true, utmContent: true, shortDomain: true },
       }),
       tx.trackingLink.findMany({ where: { slug: { startsWith: input.slugPrefix } }, select: { slug: true } }),
     ]);
-    const plan = planKit(input.slugPrefix, input.rows as KitRow[], links, slugs.map((s) => s.slug));
+    const plan = planKit(input.slugPrefix, input.rows as KitRow[], links, slugs.map((s) => s.slug), domain);
     const rows = plan.map((r) => ({ ...r, destinationUrl: r.destinationUrl || input.destinationUrl }));
     const label = campaign.label || campaign.name;
     const fresh = rows.filter((r) => r.status === "new");
@@ -146,6 +157,7 @@ export async function createKit(campaignId: string, input: z.infer<typeof kitSch
       data: fresh.map((r) => ({
         name: `${label} — ${r.label || [r.source, r.content || r.medium].filter(Boolean).join(" · ")}`.slice(0, 120),
         slug: r.slug,
+        shortDomain: domain,
         destinationUrl: r.destinationUrl,
         campaignId: campaign.id,
         utmSource: r.source || null,

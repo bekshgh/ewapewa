@@ -11,6 +11,8 @@ export const createLinkSchema = z.object({
     .max(40)
     .regex(slugRegex, "Use only letters, numbers, - and _"),
   destinationUrl: z.string().url("Enter a valid URL, e.g. https://tally.so/r/abc"),
+  /** One of the tracker's domains (Settings); empty = the main one. */
+  shortDomain: z.string().max(253).optional().nullable(),
   campaignId: z.string().optional().nullable(),
   utmSource: z.string().max(80).optional().nullable(),
   utmMedium: z.string().max(80).optional().nullable(),

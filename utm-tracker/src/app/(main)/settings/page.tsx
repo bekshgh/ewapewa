@@ -7,6 +7,8 @@ import { ThresholdsForm } from "@/components/projects/ThresholdsForm";
 import { AccessDenied } from "@/components/AccessDenied";
 import { currentActor } from "@/lib/auth";
 import { isAdmin } from "@/lib/permissions";
+import { LinkDomainsEditor } from "@/components/LinkDomainsEditor";
+import { linkDomains } from "@/lib/linkDomainsServer";
 
 export const dynamic = "force-dynamic";
 
@@ -56,7 +58,7 @@ function EnvRow({
 
 export default async function SettingsPage() {
   if (!isAdmin(await currentActor())) return <AccessDenied />;
-  const thresholds = await getProjectSettings(prisma);
+  const [thresholds, domains] = await Promise.all([getProjectSettings(prisma), linkDomains()]);
   const [links, clicks, leads, campaigns, webhookLogs] = await Promise.all([
     prisma.trackingLink.count(),
     prisma.clickEvent.count(),
@@ -114,6 +116,13 @@ export default async function SettingsPage() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Short link domains */}
+      <section className="card mb-8 p-6">
+        <h2 className="font-display text-lg font-semibold">Short link domains</h2>
+        <p className="mb-4 mt-1 text-sm text-ink-muted">Domains a link can be handed out with, e.g. zimran-aiesec.vercel.app/r/…  Pick one when creating or editing a link.</p>
+        <LinkDomainsEditor domains={domains} />
       </section>
 
       {/* Environment */}

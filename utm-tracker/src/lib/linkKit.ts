@@ -123,6 +123,7 @@ export interface ExistingLink {
   utmSource: string | null;
   utmMedium: string | null;
   utmContent: string | null;
+  shortDomain?: string | null;
 }
 
 export type PlannedRow = KitRow & {
@@ -131,25 +132,32 @@ export type PlannedRow = KitRow & {
   status: "new" | "exists" | "duplicate";
 };
 
+/** "zimran-aiesec.vercel.app" → "zimran": tells apart slugs of the same rows on another domain. */
+export function domainTag(domain: string): string {
+  return (domain.split(".")[0].split("-")[0] || domain).replace(/[^a-z0-9]/gi, "").toLowerCase().slice(0, 12);
+}
+
 /**
  * Which rows become new links and with what slug. A row whose
- * source / medium / content the campaign already has is skipped (shows the
- * existing slug), so running the kit twice adds nothing. Taken slugs get a
- * numeric suffix.
+ * source / medium / content the campaign already has on the same domain is
+ * skipped (shows the existing slug), so running the kit twice adds nothing;
+ * on another domain (null = the main one) the same rows make a second set,
+ * slugs tagged with the domain. Taken slugs get a numeric suffix.
  */
-export function planKit(prefix: string, rows: KitRow[], campaignLinks: ExistingLink[], takenSlugs: Iterable<string>): PlannedRow[] {
+export function planKit(prefix: string, rows: KitRow[], campaignLinks: ExistingLink[], takenSlugs: Iterable<string>, domain: string | null = null): PlannedRow[] {
+  const at = (d: string | null | undefined) => `@${d ?? ""}`;
   const existing = new Map(
-    campaignLinks.map((l) => [rowKey({ source: l.utmSource ?? "", medium: l.utmMedium ?? "", content: l.utmContent ?? "" }), l.slug]),
+    campaignLinks.map((l) => [rowKey({ source: l.utmSource ?? "", medium: l.utmMedium ?? "", content: l.utmContent ?? "" }) + at(l.shortDomain), l.slug]),
   );
   const taken = new Set(takenSlugs);
   const seen = new Set<string>();
   return rows.map((raw) => {
     const r = cleanRow(raw);
-    const key = rowKey(r);
+    const key = rowKey(r) + at(domain);
     if (existing.has(key)) return { ...r, slug: existing.get(key)!, status: "exists" };
     if (seen.has(key)) return { ...r, slug: "", status: "duplicate" };
     seen.add(key);
-    const base = slugFor(prefix, r);
+    const base = domain ? `${slugFor(prefix, r)}-${domainTag(domain)}` : slugFor(prefix, r);
     let slug = base;
     for (let i = 2; taken.has(slug); i++) slug = `${base}-${i}`;
     taken.add(slug);

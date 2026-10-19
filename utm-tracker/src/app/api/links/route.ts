@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { createLinkSchema } from "@/lib/validation";
 import { generateSlug } from "@/lib/utils";
+import { checkedDomain } from "@/lib/linkDomainsServer";
 
 export async function GET() {
   const actor = await guard("active");
@@ -26,6 +27,12 @@ export async function POST(req: NextRequest) {
     );
   }
   const data = parsed.data;
+  let shortDomain: string | null;
+  try {
+    shortDomain = await checkedDomain(data.shortDomain);
+  } catch (e) {
+    return NextResponse.json({ error: "Validation failed", issues: { shortDomain: [(e as Error).message] } }, { status: 422 });
+  }
   if (!(await canEditLink(actor, data))) {
     return NextResponse.json({ error: "Put the link in a campaign of one of your projects" }, { status: 403 });
   }
@@ -45,6 +52,7 @@ export async function POST(req: NextRequest) {
     data: {
       name: data.name,
       slug,
+      shortDomain,
       destinationUrl: data.destinationUrl,
       campaignId: data.campaignId || null,
       utmSource: data.utmSource || null,

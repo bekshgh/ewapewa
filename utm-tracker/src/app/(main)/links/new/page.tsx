@@ -1,5 +1,6 @@
 import { PageHeader } from "@/components/ui/PageHeader";
 import { CreateLinkForm } from "@/components/CreateLinkForm";
+import { linkDomains } from "@/lib/linkDomainsServer";
 import { prisma } from "@/lib/db";
 import { AccessDenied } from "@/components/AccessDenied";
 import { currentActor, editableCampaignIds } from "@/lib/auth";
@@ -24,7 +25,7 @@ export default async function NewLinkPage() {
   return (
     <>
       <PageHeader breadcrumb="Links" title="Create link" subtitle="Generate a new UTM-tracked short link in a few steps." />
-      <CreateLinkForm campaigns={campaigns} />
+      <CreateLinkForm campaigns={campaigns} domains={await linkDomains()} />
     </>
   );
 }

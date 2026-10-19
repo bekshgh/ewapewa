@@ -26,7 +26,8 @@ export default async function CampaignUtmLinksPage(props: { params: Promise<{ id
       />
       <LinkKitBuilder
         campaign={{ id: campaign.id, name: campaign.name, label: campaign.label, slugPrefix: campaign.slugPrefix }}
-        links={ctx.links.map((l) => ({ slug: l.slug, utmSource: l.utmSource, utmMedium: l.utmMedium, utmContent: l.utmContent }))}
+        links={ctx.links.map((l) => ({ slug: l.slug, utmSource: l.utmSource, utmMedium: l.utmMedium, utmContent: l.utmContent, shortDomain: l.shortDomain }))}
+        domains={ctx.domains}
         takenSlugs={ctx.takenSlugs}
         campaigns={ctx.campaigns.map(({ id, name, label }) => ({ id, name, label }))}
         usedPrefixes={Object.fromEntries(ctx.campaigns.filter((c) => c.slugPrefix).map((c) => [c.slugPrefix!, c.label || c.name]))}

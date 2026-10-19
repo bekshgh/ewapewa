@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { EditLinkDialog } from "@/components/EditLinkDialog";
 import { formatNumber, relativeTime } from "@/lib/utils";
+import { shortUrl } from "@/lib/linkDomains";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_URL || "";
 
@@ -13,6 +14,8 @@ export type LinkRow = {
   id: string;
   name: string;
   slug: string;
+  /** null = the main domain */
+  shortDomain: string | null;
   utmSource: string | null;
   utmMedium: string | null;
   utmContent: string | null;
@@ -125,7 +128,7 @@ export function LinksTable({ links }: { links: LinkRow[] }) {
                 <tr><td colSpan={8} className="px-5 py-10 text-center text-ink-faint">No links match your filters.</td></tr>
               )}
               {filtered.map((l) => {
-                const fullUrl = `${BASE}/r/${l.slug}`;
+                const fullUrl = shortUrl(BASE, l.slug, l.shortDomain);
                 return (
                   <tr key={l.id} className={`transition hover:bg-bg-hover/50 ${l.isArchived ? "opacity-50" : ""}`}>
                     <td className="px-5 py-3.5">
@@ -134,7 +137,7 @@ export function LinksTable({ links }: { links: LinkRow[] }) {
                     </td>
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-2">
-                        <span className="text-clicks">/r/{l.slug}</span>
+                        <span className="text-clicks" title={fullUrl}>{l.shortDomain && <span className="text-ink-faint">{l.shortDomain}</span>}/r/{l.slug}</span>
                         <CopyButton value={fullUrl} />
                         <button
                           type="button"

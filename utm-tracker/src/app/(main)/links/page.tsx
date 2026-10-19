@@ -35,7 +35,7 @@ export default async function LinksPage() {
 
   const rows: LinkRow[] = [
     ...withStats.map((l) => ({
-      id: l.id, name: l.name, slug: l.slug,
+      id: l.id, name: l.name, slug: l.slug, shortDomain: l.shortDomain,
       utmSource: l.utmSource, utmMedium: l.utmMedium, utmContent: l.utmContent,
       campaignName: l.campaign?.label || l.campaign?.name || l.utmCampaign,
       clicks: l.clicks, leads: l.leads, cr: l.cr,
@@ -43,7 +43,7 @@ export default async function LinksPage() {
       editable: editable(l),
     })),
     ...archived.map((l) => ({
-      id: l.id, name: l.name, slug: l.slug,
+      id: l.id, name: l.name, slug: l.slug, shortDomain: l.shortDomain,
       utmSource: l.utmSource, utmMedium: l.utmMedium, utmContent: l.utmContent,
       campaignName: l.campaign?.label || l.campaign?.name || l.utmCampaign,
       clicks: l._count.clicks, leads: l._count.leads,
