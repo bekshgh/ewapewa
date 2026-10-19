@@ -99,6 +99,7 @@ export default async function CampaignDetailPage(props: { params: Promise<{ id: 
         base={BASE}
         file={campaign.slugPrefix || campaign.name}
         createHref={editable ? `/campaigns/${campaign.id}/utm-links` : null}
+        editable={editable}
         rows={links.filter((l) => !l.isArchived).map((l) => ({
           id: l.id,
           label: linkLabel(l.name, campaign),

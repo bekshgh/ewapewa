@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CopyButton } from "@/components/ui/CopyButton";
+import { EditLinkDialog } from "@/components/EditLinkDialog";
 import { formatNumber, relativeTime } from "@/lib/utils";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_URL || "";
@@ -58,6 +59,7 @@ export function LinksTable({ links }: { links: LinkRow[] }) {
   const [source, setSource] = useState("");
   const [showArchived, setShowArchived] = useState(false);
   const [qrUrl, setQrUrl] = useState<string | null>(null);
+  const [editing, setEditing] = useState<string | null>(null);
 
   const campaigns = useMemo(() => Array.from(new Set(links.map((l) => l.campaignName).filter(Boolean))) as string[], [links]);
   const sources = useMemo(() => Array.from(new Set(links.map((l) => l.utmSource).filter(Boolean))) as string[], [links]);
@@ -84,6 +86,7 @@ export function LinksTable({ links }: { links: LinkRow[] }) {
   return (
     <>
       {qrUrl && <QRModal url={qrUrl} onClose={() => setQrUrl(null)} />}
+      {editing && <EditLinkDialog id={editing} onClose={() => setEditing(null)} />}
 
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <input className="input max-w-xs" placeholder="Search links…" value={q} onChange={(e) => setQ(e.target.value)} />
@@ -156,6 +159,7 @@ export function LinksTable({ links }: { links: LinkRow[] }) {
                         <a href={fullUrl} target="_blank" rel="noreferrer" className="text-ink-faint hover:text-ink">Open</a>
                         {l.editable && (
                           <>
+                            <button onClick={() => setEditing(l.id)} className="font-medium text-accent hover:opacity-80">Edit</button>
                             <button onClick={() => patch(l.id, { isActive: !l.isActive })} className="text-ink-faint hover:text-ink">
                               {l.isActive ? "Pause" : "Resume"}
                             </button>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { CopyButton } from "@/components/ui/CopyButton";
+import { EditLinkDialog } from "@/components/EditLinkDialog";
 
 export interface CampaignLinkRow {
   id: string;
@@ -17,8 +18,9 @@ export interface CampaignLinkRow {
 }
 
 /** The campaign's ready links: short URL to hand out, with clicks and leads; copy all or download CSV. */
-export function CampaignLinks({ rows, base, file, createHref }: { rows: CampaignLinkRow[]; base: string; file: string; createHref: string | null }) {
+export function CampaignLinks({ rows, base, file, createHref, editable = false }: { rows: CampaignLinkRow[]; base: string; file: string; createHref: string | null; editable?: boolean }) {
   const [info, setInfo] = useState<string | null>(null);
+  const [editing, setEditing] = useState<string | null>(null);
   const short = (slug: string) => `${base}/r/${slug}`;
 
   async function copyAll() {
@@ -45,6 +47,7 @@ export function CampaignLinks({ rows, base, file, createHref }: { rows: Campaign
 
   return (
     <section className="card mt-6 overflow-hidden">
+      {editing && <EditLinkDialog id={editing} onClose={() => setEditing(null)} />}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-6 py-4">
         <h2 className="font-display text-lg font-semibold">Links <span className="text-sm font-normal text-ink-faint">{rows.length}</span></h2>
         {rows.length > 0 && (
@@ -70,6 +73,7 @@ export function CampaignLinks({ rows, base, file, createHref }: { rows: Campaign
                 <th className="px-6 py-3 font-medium">Source · content</th>
                 <th className="px-6 py-3 text-right font-medium">Clicks</th>
                 <th className="px-6 py-3 text-right font-medium">Leads</th>
+                {editable && <th className="px-6 py-3" />}
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
@@ -85,6 +89,11 @@ export function CampaignLinks({ rows, base, file, createHref }: { rows: Campaign
                   <td className="px-6 py-3 text-xs text-ink-muted">{[r.utmSource, r.utmContent || r.utmMedium].filter(Boolean).join(" · ") || "—"}</td>
                   <td className="num px-6 py-3 text-right text-ink">{r.clicks}</td>
                   <td className="num px-6 py-3 text-right text-leads">{r.leads}</td>
+                  {editable && (
+                    <td className="px-6 py-3 text-right">
+                      <button type="button" onClick={() => setEditing(r.id)} className="text-xs font-medium text-accent hover:opacity-80">Edit</button>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

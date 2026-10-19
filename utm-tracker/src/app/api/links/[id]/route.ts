@@ -3,6 +3,22 @@ import { prisma } from "@/lib/db";
 import { canEditLink, forbidden, guard } from "@/lib/auth";
 import { updateLinkSchema } from "@/lib/validation";
 
+/** GET /api/links/{id} — the link's editable fields (for the edit dialog). */
+export async function GET(_req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const actor = await guard("active");
+  if (actor instanceof NextResponse) return actor;
+  const { id } = await props.params;
+  const link = await prisma.trackingLink.findUnique({
+    where: { id },
+    select: {
+      id: true, name: true, slug: true, destinationUrl: true, campaignId: true,
+      utmSource: true, utmMedium: true, utmCampaign: true, utmContent: true, utmTerm: true, notes: true,
+    },
+  });
+  if (!link) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return NextResponse.json({ ...link, editable: await canEditLink(actor, link) });
+}
+
 export async function PATCH(req: NextRequest, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const body = await req.json().catch(() => null);
