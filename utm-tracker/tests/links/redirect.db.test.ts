@@ -40,6 +40,19 @@ describe.skipIf(!url)("short link clicks (database)", () => {
     expect(await clicks()).toBe(0);
   });
 
+  it("counts a QR scan made by a scanner app, once even when the browser opens it next", async () => {
+    const qr = await db.trackingLink.create({ data: { name: `${tag} qr`, slug: `${tag}-qr-banner`, destinationUrl: `https://${tag}.example/apply`, utmSource: "qr", utmMedium: "offline" } });
+    const scan = (headers: Record<string, string>) =>
+      GET(new NextRequest(`http://x/r/${qr.slug}`, { headers: { "x-forwarded-for": "10.3.3.3", ...headers } }), { params: Promise.resolve({ slug: qr.slug }) });
+    await scan({ "user-agent": "Dalvik/2.1.0 (Linux; U; Android 13; M2101K6G Build/TKQ1)" });
+    await scan({ "user-agent": CHROME, "accept-language": "ru" });
+    expect(await db.clickEvent.count({ where: { trackingLinkId: qr.id } })).toBe(1);
+    await scan({ "user-agent": "TelegramBot (like TwitterBot)" });
+    expect(await db.clickEvent.count({ where: { trackingLinkId: qr.id } })).toBe(1);
+    await db.clickEvent.deleteMany({ where: { trackingLinkId: qr.id } });
+    await db.trackingLink.delete({ where: { id: qr.id } });
+  });
+
   it("counts a person once, even when they tap again within seconds", async () => {
     const person = { "user-agent": CHROME, "accept-language": "ru-RU,ru;q=0.9" };
     const first = await open(person);

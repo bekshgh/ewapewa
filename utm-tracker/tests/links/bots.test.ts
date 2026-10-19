@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { botReason } from "@/lib/bots";
+import { botReason, isOfflineLink } from "@/lib/bots";
 
 const person = (userAgent: string) => ({ userAgent, acceptLanguage: "ru-RU,ru;q=0.9", purpose: null });
 
@@ -14,17 +14,36 @@ describe("short-link bot filter", () => {
     ]) expect(botReason(person(ua)), ua).toBeNull();
   });
 
-  it("stops link previews, crawlers and scripts", () => {
+  it("stops link previews and crawlers everywhere", () => {
     for (const ua of [
       "TelegramBot (like TwitterBot)",
       "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)",
       "WhatsApp/2.23.20.0",
       "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/129.0 Safari/537.36",
-      "curl/8.7.1",
-      "python-requests/2.32.3",
-      "Go-http-client/2.0",
-    ]) expect(botReason(person(ua)), ua).toBe("bot-ua");
+    ]) {
+      expect(botReason(person(ua)), ua).toBe("bot-ua");
+      expect(botReason({ ...person(ua), offline: true }), ua).toBe("bot-ua");
+    }
+  });
+
+  it("stops scripts on online links, but counts QR scanner apps on printed links", () => {
+    for (const ua of ["curl/8.7.1", "python-requests/2.32.3", "Go-http-client/2.0", "okhttp/4.12.0", "QR Scanner/3.2 (Android)"]) {
+      expect(botReason(person(ua)), ua).toBe("script-ua");
+      expect(botReason({ ...person(ua), offline: true }), ua).toBeNull();
+    }
+    // Android's built-in HTTP client: a borrowed-looking UA, no Accept-Language
+    const dalvik = { userAgent: "Dalvik/2.1.0 (Linux; U; Android 13; M2101K6G Build/TKQ1)", acceptLanguage: null, purpose: null };
+    expect(botReason(dalvik)).toBe("no-accept-language");
+    expect(botReason({ ...dalvik, offline: true })).toBeNull();
+    expect(botReason({ userAgent: "", acceptLanguage: null, purpose: null, offline: true })).toBeNull();
+  });
+
+  it("knows a printed link by its tags or slug", () => {
+    expect(isOfflineLink({ slug: "bc2-qr-banner", utmSource: "qr", utmMedium: "offline" })).toBe(true);
+    expect(isOfflineLink({ slug: "poster-1", utmSource: "poster", utmMedium: null })).toBe(true);
+    expect(isOfflineLink({ slug: "bc2-tg-telegram", utmSource: "telegram", utmMedium: "social" })).toBe(false);
+    expect(isOfflineLink({ slug: "bc2-tg-qrcodes", utmSource: "telegram", utmMedium: "social" })).toBe(false);
   });
 
   it("stops prefetches, HEAD checks, empty agents and requests without Accept-Language", () => {

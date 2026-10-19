@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { UAParser } from "ua-parser-js";
 import { prisma } from "@/lib/db";
 import { generateClickId, hashIp, buildDestinationUrl } from "@/lib/utils";
-import { isBotRequest, REPEAT_WINDOW_MS } from "@/lib/bots";
+import { botReason, isOfflineLink, REPEAT_WINDOW_MS } from "@/lib/bots";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -58,18 +58,27 @@ export async function GET(req: NextRequest, props: { params: Promise<{ slug: str
   const custom = (link.customParams as Record<string, string> | null) ?? null;
 
   // Link previews, crawlers, scripts, prefetches: redirect, but don't count a click.
-  const bot = isBotRequest({
+  // On printed links (QR codes) only sure bots are skipped: scanner apps look like scripts.
+  const bot = botReason({
     method: req.method,
     userAgent: ua,
     acceptLanguage: req.headers.get("accept-language"),
     purpose: req.headers.get("sec-purpose") || req.headers.get("purpose"),
+    offline: isOfflineLink(link),
   });
-  if (bot) return NextResponse.redirect(buildDestinationUrl(link.destinationUrl, utm, custom, null), 302);
+  if (bot) {
+    console.info("click_skipped", JSON.stringify({ slug, reason: bot, ua: ua.slice(0, 160) }));
+    return NextResponse.redirect(buildDestinationUrl(link.destinationUrl, utm, custom, null), 302);
+  }
 
   // The same device tapping the link again within seconds is still one click: reuse its click_id.
   if (ipHash) {
     const recent = await prisma.clickEvent.findFirst({
-      where: { trackingLinkId: link.id, ipHash, userAgent: ua || null, timestamp: { gte: new Date(Date.now() - REPEAT_WINDOW_MS) } },
+      // a scanner app resolving the link, then the browser opening it: one scan
+      where: {
+        trackingLinkId: link.id, ipHash, timestamp: { gte: new Date(Date.now() - REPEAT_WINDOW_MS) },
+        ...(isOfflineLink(link) ? {} : { userAgent: ua || null }),
+      },
       orderBy: { timestamp: "desc" },
       select: { clickId: true },
     }).catch(() => null);
