@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { EditLinkDialog } from "@/components/EditLinkDialog";
+import { Portal } from "@/components/ui/Portal";
 import { formatNumber, relativeTime } from "@/lib/utils";
 import { shortUrl } from "@/lib/linkDomains";
 
@@ -33,6 +34,7 @@ export type LinkRow = {
 function QRModal({ url, onClose }: { url: string; onClose: () => void }) {
   const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`;
   return (
+    <Portal>
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
       onClick={onClose}
@@ -52,6 +54,7 @@ function QRModal({ url, onClose }: { url: string; onClose: () => void }) {
         </div>
       </div>
     </div>
+    </Portal>
   );
 }
 

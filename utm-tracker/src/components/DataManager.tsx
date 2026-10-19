@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Portal } from "@/components/ui/Portal";
 import { useRouter } from "next/navigation";
 
 type Campaign = { id: string; name: string; label: string | null };
@@ -107,7 +108,8 @@ export function DataManager({ stats, campaigns }: { stats: Stats; campaigns: Cam
       </section>
 
       {pendingAction && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+        <Portal>
+<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
           <div className="card w-full max-w-md p-6 shadow-2xl space-y-4">
             <p className="font-display text-lg font-semibold text-ink">Confirm deletion</p>
             <p className="text-sm text-ink-muted">
@@ -135,6 +137,7 @@ export function DataManager({ stats, campaigns }: { stats: Stats; campaigns: Cam
             </div>
           </div>
         </div>
+        </Portal>
       )}
     </div>
   );

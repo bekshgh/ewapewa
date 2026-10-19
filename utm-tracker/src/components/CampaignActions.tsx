@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Portal } from "@/components/ui/Portal";
 import { useRouter } from "next/navigation";
 
 export function CampaignActions({ id, status, canDelete }: { id: string; status: string; canDelete: boolean }) {
@@ -59,7 +60,8 @@ export function CampaignActions({ id, status, canDelete }: { id: string; status:
       </div>
 
       {confirmDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+        <Portal>
+<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
           <div className="card w-full max-w-md p-6 shadow-2xl space-y-4">
             <p className="font-display text-lg font-semibold text-ink">Delete campaign?</p>
             <p className="text-sm text-ink-muted">
@@ -87,6 +89,7 @@ export function CampaignActions({ id, status, canDelete }: { id: string; status:
             </div>
           </div>
         </div>
+        </Portal>
       )}
     </>
   );

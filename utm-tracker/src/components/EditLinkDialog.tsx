@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { UTM_MEDIUMS, UTM_SOURCES } from "@/lib/constants";
+import { Portal } from "@/components/ui/Portal";
 
 type Form = {
   shortDomain: string;
@@ -87,6 +88,7 @@ export function EditLinkDialog({ id, onClose }: { id: string; onClose: () => voi
     setForm((f) => (f ? { ...f, [k]: e.target.value } : f));
 
   return (
+    <Portal>
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm sm:items-center" onClick={onClose}>
       <form
         onSubmit={save}
@@ -150,5 +152,6 @@ export function EditLinkDialog({ id, onClose }: { id: string; onClose: () => voi
         </div>
       </form>
     </div>
+    </Portal>
   );
 }
