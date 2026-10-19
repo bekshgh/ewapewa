@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { prisma } from "@/lib/db";
 import { filterOptions, report, sessions as listSessions, slice } from "@/lib/formAnalytics/report";
+import { FormRename } from "@/components/FormRename";
 import { SLICES, duration, fieldLabel, formTitle, labelsOf, parseFilter, pickSlice, type SP } from "@/lib/formAnalytics/filters";
 import { FormProjectPicker } from "@/components/FormProjectPicker";
 import { currentActor } from "@/lib/auth";
@@ -53,6 +54,7 @@ export default async function FormReportPage(props: { params: Promise<{ id: stri
       <PageHeader
         breadcrumb="Forms"
         title={formTitle(form)}
+        titleAction={mayPick(form.projectSlug) ? <FormRename id={id} name={formTitle(form)} autoName={form.title || form.id} /> : undefined}
         subtitle={`${form.pageUrl ? `${form.pageUrl.replace(/^https?:\/\//, "")} · ` : ""}${projectTitle ? `${projectTitle} · ` : ""}${formatNumber(fn.visitors)} visitors · ${formatNumber(fn.sessions)} sessions`}
         action={
           <div className="flex flex-wrap gap-2">

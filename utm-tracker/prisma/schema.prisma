@@ -377,6 +377,7 @@ model AnalyticsForm {
   projectSlug String? // project folder key in Campaigns → Projects, e.g. "toptalentssprint-f26"
   projectSetByHand Boolean @default(false) // picked in Forms: the page's links / UTM no longer change it
   title       String? // heading of the form's block (forms found by /t.js), else the page title
+  customTitle String? // the team's own name for the form; shown instead of title
   pageUrl     String? // page the form is on (forms found by /t.js)
   fields      Json // [{k, kind: text|select|check, cond: bool, req: bool, label?}] in page order
   createdAt   DateTime @default(now())

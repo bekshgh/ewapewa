@@ -58,4 +58,4 @@ export const fieldLabel = (k: string, labels?: Record<string, string>) => labels
 export const labelsOf = (fields: unknown): Record<string, string> =>
   Object.fromEntries(((fields as { k: string; label?: string }[] | null) ?? []).filter((f) => f.label).map((f) => [f.k, f.label!]));
 /** A form's name in lists and headers. */
-export const formTitle = (f: { id: string; title: string | null }) => f.title || f.id;
+export const formTitle = (f: { id: string; title: string | null; customTitle?: string | null }) => f.customTitle || f.title || f.id;
