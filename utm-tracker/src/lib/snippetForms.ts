@@ -47,7 +47,8 @@ export const FORMS_JS = String.raw`
       if (/iPad|Tablet/i.test(ua) || (w >= 768 && w < 1024 && /Mobi|Android/i.test(ua))) return "tablet";
       return /Mobi|Android|iPhone/i.test(ua) || w < 768 ? "mobile" : "desktop";
     }
-    var page = (location.hostname.replace(/^www\./, "") + location.pathname.replace(/\/+$/, "")).toLowerCase().replace(/[^a-z0-9_.:-]+/g, "_");
+    // the page a form is on, read when the form appears: single-page sites change the address without a reload
+    function pageKey() { return (location.hostname.replace(/^www\./, "") + location.pathname.replace(/\/+$/, "")).toLowerCase().replace(/[^a-z0-9_.:-]+/g, "_"); }
 
     // ── the form's questions, in page order ──
     function groupOf(el) { return el.closest(".t-input-group, .t-input-group_cb, .form-group, fieldset"); }
@@ -327,7 +328,7 @@ export const FORMS_JS = String.raw`
       if (!fl.list.length) return;
       form.__tl = true;
       var ident = (form.id || form.getAttribute("name") || "form" + i).replace(/[^A-Za-z0-9_.-]+/g, "_").slice(0, 30);
-      var t = { form: form, id: page.slice(0, 79 - ident.length) + ":" + ident, fl: fl, list: fl.list, byName: fl.byName, byCtl: fl.byCtl, title: titleOf(form),
+      var t = { form: form, id: pageKey().slice(0, 79 - ident.length) + ":" + ident, fl: fl, list: fl.list, byName: fl.byName, byCtl: fl.byCtl, title: titleOf(form),
                 tilda: /(^|\s)t-form(\s|$)/.test(form.className) || !!form.closest(".t-rec, .t-popup"), multi: false,
                 q: [], sid: "", seq: 0, t0: 0, started: false, done: false, last: null, focusAt: {}, seen: {}, attemptAt: 0, values: {}, known: {} };
       customValues(t, false);

@@ -13,11 +13,17 @@ import { manualNumbers, projectStats, type ChannelRow, type CampaignStats } from
 
 export const dynamic = "force-dynamic";
 
+/** "/en/apply" — tells a project's forms apart when it has several. */
+function formPage(f: { id: string; pageUrl: string | null }): string {
+  try { if (f.pageUrl) return new URL(f.pageUrl).pathname || "/"; } catch {}
+  return f.id.split(":").pop() ?? f.id;
+}
+
 export default async function ProjectFolderPage(props: { params: Promise<{ key: string }> }) {
   const { key } = await props.params;
   const [s, manual, actor, forms] = await Promise.all([
     projectStats(key), manualNumbers(key), currentActor(),
-    prisma.analyticsForm.findMany({ where: { projectSlug: key }, select: { id: true } }),
+    prisma.analyticsForm.findMany({ where: { projectSlug: key }, select: { id: true, pageUrl: true }, orderBy: { createdAt: "asc" } }),
   ]);
   if (!s) notFound();
   const programmes = s.campaigns.filter((c) => c.role.kind === "programme");
@@ -31,7 +37,11 @@ export default async function ProjectFolderPage(props: { params: Promise<{ key: 
         action={
           <div className="flex flex-wrap items-center gap-2">
             <LiveRefresh />
-            {forms.map((f) => <Link key={f.id} href={`/forms/${encodeURIComponent(f.id)}`} className="btn-ghost">Form drop-off <NewBadge className="ml-1" /> →</Link>)}
+            {forms.map((f) => (
+              <Link key={f.id} href={`/forms/${encodeURIComponent(f.id)}`} className="btn-ghost" title={f.pageUrl ?? f.id}>
+                Form drop-off{forms.length > 1 && <span className="ml-1 text-ink-faint">· {formPage(f)}</span>} <NewBadge className="ml-1" /> →
+              </Link>
+            ))}
             <Link href="/campaigns" className="btn-ghost">← All campaigns</Link>
           </div>
         }
