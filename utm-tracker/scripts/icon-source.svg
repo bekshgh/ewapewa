@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Source of src/app/icon.png and apple-icon.png (node scripts/render-icons.mjs): a polar bear paw. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1B4D78"/>
+      <stop offset="1" stop-color="#0A1F36"/>
+    </linearGradient>
+    <linearGradient id="fur" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#D9EAF6"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.32" cy="0.22" r="0.8">
+      <stop offset="0" stop-color="#5290BD" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#5290BD" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="112" fill="url(#glow)"/>
+  <g transform="translate(70 78) scale(0.73)">
+    <!-- claws -->
+    <g fill="#9CC3E2">
+      <path d="M28 168 C30 140 38 118 50 102 C54 124 56 148 54 170 Z"/>
+      <path d="M150 64 C156 38 168 14 186 0 C190 26 188 52 180 74 Z"/>
+      <path d="M272 58 C282 34 296 14 316 4 C316 30 310 56 298 78 Z"/>
+      <path d="M372 132 C386 110 402 92 422 82 C418 108 408 132 394 150 Z"/>
+      <path d="M452 236 C468 218 486 204 506 198 C498 222 486 244 470 260 Z"/>
+    </g>
+    <!-- toes and pad -->
+    <g fill="url(#fur)" stroke="#BFD9EC" stroke-width="4">
+      <ellipse cx="40" cy="228" rx="38" ry="50" transform="rotate(-8 40 228)"/>
+      <ellipse cx="150" cy="148" rx="48" ry="70" transform="rotate(8 150 148)"/>
+      <ellipse cx="266" cy="140" rx="48" ry="64" transform="rotate(16 266 140)"/>
+      <ellipse cx="354" cy="228" rx="44" ry="60" transform="rotate(24 354 228)"/>
+      <ellipse cx="430" cy="326" rx="42" ry="58" transform="rotate(28 430 326)"/>
+      <path d="M150 262 C206 248 262 268 300 304 C336 338 372 372 396 410 C418 446 404 488 362 496 C318 504 268 486 222 478 C176 470 126 488 86 474 C44 460 26 418 40 380 C54 342 92 278 150 262 Z"/>
+    </g>
+    <!-- a little shine on the pad -->
+    <path d="M118 318 C140 300 172 296 196 304" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" opacity="0.8"/>
+  </g>
+</svg>
