@@ -13,6 +13,7 @@ import {
   Cell,
   Legend,
 } from "recharts";
+import { useState } from "react";
 import { formatNumber, formatPercent } from "@/lib/utils";
 
 const COLORS = [
@@ -130,7 +131,11 @@ function DonutChart({ data, field }: { data: { name: string; value: number }[]; 
 }
 
 /* ─── Breakdown panel (donuts + table) ──────────────── */
+const ROW_LIMITS = [10, 20, 30, 0] as const; // 0 = all
+
 export function BreakdownPanel({ title, head, rows }: { title: string; head: string; rows: Row[] }) {
+  const [limit, setLimit] = useState<number>(10);
+  const shown = limit ? rows.slice(0, limit) : rows;
   const totalClicks = rows.reduce((s, r) => s + r.clicks, 0);
   const totalLeads  = rows.reduce((s, r) => s + r.leads,  0);
 
@@ -139,7 +144,24 @@ export function BreakdownPanel({ title, head, rows }: { title: string; head: str
 
   return (
     <div className="card p-6">
-      <h2 className="font-display text-lg font-semibold">{title}</h2>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-display text-lg font-semibold">{title}</h2>
+        {rows.length > ROW_LIMITS[0] && (
+          <div className="inline-flex rounded-lg border border-line p-0.5 text-xs" role="group" aria-label={`Rows shown in ${title}`}>
+            {ROW_LIMITS.filter((n) => n === 0 || n < rows.length || n === ROW_LIMITS[0]).map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setLimit(n)}
+                aria-pressed={limit === n}
+                className={`rounded-md px-2.5 py-1 transition ${limit === n ? "bg-bg-hover font-medium text-ink" : "text-ink-faint hover:text-ink"}`}
+              >
+                {n === 0 ? `All ${rows.length}` : `Top ${n}`}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {rows.length === 0 ? (
         <p className="mt-6 text-sm text-ink-faint">No data yet.</p>
@@ -165,7 +187,7 @@ export function BreakdownPanel({ title, head, rows }: { title: string; head: str
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
-                {rows.slice(0, 10).map((r, i) => (
+                {shown.map((r, i) => (
                   <tr key={r.key} className="hover:bg-bg-hover/40">
                     <td className="py-2.5 flex items-center gap-2 text-ink">
                       <span className="h-2.5 w-2.5 rounded-full flex-shrink-0" style={{ background: COLORS[i % COLORS.length] }} />
