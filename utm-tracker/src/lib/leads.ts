@@ -1,7 +1,7 @@
 import { Prisma, AttributionStatus, WebhookStatus } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { buildDedupeKey } from "@/lib/utils";
-import { resolveAttribution, type NormalisedLead } from "@/lib/attribution";
+import { preferLinkTags, resolveAttribution, type NormalisedLead } from "@/lib/attribution";
 
 export interface RecordLeadResult {
   leadId: string;
@@ -37,6 +37,14 @@ export async function recordLead(
   if (existing) return logDuplicate(existing, lead, opts);
 
   const attribution = await resolveAttribution(lead);
+  // Exact match on a click: the link's tags are the truth.
+  if (attribution.status === AttributionStatus.exact && attribution.trackingLinkId) {
+    const link = await prisma.trackingLink.findUnique({
+      where: { id: attribution.trackingLinkId },
+      select: { utmSource: true, utmMedium: true, utmCampaign: true, utmContent: true, utmTerm: true },
+    });
+    if (link) lead = preferLinkTags(link, lead);
+  }
 
   let created;
   try {

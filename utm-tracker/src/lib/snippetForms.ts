@@ -243,8 +243,8 @@ export const FORMS_JS = String.raw`
       if (t.done) return;
       emit(t, "submit_success");
       flush(t, false);
-      // Tilda forms report the lead on the button press; others once the send went through
-      if (!t.tilda && window.tlConversion) window.tlConversion(t.form, true);
+      // the lead, once the send went through (repeats are merged on the server)
+      if (window.tlConversion) window.tlConversion(t.form, true);
     }
     // a non-Tilda form gave way to its thank-you screen, or lost all its questions
     function goneAway(t) {

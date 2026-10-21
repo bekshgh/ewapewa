@@ -40,7 +40,7 @@ function LoginForm() {
         router.refresh();
       } else {
         const data = await res.json().catch(() => null);
-        setError(res.status === 403 && data?.error ? data.error : "Wrong email or password");
+        setError((res.status === 403 || res.status === 429) && data?.error ? data.error : "Wrong email or password");
       }
     } catch {
       setError("Connection error. Please try again.");

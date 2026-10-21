@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { verifyPassword } from "@/lib/password";
 import { OWNER, SESSION_COOKIE, SESSION_MAX_AGE_SEC, createSessionToken, safeEqual } from "@/lib/session";
+import { blockedFor, noteAttempt, requestIpHash, tooMany } from "@/lib/authLimit";
 
 /** POST { email, password } — a team account, or the owner (AUTH_EMAIL / AUTH_PASSWORD). */
 export async function POST(req: NextRequest) {
@@ -11,6 +12,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
   const mail = email.toLowerCase().trim();
+  const ipHash = requestIpHash(req);
+  const wait = await blockedFor("login", ipHash);
+  if (wait) return NextResponse.json({ error: tooMany(wait) }, { status: 429 });
 
   let subject: string | null = null;
   const user = await prisma.user.findUnique({ where: { email: mail } });
@@ -24,6 +28,7 @@ export async function POST(req: NextRequest) {
     const ownerPassword = process.env.AUTH_PASSWORD;
     if (ownerEmail && ownerPassword && mail === ownerEmail.toLowerCase().trim() && safeEqual(password, ownerPassword)) subject = OWNER;
   }
+  await noteAttempt("login", ipHash, !!subject);
   if (!subject) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
 
   const token = await createSessionToken(subject);

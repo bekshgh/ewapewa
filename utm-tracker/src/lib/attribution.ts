@@ -79,3 +79,24 @@ export async function resolveAttribution(lead: NormalisedLead): Promise<Attribut
   // 3. Nothing matched
   return { status: AttributionStatus.unknown, clickEventId: null, trackingLinkId: null };
 }
+
+type LinkTags = { utmSource: string | null; utmMedium: string | null; utmCampaign: string | null; utmContent: string | null; utmTerm: string | null };
+
+/**
+ * A lead that came through a known tracker link takes that link's tags; the
+ * page's tags only fill what the link leaves empty. The page's copy may be stale
+ * (an earlier visit), copied along with the address, or edited by hand.
+ */
+export function preferLinkTags<T extends Partial<Record<keyof LinkTags, string | undefined>>>(link: LinkTags, page: T): T {
+  if (!link.utmSource && !link.utmCampaign) return page;
+  const v = (x: string | null) => x ?? undefined;
+  return {
+    ...page,
+    utmSource: v(link.utmSource) ?? page.utmSource,
+    utmMedium: v(link.utmMedium) ?? page.utmMedium,
+    utmCampaign: v(link.utmCampaign) ?? page.utmCampaign,
+    // content / term belong to the link's own set of tags: never mix in the page's
+    utmContent: v(link.utmContent),
+    utmTerm: v(link.utmTerm),
+  };
+}

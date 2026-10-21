@@ -442,3 +442,14 @@ model AnalyticsEvent {
   @@index([type, fieldId])
   @@index([ts])
 }
+
+// Sign-in / sign-up attempts per visitor (hashed IP), for rate limiting.
+model AuthAttempt {
+  id        String   @id @default(cuid())
+  kind      String // "login" | "register"
+  ipHash    String
+  ok        Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([kind, ipHash, createdAt])
+}

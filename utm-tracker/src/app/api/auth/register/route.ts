@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { hashPassword } from "@/lib/password";
+import { blockedFor, noteAttempt, requestIpHash, tooMany } from "@/lib/authLimit";
 
 const schema = z.object({
   name: z.string().trim().min(2, "Enter your name").max(80),
@@ -14,6 +15,10 @@ const schema = z.object({
  * admin's approval. The owner's own e-mail (AUTH_EMAIL) is approved as admin.
  */
 export async function POST(req: NextRequest) {
+  const ipHash = requestIpHash(req);
+  const wait = await blockedFor("register", ipHash);
+  if (wait) return NextResponse.json({ error: tooMany(wait) }, { status: 429 });
+  await noteAttempt("register", ipHash, true);
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Check the form" }, { status: 422 });
   const { name, email, password } = parsed.data;

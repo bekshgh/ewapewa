@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { recordLead } from "@/lib/leads";
-import { type NormalisedLead } from "@/lib/attribution";
+import { preferLinkTags, type NormalisedLead } from "@/lib/attribution";
 import { CORS, beaconOk, readInput, str } from "@/lib/beacon";
 import { hashIp } from "@/lib/utils";
 import {
@@ -54,12 +54,12 @@ async function handle(req: NextRequest) {
     formName: str(body.formname) || str(body.formName),
     pageUrl: str(body.pageUrl) || str(body.page_url) || str(body.url),
     clickId,
-    // UTM from the page, else from the link the visitor came through.
-    utmSource: str(body.utm_source) || str(click.trackingLink.utmSource),
-    utmMedium: str(body.utm_medium) || str(click.trackingLink.utmMedium),
-    utmCampaign: str(body.utm_campaign) || str(click.trackingLink.utmCampaign),
-    utmContent: str(body.utm_content) || str(click.trackingLink.utmContent),
-    utmTerm: str(body.utm_term) || str(click.trackingLink.utmTerm),
+    // The link the visitor came through is the truth; the page's tags only fill gaps
+    // (they may be stale, copied along with the address, or mixed from another visit).
+    ...preferLinkTags(click.trackingLink, {
+      utmSource: str(body.utm_source), utmMedium: str(body.utm_medium), utmCampaign: str(body.utm_campaign),
+      utmContent: str(body.utm_content), utmTerm: str(body.utm_term),
+    }),
     submittedAt: new Date(),
   };
 

@@ -20,10 +20,16 @@ export function buildSnippetJs(base: string): string {
   var p = new URLSearchParams(window.location.search);
 
   // Persist the params to a cookie so they survive a redirect to a thank-you page.
-  FIELDS.forEach(function (name) {
-    var v = p.get(name);
-    if (v) { try { document.cookie = "tl_" + name + "=" + encodeURIComponent(v) + ";path=/;max-age=86400;SameSite=Lax"; } catch (e) {} }
-  });
+  // A visit with any of them replaces the whole set: tags of an earlier visit must
+  // never mix into this one (utm_content of yesterday's QR on today's Instagram click).
+  if (FIELDS.some(function (name) { return p.get(name); })) {
+    FIELDS.forEach(function (name) {
+      var v = p.get(name);
+      try {
+        document.cookie = "tl_" + name + "=" + (v ? encodeURIComponent(v) + ";max-age=86400" : ";max-age=0") + ";path=/;SameSite=Lax";
+      } catch (e) {}
+    });
+  }
   function cookie(name) {
     var m = document.cookie.match(new RegExp("(?:^|; )tl_" + name + "=([^;]*)"));
     return m ? decodeURIComponent(m[1]) : "";
@@ -82,9 +88,10 @@ export function buildSnippetJs(base: string): string {
     return !!form && !!form.closest && (/(^|\\s)t-form(\\s|$)/.test(form.className || "") || !!form.closest(".t-rec, .t-popup"));
   }
 
-  // 2. Report the lead on a press of the submit button, and again on Tilda's
-  //    success callback / event. Repeats are merged into one lead on the server
-  //    (by click_id), filling in contact fields typed after the first press.
+  // 2. Report the lead once the form is sent: Tilda's success callback / event, a
+  //    thank-you screen, or a send that leaves the page. Repeats are merged into one
+  //    lead on the server (by click_id). Contacts typed in the form are remembered as
+  //    they are typed, since Tilda clears its fields after a successful send.
   //    Visitors who did not come through a tracker link are reported too, as
   //    "direct" registrations: one per page view (sid), only with an e-mail or phone.
   var last = 0;
@@ -135,14 +142,9 @@ export function buildSnippetJs(base: string): string {
   setTimeout(attach, 3000);
   // Current Tilda forms (no jQuery) fire this native event on the form after a successful send.
   document.addEventListener("tildaform:aftersuccess", function (e) { last = 0; window.tlConversion(e.target); }, true);
-  // Tilda forms: on the button press. Other forms ("Continue" of a multi-step form is a submit
-  // button too): only a send that leaves the page here; one handled by the page's script counts
-  // once its thank-you screen shows (part 3 below calls tlConversion then).
-  document.addEventListener("click", function (e) {
-    var btn = e.target && e.target.closest && e.target.closest('.t-submit, button[type="submit"], input[type="submit"]');
-    if (btn && isTilda(btn.closest("form"))) window.tlConversion(btn.closest("form"));
-  }, true);
-  document.addEventListener("submit", function (e) { if (isTilda(e.target)) window.tlConversion(e.target); }, true);
+  // Only a send that went through counts — never a press of a button the form then refused.
+  // Tilda: its success callback / event above, or its thank-you box (part 3 calls tlConversion).
+  // Other forms: a thank-you screen (part 3), or — here — a send that leaves the page.
   // bubbling, after the page's own handlers: not prevented = the browser leaves with the form
   window.addEventListener("submit", function (e) { if (!isTilda(e.target) && !e.defaultPrevented) window.tlConversion(e.target, true); });
 ${FORMS_JS}
