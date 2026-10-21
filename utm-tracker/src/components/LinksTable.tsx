@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import QRCode from "qrcode";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CopyButton } from "@/components/ui/CopyButton";
@@ -10,6 +11,7 @@ import { formatNumber, relativeTime } from "@/lib/utils";
 import { shortUrl } from "@/lib/linkDomains";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_URL || "";
+const PAGE = 50; // rows shown at a time
 
 export type LinkRow = {
   id: string;
@@ -31,8 +33,18 @@ export type LinkRow = {
   editable: boolean;
 };
 
-function QRModal({ url, onClose }: { url: string; onClose: () => void }) {
-  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`;
+/** QR made in the browser (no third-party service sees the links): PNG 1024 px and SVG for print. */
+function QRModal({ url, slug, onClose }: { url: string; slug: string; onClose: () => void }) {
+  const [png, setPng] = useState<string | null>(null);
+  const [svg, setSvg] = useState<string | null>(null);
+  useEffect(() => {
+    let stop = false;
+    const opts = { margin: 2, errorCorrectionLevel: "M" as const, color: { dark: "#000000", light: "#ffffff" } };
+    Promise.all([QRCode.toDataURL(url, { ...opts, width: 1024 }), QRCode.toString(url, { ...opts, type: "svg" })])
+      .then(([p, s]) => { if (!stop) { setPng(p); setSvg(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(s)}`); } })
+      .catch(() => {});
+    return () => { stop = true; };
+  }, [url]);
   return (
     <Portal>
     <div
@@ -44,12 +56,11 @@ function QRModal({ url, onClose }: { url: string; onClose: () => void }) {
         onClick={(e) => e.stopPropagation()}
       >
         <p className="text-sm font-semibold text-ink">QR Code</p>
-        <img src={qrSrc} alt="QR code" width={200} height={200} className="rounded-xl" />
-        <p className="max-w-[220px] break-all text-center text-xs text-ink-faint">{url}</p>
-        <div className="flex gap-3">
-          <a href={qrSrc} download="qr.png" target="_blank" rel="noreferrer" className="btn-ghost text-xs">
-            Download
-          </a>
+        {png ? <img src={png} alt="QR code" width={220} height={220} className="rounded-xl" /> : <div className="h-[220px] w-[220px] animate-pulse rounded-xl bg-bg-hover" />}
+        <p className="max-w-[240px] break-all text-center text-xs text-ink-faint">{url}</p>
+        <div className="flex flex-wrap justify-center gap-2">
+          {png && <a href={png} download={`qr-${slug}.png`} className="btn-ghost border border-line text-xs">PNG 1024 px</a>}
+          {svg && <a href={svg} download={`qr-${slug}.svg`} className="btn-ghost border border-line text-xs" title="Vector: any size for print">SVG (print)</a>}
           <button className="btn-ghost text-xs" onClick={onClose}>Close</button>
         </div>
       </div>
@@ -64,8 +75,9 @@ export function LinksTable({ links }: { links: LinkRow[] }) {
   const [campaign, setCampaign] = useState("");
   const [source, setSource] = useState("");
   const [showArchived, setShowArchived] = useState(false);
-  const [qrUrl, setQrUrl] = useState<string | null>(null);
+  const [qr, setQr] = useState<{ url: string; slug: string } | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
+  const [limit, setLimit] = useState(PAGE);
 
   const campaigns = useMemo(() => Array.from(new Set(links.map((l) => l.campaignName).filter(Boolean))) as string[], [links]);
   const sources = useMemo(() => Array.from(new Set(links.map((l) => l.utmSource).filter(Boolean))) as string[], [links]);
@@ -91,7 +103,7 @@ export function LinksTable({ links }: { links: LinkRow[] }) {
 
   return (
     <>
-      {qrUrl && <QRModal url={qrUrl} onClose={() => setQrUrl(null)} />}
+      {qr && <QRModal url={qr.url} slug={qr.slug} onClose={() => setQr(null)} />}
       {editing && <EditLinkDialog id={editing} onClose={() => setEditing(null)} />}
 
       <div className="mb-5 flex flex-wrap items-center gap-3">
@@ -130,7 +142,7 @@ export function LinksTable({ links }: { links: LinkRow[] }) {
               {filtered.length === 0 && (
                 <tr><td colSpan={8} className="px-5 py-10 text-center text-ink-faint">No links match your filters.</td></tr>
               )}
-              {filtered.map((l) => {
+              {filtered.slice(0, limit).map((l) => {
                 const fullUrl = shortUrl(BASE, l.slug, l.shortDomain);
                 return (
                   <tr key={l.id} className={`transition hover:bg-bg-hover/50 ${l.isArchived ? "opacity-50" : ""}`}>
@@ -144,7 +156,7 @@ export function LinksTable({ links }: { links: LinkRow[] }) {
                         <CopyButton value={fullUrl} />
                         <button
                           type="button"
-                          onClick={() => setQrUrl(fullUrl)}
+                          onClick={() => setQr({ url: fullUrl, slug: l.slug })}
                           className="inline-flex items-center rounded-md border border-line bg-bg-raised px-2 py-0.5 text-xs font-medium text-ink-muted transition hover:border-accent hover:text-accent"
                           title="Show QR code"
                         >
@@ -183,6 +195,15 @@ export function LinksTable({ links }: { links: LinkRow[] }) {
             </tbody>
           </table>
         </div>
+        {filtered.length > limit && (
+          <div className="flex items-center justify-between gap-3 border-t border-line px-5 py-3 text-sm text-ink-muted">
+            <span>Showing {limit} of {filtered.length}</span>
+            <div className="flex gap-2">
+              <button type="button" className="btn-ghost border border-line" onClick={() => setLimit((n) => n + PAGE)}>Show {Math.min(PAGE, filtered.length - limit)} more</button>
+              <button type="button" className="btn-ghost" onClick={() => setLimit(filtered.length)}>Show all</button>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
