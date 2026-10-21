@@ -8,6 +8,7 @@ import { AccessDenied } from "@/components/AccessDenied";
 import { currentActor } from "@/lib/auth";
 import { isAdmin } from "@/lib/permissions";
 import { LinkDomainsEditor } from "@/components/LinkDomainsEditor";
+import { OldNamesFixer } from "@/components/OldNamesFixer";
 import { linkDomains } from "@/lib/linkDomainsServer";
 
 export const dynamic = "force-dynamic";
@@ -123,6 +124,13 @@ export default async function SettingsPage() {
         <h2 className="font-display text-lg font-semibold">Short link domains</h2>
         <p className="mb-4 mt-1 text-sm text-ink-muted">Domains a link can be handed out with, e.g. zimran-aiesec.vercel.app/r/…  Pick one when creating or editing a link.</p>
         <LinkDomainsEditor domains={domains} />
+      </section>
+
+      {/* Old names */}
+      <section className="card mb-8 p-6">
+        <h2 className="font-display text-lg font-semibold">Old names</h2>
+        <p className="mb-4 mt-1 text-sm text-ink-muted">Projects and campaigns named before the &quot;Name F&apos;26 / S&apos;26&quot; rule.</p>
+        <OldNamesFixer />
       </section>
 
       {/* Environment */}

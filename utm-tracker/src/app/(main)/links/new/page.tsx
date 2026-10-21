@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { CreateLinkForm } from "@/components/CreateLinkForm";
 import { linkDomains } from "@/lib/linkDomainsServer";
@@ -24,7 +25,12 @@ export default async function NewLinkPage() {
 
   return (
     <>
-      <PageHeader breadcrumb="Links" title="Create link" subtitle="Generate a new UTM-tracked short link in a few steps." />
+      <PageHeader breadcrumb="Links" title="Create link" subtitle="One short link with your own UTM tags." />
+      <div className="mb-6 rounded-xl border border-accent/30 bg-accent/5 p-4 text-sm text-ink-muted">
+        <strong className="text-ink">Making links for a campaign?</strong> Use <Link href="/campaigns" className="text-accent hover:underline">Campaigns</Link> → the
+        campaign → <em>Create UTM links</em>: a whole set (Instagram, Telegram, partners, QR…) in one go, named and tagged the same way,
+        with the domain of your choice. This page is for a single link that doesn&apos;t fit the set.
+      </div>
       <CreateLinkForm campaigns={campaigns} domains={await linkDomains()} />
     </>
   );
