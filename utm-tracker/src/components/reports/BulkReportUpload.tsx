@@ -7,6 +7,7 @@ import { eventKey, type UploadSummary } from "@/lib/projects/grouping";
 import { MAX_COMPARE } from "@/lib/projects/filters/state";
 import { cn } from "@/lib/utils";
 import { withTerm } from "@/lib/naming";
+import { useT } from "@/lib/i18n/client";
 
 const MAX_MB = 4;
 const PARALLEL = 3;
@@ -50,6 +51,7 @@ const TYPE_LABEL = { feedback: "Feedback", registration: "Registration" } as con
  * saved. The result links straight to comparing the projects.
  */
 export function BulkReportUpload({ projects, types }: { projects: ProjectOption[]; types: { value: string; label: string }[] }) {
+  const t = useT();
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
   const nextId = useRef(1);
@@ -89,9 +91,9 @@ export function BulkReportUpload({ projects, types }: { projects: ProjectOption[
       // The file name usually says it: "… Registration Form Analysis.xlsx"
       const guess = /regist|регистр/i.test(item.file.name) ? "registration" : /feedback|фидбек|отзыв/i.test(item.file.name) ? "feedback" : null;
       if (guess) return inspect(item, guess);
-      return patchItem(item.id, { status: "error", needsType: true, error: "Could not tell whether this is a Feedback or a Registration analysis. Pick the type:" });
+      return patchItem(item.id, { status: "error", needsType: true, error: t("Could not tell whether this is a Feedback or a Registration analysis. Pick the type:") });
     }
-    if (!res?.ok) return patchItem(item.id, { status: "error", needsType: false, error: body.error ?? "Could not read the file." });
+    if (!res?.ok) return patchItem(item.id, { status: "error", needsType: false, error: body.error ?? t("Could not read the file.") });
     const s = body as UploadSummary;
     const group = s.eventKey || `file-${item.id}`;
     ensureGroup(group, s);
@@ -103,8 +105,8 @@ export function BulkReportUpload({ projects, types }: { projects: ProjectOption[
     for (const f of Array.from(files)) {
       const id = nextId.current++;
       const bad = !/\.xlsx$/i.test(f.name)
-        ? /\.xlsm$/i.test(f.name) ? "Macro-enabled files (.xlsm) are not accepted — save it as .xlsx." : "Not an .xlsx file."
-        : f.size > MAX_MB * 1024 * 1024 ? `Larger than ${MAX_MB} MB.` : null;
+        ? /\.xlsm$/i.test(f.name) ? t("Macro-enabled files (.xlsm) are not accepted — save it as .xlsx.") : t("Not an .xlsx file.")
+        : f.size > MAX_MB * 1024 * 1024 ? t("Larger than {n} MB.", { n: MAX_MB }) : null;
       fresh.push({ id, file: f, status: bad ? "error" : "inspecting", error: bad ?? undefined, group: `file-${id}` });
     }
     setItems((xs) => [...xs, ...fresh]);
@@ -152,7 +154,7 @@ export function BulkReportUpload({ projects, types }: { projects: ProjectOption[
         }).catch(() => null);
         const body = res ? await res.json().catch(() => ({})) : {};
         if (!res?.ok) {
-          files.forEach((f) => patchItem(f.id, { status: "failed", error: `Could not create the project: ${body.error ?? "unknown error"}` }));
+          files.forEach((f) => patchItem(f.id, { status: "failed", error: t("Could not create the project: {error}", { error: body.error ?? t("unknown error") }) }));
           continue;
         }
         project = { id: body.id, slug: body.slug, name: g.name };
@@ -169,7 +171,7 @@ export function BulkReportUpload({ projects, types }: { projects: ProjectOption[
         const res = await fetch("/api/reports", { method: "POST", body: fd }).catch(() => null);
         const body = res ? await res.json().catch(() => ({})) : {};
         if (!res?.ok) {
-          patchItem(f.id, { status: "failed", error: body.error ?? "Upload failed." });
+          patchItem(f.id, { status: "failed", error: body.error ?? t("Upload failed.") });
           continue;
         }
         if (publish) {
@@ -201,7 +203,7 @@ export function BulkReportUpload({ projects, types }: { projects: ProjectOption[
     <div
       role="button"
       tabIndex={0}
-      aria-label="Choose .xlsx files"
+      aria-label={t("Choose .xlsx files")}
       onClick={() => input.current?.click()}
       onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), input.current?.click())}
       onDragOver={(e) => (e.preventDefault(), setDrag(true))}
@@ -228,8 +230,8 @@ export function BulkReportUpload({ projects, types }: { projects: ProjectOption[
           e.target.value = "";
         }}
       />
-      <p className="text-sm font-medium text-ink">{phase === "pick" ? "Drop one or more .xlsx files here, or click to choose" : "+ Add more files"}</p>
-      {phase === "pick" && <p className="mt-1 text-xs text-ink-faint">Feedback and Registration Form Analysis · up to {MAX_MB} MB each · files of the same event are grouped into one project</p>}
+      <p className="text-sm font-medium text-ink">{phase === "pick" ? t("Drop one or more .xlsx files here, or click to choose") : "+ " + t("Add more files")}</p>
+      {phase === "pick" && <p className="mt-1 text-xs text-ink-faint">{t("Feedback and Registration Form Analysis · up to {n} MB each · files of the same event are grouped into one project", { n: MAX_MB })}</p>}
     </div>
   );
 
@@ -238,7 +240,7 @@ export function BulkReportUpload({ projects, types }: { projects: ProjectOption[
       <>
         {dropZone}
         <p className="mt-2 text-xs text-ink-faint">
-          Making a new file? Build it with the report kit so it reads without warnings: <Link href="/reports/guide" className="text-accent hover:underline">How to prepare a file</Link>.
+          {t("Making a new file? Build it with the report kit so it reads without warnings:")} <Link href="/reports/guide" className="text-accent hover:underline">{t("How to prepare a file")}</Link>.
         </p>
       </>
     );
@@ -251,21 +253,19 @@ export function BulkReportUpload({ projects, types }: { projects: ProjectOption[
     return (
       <div className="space-y-4">
         <p className="text-sm text-ink">
-          Saved <strong>{done.reports.length}</strong> {done.reports.length === 1 ? "report" : "reports"} into <strong>{done.projects.length}</strong>{" "}
-          {done.projects.length === 1 ? "project" : "projects"}
-          {publish ? " and published them" : " as drafts"}.
+          {publish ? t("Saved {r} reports into {p} projects and published them.", { r: done.reports.length, p: done.projects.length }) : t("Saved {r} reports into {p} projects as drafts.", { r: done.reports.length, p: done.projects.length })}
         </p>
         <ul className="divide-y divide-line rounded-xl border border-line text-sm">
           {done.projects.map((p) => (
             <li key={p.id} className="flex items-center justify-between gap-3 px-4 py-2.5">
               <Link href={`/projects/${p.slug}`} className="font-medium text-ink hover:text-accent">{p.name}</Link>
-              <span className="text-xs text-ink-faint">{p.files} {p.files === 1 ? "file" : "files"}</span>
+              <span className="text-xs text-ink-faint">{t("files: {n}", { n: p.files })}</span>
             </li>
           ))}
         </ul>
         {failed.length > 0 && (
           <div role="alert" className="rounded-xl border border-danger/40 bg-danger/5 p-3 text-sm text-danger">
-            {failed.length} file(s) were not saved:
+            {t("Files not saved: {n}", { n: failed.length })}
             <ul className="mt-1 list-disc pl-5">
               {failed.map((f) => <li key={f.id}>{f.file.name}: {f.error}</li>)}
             </ul>
@@ -274,15 +274,15 @@ export function BulkReportUpload({ projects, types }: { projects: ProjectOption[
         <div className="flex flex-wrap gap-2">
           {done.projects.length >= 2 && (
             <Link href={`/projects?cmp=${cmp}`} className="btn-primary">
-              Compare these {Math.min(done.projects.length, MAX_COMPARE)} projects →
+              {t("Compare these projects ({n})", { n: Math.min(done.projects.length, MAX_COMPARE) })} →
             </Link>
           )}
-          {done.projects.length === 1 && <Link href={`/projects/${done.projects[0].slug}`} className="btn-primary">Open the project →</Link>}
-          {done.reports.length === 1 && <Link href={`/reports/${done.reports[0].id}`} className="btn-ghost">Open the report</Link>}
-          <button type="button" className="btn-ghost" onClick={reset}>Upload more</button>
+          {done.projects.length === 1 && <Link href={`/projects/${done.projects[0].slug}`} className="btn-primary">{t("Open the project")} →</Link>}
+          {done.reports.length === 1 && <Link href={`/reports/${done.reports[0].id}`} className="btn-ghost">{t("Open the report")}</Link>}
+          <button type="button" className="btn-ghost" onClick={reset}>{t("Upload more")}</button>
         </div>
         {done.projects.length > MAX_COMPARE && (
-          <p className="text-xs text-ink-faint">Up to {MAX_COMPARE} projects can be compared at once; pick the others in Projects.</p>
+          <p className="text-xs text-ink-faint">{t("Up to {n} projects can be compared at once; pick the others in Projects.", { n: MAX_COMPARE })}</p>
         )}
       </div>
     );
@@ -294,21 +294,21 @@ export function BulkReportUpload({ projects, types }: { projects: ProjectOption[
     <div className="space-y-5">
       {dropZone}
 
-      {inspecting && <p className="text-sm text-ink-muted" aria-live="polite">Reading {items.filter((x) => x.status === "inspecting").length} file(s)…</p>}
+      {inspecting && <p className="text-sm text-ink-muted" aria-live="polite">{t("Reading files: {n}…", { n: items.filter((x) => x.status === "inspecting").length })}</p>}
 
       {errors.length > 0 && (
         <div role="alert" className="rounded-xl border border-danger/40 bg-danger/5 p-3 text-sm text-danger">
-          These files can't be used and will be skipped:
+          {t("These files can't be used and will be skipped:")}
           <ul className="mt-1 list-disc pl-5">
             {errors.map((f) => (
               <li key={f.id}>
                 {f.file.name}: {f.error}
                 {f.needsType && (
                   <span className="ml-2 inline-flex gap-2">
-                    {(["registration", "feedback"] as const).map((t) => (
-                      <button key={t} type="button" className="btn-ghost px-2 py-0.5 text-xs text-ink"
-                        onClick={() => { patchItem(f.id, { status: "inspecting", error: undefined, needsType: false }); inspect(f, t); }}>
-                        {TYPE_LABEL[t]}
+                    {(["registration", "feedback"] as const).map((k) => (
+                      <button key={k} type="button" className="btn-ghost px-2 py-0.5 text-xs text-ink"
+                        onClick={() => { patchItem(f.id, { status: "inspecting", error: undefined, needsType: false }); inspect(f, k); }}>
+                        {t(TYPE_LABEL[k])}
                       </button>
                     ))}
                   </span>
@@ -327,29 +327,29 @@ export function BulkReportUpload({ projects, types }: { projects: ProjectOption[
         const dup = fileTypes.length !== new Set(fileTypes).size;
         return (
           <fieldset key={key} className="rounded-2xl border border-line p-4" disabled={phase === "saving"}>
-            <legend className="px-1 font-display text-sm font-semibold text-ink">{g.target === "new" ? g.name || "New project" : projects.find((p) => p.id === g.target)?.name}</legend>
+            <legend className="px-1 font-display text-sm font-semibold text-ink">{g.target === "new" ? g.name || t("New project") : projects.find((p) => p.id === g.target)?.name}</legend>
             <div className="grid gap-3 md:grid-cols-[1.4fr_1fr_1fr_0.9fr]">
               <div>
-                <label className="label text-xs" htmlFor={`g-${key}-t`}>Project</label>
+                <label className="label text-xs" htmlFor={`g-${key}-t`}>{t("Project")}</label>
                 <select id={`g-${key}-t`} className="input py-2 text-sm" value={g.target} onChange={(e) => setGroup(key, { target: e.target.value })}>
-                  <option value="new">Create a new project</option>
-                  {projects.map((p) => <option key={p.id} value={p.id}>Add to: {p.name}</option>)}
+                  <option value="new">{t("Create a new project")}</option>
+                  {projects.map((p) => <option key={p.id} value={p.id}>{t("Add to: {name}", { name: p.name })}</option>)}
                 </select>
               </div>
               {g.target === "new" && (
                 <>
                   <div>
-                    <label className="label text-xs" htmlFor={`g-${key}-n`}>Name</label>
-                    <input id={`g-${key}-n`} className="input py-2 text-sm" value={g.name} maxLength={120} placeholder="SheCodes F'26" title="Project name, then the term: F'26 (fall) or S'26 (spring)" onChange={(e) => setGroup(key, { name: e.target.value })} />
+                    <label className="label text-xs" htmlFor={`g-${key}-n`}>{t("Name")}</label>
+                    <input id={`g-${key}-n`} className="input py-2 text-sm" value={g.name} maxLength={120} placeholder="SheCodes F'26" title={t("Project name, then the term: F'26 (fall) or S'26 (spring)")} onChange={(e) => setGroup(key, { name: e.target.value })} />
                   </div>
                   <div>
-                    <label className="label text-xs" htmlFor={`g-${key}-y`}>Type</label>
+                    <label className="label text-xs" htmlFor={`g-${key}-y`}>{t("Type")}</label>
                     <select id={`g-${key}-y`} className="input py-2 text-sm" value={g.typeKey} onChange={(e) => setGroup(key, { typeKey: e.target.value })}>
-                      {types.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                      {types.map((x) => <option key={x.value} value={x.value}>{x.label}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="label text-xs" htmlFor={`g-${key}-d`}>Event date</label>
+                    <label className="label text-xs" htmlFor={`g-${key}-d`}>{t("Event date")}</label>
                     <input id={`g-${key}-d`} type="date" className="input py-2 text-sm" value={g.date} onChange={(e) => setGroup(key, { date: e.target.value })} />
                   </div>
                 </>
@@ -358,24 +358,24 @@ export function BulkReportUpload({ projects, types }: { projects: ProjectOption[
             <ul className="mt-3 divide-y divide-line text-sm">
               {files.map((f) => (
                 <li key={f.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2">
-                  <span className={cn("pill text-[11px]", f.summary!.type === "feedback" ? "bg-leads/15 text-leads" : "bg-clicks/15 text-clicks")}>{TYPE_LABEL[f.summary!.type]}</span>
+                  <span className={cn("pill text-[11px]", f.summary!.type === "feedback" ? "bg-leads/15 text-leads" : "bg-clicks/15 text-clicks")}>{t(TYPE_LABEL[f.summary!.type])}</span>
                   <span className="min-w-0 flex-1 truncate text-ink" title={f.file.name}>{f.file.name}</span>
                   <span className="text-xs text-ink-faint">
                     {f.summary!.period ?? ""}
                     {f.summary!.sampleSize !== undefined ? ` · n = ${f.summary!.sampleSize}` : ""}
-                    {f.summary!.warnings ? ` · ${f.summary!.warnings} warning(s)` : ""}
+                    {f.summary!.warnings ? ` · ${t("warnings: {n}", { n: f.summary!.warnings })}` : ""}
                   </span>
                   <StatusBadge item={f} />
                   {phase === "review" && (
-                    <select className="input w-auto py-1 text-xs" aria-label={`Event of ${f.file.name}`} value={f.group} onChange={(e) => moveItem(f, e.target.value)}>
+                    <select className="input w-auto py-1 text-xs" aria-label={t("Event of {name}", { name: f.file.name })} value={f.group} onChange={(e) => moveItem(f, e.target.value)}>
                       {groupKeys.map((k) => <option key={k} value={k}>{groups[k]?.target === "new" ? groups[k]?.name : projects.find((p) => p.id === groups[k]?.target)?.name}</option>)}
-                      <option value="__own">Separate project</option>
+                      <option value="__own">{t("Separate project")}</option>
                     </select>
                   )}
                 </li>
               ))}
             </ul>
-            {dup && <p className="mt-2 text-xs text-accent">⚠ Two files of the same type in one project — the most recently uploaded one is used for the project&apos;s metrics.</p>}
+            {dup && <p className="mt-2 text-xs text-accent">⚠ {t("Two files of the same type in one project — the most recently uploaded one is used for the project's metrics.")}</p>}
           </fieldset>
         );
       })}
@@ -383,25 +383,26 @@ export function BulkReportUpload({ projects, types }: { projects: ProjectOption[
       <div className="flex flex-wrap items-center gap-4">
         <button type="button" className="btn-primary" disabled={inspecting || phase === "saving" || ready.length === 0} onClick={save}>
           {phase === "saving"
-            ? "Saving…"
-            : `Save ${ready.length} ${ready.length === 1 ? "report" : "reports"} into ${groupKeys.length} ${groupKeys.length === 1 ? "project" : "projects"}`}
+            ? t("Saving…")
+            : t("Save {r} reports into {p} projects", { r: ready.length, p: groupKeys.length })}
         </button>
         <label className="flex items-center gap-2 text-sm text-ink-muted">
           <input type="checkbox" className="h-4 w-4 accent-accent" checked={publish} onChange={(e) => setPublish(e.target.checked)} disabled={phase === "saving"} />
-          Publish right away
+          {t("Publish right away")}
         </label>
-        {phase === "review" && <button type="button" className="text-sm text-ink-faint hover:text-ink" onClick={reset}>Cancel</button>}
+        {phase === "review" && <button type="button" className="text-sm text-ink-faint hover:text-ink" onClick={reset}>{t("Cancel")}</button>}
       </div>
-      <p className="text-xs text-ink-faint">Files are read on the server and not stored: only the analytics sheets are saved.</p>
+      <p className="text-xs text-ink-faint">{t("Files are read on the server and not stored: only the analytics sheets are saved.")}</p>
     </div>
   );
 }
 
 function StatusBadge({ item }: { item: Item }) {
+  const t = useT();
   const map: Partial<Record<ItemStatus, [string, string]>> = {
-    saving: ["Saving…", "text-ink-muted"],
-    saved: ["Saved ✓", "text-leads"],
-    failed: [`Failed: ${item.error ?? ""}`, "text-danger"],
+    saving: [t("Saving…"), "text-ink-muted"],
+    saved: [t("Saved ✓"), "text-leads"],
+    failed: [t("Failed: {error}", { error: item.error ?? "" }), "text-danger"],
   };
   const m = map[item.status];
   return m ? <span className={cn("text-xs", m[1])}>{m[0]}</span> : null;

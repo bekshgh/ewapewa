@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { plural, type Lang } from "@/lib/i18n";
 
 /** Tailwind classnames merge (lightweight). */
 export function cn(...classes: Array<string | false | null | undefined>): string {
@@ -79,16 +80,15 @@ export function formatDateTime(d: Date | string): string {
   });
 }
 
-export function relativeTime(d: Date | string): string {
+export function relativeTime(d: Date | string, lang: Lang = "en"): string {
   const date = typeof d === "string" ? new Date(d) : d;
   const diff = Date.now() - date.getTime();
   const days = Math.floor(diff / 86_400_000);
-  if (days <= 0) return "today";
-  if (days === 1) return "1 day ago";
-  if (days < 30) return `${days} days ago`;
+  const ru = lang === "ru";
+  if (days <= 0) return ru ? "сегодня" : "today";
+  if (days < 30) return ru ? `${days} ${plural("ru", days, "день", "дня", "дней")} назад` : days === 1 ? "1 day ago" : `${days} days ago`;
   const months = Math.floor(days / 30);
-  if (months === 1) return "1 month ago";
-  return `${months} months ago`;
+  return ru ? `${months} ${plural("ru", months, "месяц", "месяца", "месяцев")} назад` : months === 1 ? "1 month ago" : `${months} months ago`;
 }
 
 /** Build the destination URL with UTM + click_id appended. */

@@ -5,6 +5,8 @@ import { prisma } from "@/lib/db";
 import { canView, isTeamMember } from "@/lib/reports/store";
 import type { ReportDocument } from "@/lib/reports/types";
 import { ReportView } from "@/components/reports/ReportView";
+import { getT } from "@/lib/i18n/server";
+import { LangSwitch } from "@/components/Sidebar";
 
 export const dynamic = "force-dynamic";
 
@@ -37,20 +39,22 @@ export default async function ReportPage(props: {
   if (!found) notFound();
   const { report, admin } = found;
   const doc = report.data as unknown as ReportDocument;
+  const t = await getT();
 
   return (
     <main className="mx-auto w-full max-w-[1180px] px-4 py-6 sm:px-8 sm:py-10">
       <div className="mb-6 flex items-center justify-between gap-3 print:hidden">
-        <span className="font-display text-sm font-semibold tracking-tight text-ink-muted">EwA · Reports</span>
+        <span className="font-display text-sm font-semibold tracking-tight text-ink-muted">EwA · {t("Reports")}</span>
+        <LangSwitch className="ml-auto" />
         {admin && (
           <Link href={`/reports/${report.id}`} className="btn-ghost py-1.5 text-xs">
-            ← Manage report
+            ← {t("Manage report")}
           </Link>
         )}
       </div>
       {admin && (report.status !== "published" || report.visibility === "private") && (
         <p className="mb-6 rounded-xl border border-accent/40 bg-accent/5 px-4 py-3 text-sm text-accent print:hidden">
-          {report.status !== "published" ? "Draft: only you can see this report." : "Private report: visible to signed-in admins only."}
+          {report.status !== "published" ? t("Draft: only you can see this report.") : t("Private report: visible to signed-in admins only.")}
         </p>
       )}
       <ReportView doc={doc} initialTab={searchParams.tab} />

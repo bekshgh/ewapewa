@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useLang, useT } from "@/lib/i18n/client";
 
 type Summary = {
   sheet: string;
@@ -25,10 +26,14 @@ type Summary = {
 
 type Options = { city: string; onePerPerson: boolean };
 
-const day = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("en-GB", { timeZone: "Asia/Almaty" }) : "—");
 
 /** Upload a landing page's registrations sheet and turn its rows into leads (see lib/registrationImport). */
 export function RegistrationImport() {
+  const t = useT();
+  const lang = useLang();
+  const loc = lang === "ru" ? "ru-RU" : "en-GB";
+  const num = (n: number) => n.toLocaleString(loc);
+  const day = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString(loc, { timeZone: "Asia/Almaty" }) : "—");
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [opts, setOpts] = useState<Options>({ city: "", onePerPerson: true });
@@ -49,8 +54,8 @@ export function RegistrationImport() {
       if (o.city) body.append("city", o.city);
       if (o.onePerPerson) body.append("onePerPerson", "1");
       const res = await fetch("/api/admin/registrations", { method: "POST", body });
-      const data = await res.json().catch(() => ({ error: `Request failed (${res.status})` }));
-      if (!res.ok) throw new Error(data.error ?? `Request failed (${res.status})`);
+      const data = await res.json().catch(() => ({ error: t("Request failed ({status})", { status: res.status }) }));
+      if (!res.ok) throw new Error(data.error ?? t("Request failed ({status})", { status: res.status }));
       if (mode === "check") setCheck(data);
       else {
         setResult(data);
@@ -73,12 +78,9 @@ export function RegistrationImport() {
 
   return (
     <section>
-      <h2 className="mb-1 font-display text-lg font-semibold">Import registrations from a spreadsheet</h2>
+      <h2 className="mb-1 font-display text-lg font-semibold">{t("Import registrations from a spreadsheet")}</h2>
       <p className="mb-3 text-sm text-ink-muted">
-        For a landing page whose form never sent leads here: upload its registrations sheet (.xlsx, e.g. downloaded from
-        Google Sheets). Each selected row becomes a lead dated by its own timestamp. Rows with a <code>click_id</code> in
-        the page address are tied to the exact click; the rest are matched by UTM. Uploading the same file again adds
-        nothing.
+        {t("For a landing page whose form never sent leads here: upload its registrations sheet (.xlsx, e.g. downloaded from Google Sheets). Each selected row becomes a lead dated by its own timestamp. Rows with a click_id in the page address are tied to the exact click; the rest are matched by UTM. Uploading the same file again adds nothing.")}
       </p>
       <div className="card space-y-4 p-5">
         <input
@@ -98,12 +100,12 @@ export function RegistrationImport() {
           <div className="flex flex-wrap items-end gap-6 text-sm">
             {check.cities.length > 0 && (
               <div>
-                <label className="label">City</label>
+                <label className="label">{t("City")}</label>
                 <select className="input" value={opts.city} disabled={!!busy} onChange={(e) => change({ city: e.target.value })}>
-                  <option value="">All cities ({check.totalRows.toLocaleString()})</option>
+                  <option value="">{t("All cities ({n})", { n: num(check.totalRows) })}</option>
                   {check.cities.map((c) => (
                     <option key={c.city} value={c.city}>
-                      {c.city} ({c.rows.toLocaleString()})
+                      {c.city} ({num(c.rows)})
                     </option>
                   ))}
                 </select>
@@ -116,21 +118,21 @@ export function RegistrationImport() {
                 disabled={!!busy}
                 onChange={(e) => change({ onePerPerson: e.target.checked })}
               />
-              One lead per person (keep the earliest registration)
+              {t("One lead per person (keep the earliest registration)")}
             </label>
           </div>
         )}
 
         <div className="flex flex-wrap gap-3">
           <button className="btn-ghost border border-line text-sm" disabled={!file || !!busy} onClick={() => run("check")}>
-            {busy === "check" ? "Checking…" : "1. Check"}
+            {busy === "check" ? t("Checking…") : "1. " + t("Check")}
           </button>
           <button
             className="btn-primary text-sm"
             disabled={!file || !check || check.created === 0 || !!result || !!busy}
             onClick={() => run("import")}
           >
-            {busy === "import" ? "Importing…" : `2. Import ${check ? check.created.toLocaleString() : ""} leads`}
+            {busy === "import" ? t("Importing…") : "2. " + t("Import {n} leads", { n: check ? num(check.created) : "" })}
           </button>
         </div>
 
@@ -140,8 +142,8 @@ export function RegistrationImport() {
           <div className="space-y-3 text-sm">
             <p className="font-medium text-ink">
               {result
-                ? `Import finished: ${result.created.toLocaleString()} leads added.`
-                : `Sheet «${s.sheet}»: ${s.totalRows.toLocaleString()} registrations, ${day(s.dateFrom)} – ${day(s.dateTo)}. Selected: ${s.rows.toLocaleString()}.`}
+                ? t("Import finished: {n} leads added.", { n: num(result.created) })
+                : t("Sheet «{sheet}»: {n} registrations, {from} – {to}. Selected: {sel}.", { sheet: s.sheet, n: num(s.totalRows), from: day(s.dateFrom), to: day(s.dateTo), sel: num(s.rows) })}
             </p>
             <ul className="grid max-w-xl grid-cols-2 gap-x-6 gap-y-1">
               {[
@@ -156,19 +158,19 @@ export function RegistrationImport() {
                 ["click_id not among recorded clicks", s.clickNotFound],
               ].map(([label, n]) => (
                 <li key={label as string} className="flex justify-between gap-3">
-                  <span className="text-ink-muted">{label}</span>
-                  <span className="font-mono text-ink">{(n as number).toLocaleString()}</span>
+                  <span className="text-ink-muted">{t(label as string)}</span>
+                  <span className="font-mono text-ink">{num(n as number)}</span>
                 </li>
               ))}
             </ul>
             {s.byCampaign.length > 0 && (
               <div>
-                <p className="mb-1 text-ink-muted">By utm_campaign:</p>
+                <p className="mb-1 text-ink-muted">{t("By utm_campaign:")}</p>
                 <ul className="max-w-xl space-y-0.5">
                   {s.byCampaign.map((c) => (
                     <li key={c.campaign} className="flex justify-between gap-3">
                       <span className="truncate text-ink">{c.campaign}</span>
-                      <span className="font-mono text-ink">{c.leads.toLocaleString()}</span>
+                      <span className="font-mono text-ink">{num(c.leads)}</span>
                     </li>
                   ))}
                 </ul>
@@ -176,9 +178,7 @@ export function RegistrationImport() {
             )}
             {s.clickNotFound > 0 && (
               <p className="hint">
-                Some click_ids are not in this tracker&apos;s clicks (e.g. the old data was not imported yet). Those rows
-                are matched by UTM instead. Import the old tracker first, then upload this file — rows already added are
-                not duplicated, but they keep their first attribution.
+                {t("Some click_ids are not in this tracker's clicks (e.g. the old data was not imported yet). Those rows are matched by UTM instead. Import the old tracker first, then upload this file — rows already added are not duplicated, but they keep their first attribution.")}
               </p>
             )}
           </div>

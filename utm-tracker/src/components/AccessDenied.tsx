@@ -1,9 +1,11 @@
 import { PageHeader } from "@/components/ui/PageHeader";
+import { getT } from "@/lib/i18n/server";
 
-export function AccessDenied({ title = "Admins only" }: { title?: string }) {
+export async function AccessDenied({ title }: { title?: string }) {
+  const t = await getT();
   return (
     <>
-      <PageHeader breadcrumb="Access" title={title} subtitle="Your role does not open this page. Ask an admin if you need it." />
+      <PageHeader breadcrumb={t("Access")} title={title ?? t("Admins only")} subtitle={t("Your role does not open this page. Ask an admin if you need it.")} />
     </>
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getT } from "@/lib/i18n/server";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { CreateLinkForm } from "@/components/CreateLinkForm";
 import { linkDomains } from "@/lib/linkDomainsServer";
@@ -11,7 +12,8 @@ export const dynamic = "force-dynamic";
 
 export default async function NewLinkPage() {
   const actor = await currentActor();
-  if (!actor || actor.role === "viewer") return <AccessDenied title="Viewers cannot create links" />;
+  const t = await getT();
+  if (!actor || actor.role === "viewer") return <AccessDenied title={t("Viewers cannot create links")} />;
   const [all, editable] = await Promise.all([
     prisma.campaign.findMany({
       where: { status: { not: "archived" } },
@@ -25,11 +27,11 @@ export default async function NewLinkPage() {
 
   return (
     <>
-      <PageHeader breadcrumb="Links" title="Create link" subtitle="One short link with your own UTM tags." />
+      <PageHeader breadcrumb={t("Links")} title={t("Create link")} subtitle={t("One short link with your own UTM tags.")} />
       <div className="mb-6 rounded-xl border border-accent/30 bg-accent/5 p-4 text-sm text-ink-muted">
-        <strong className="text-ink">Making links for a campaign?</strong> Use <Link href="/campaigns" className="text-accent hover:underline">Campaigns</Link> → the
-        campaign → <em>Create UTM links</em>: a whole set (Instagram, Telegram, partners, QR…) in one go, named and tagged the same way,
-        with the domain of your choice. This page is for a single link that doesn&apos;t fit the set.
+        <strong className="text-ink">{t("Making links for a campaign?")}</strong>{" "}
+        <Link href="/campaigns" className="text-accent hover:underline">{t("Campaigns")}</Link> → {t("the campaign")} → <em>{t("Create UTM links")}</em>:{" "}
+        {t("a whole set (Instagram, Telegram, partners, QR…) in one go, named and tagged the same way, with the domain of your choice. This page is for a single link that doesn't fit the set.")}
       </div>
       <CreateLinkForm campaigns={campaigns} domains={await linkDomains()} />
     </>

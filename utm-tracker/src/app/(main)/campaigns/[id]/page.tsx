@@ -13,6 +13,7 @@ import { canEditCampaign, currentActor } from "@/lib/auth";
 import { isAdmin } from "@/lib/permissions";
 import { campaignLinksWhere, linkLabel } from "@/lib/linkKitServer";
 import { CampaignLinks } from "@/components/CampaignLinks";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,7 @@ const BASE = process.env.NEXT_PUBLIC_BASE_URL || "https://aieseckz.vercel.app";
 
 export default async function CampaignDetailPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
+  const t = await getT();
   const [campaign, actor] = await Promise.all([prisma.campaign.findUnique({ where: { id: params.id } }), currentActor()]);
   if (!campaign) notFound();
 
@@ -80,28 +82,28 @@ export default async function CampaignDetailPage(props: { params: Promise<{ id: 
   return (
     <>
       <PageHeader
-        breadcrumb="Campaigns"
+        breadcrumb={t("Campaigns")}
         title={campaign.label || campaign.name}
         subtitle={[campaign.type, campaign.season, `utm: ${campaign.name}`].filter(Boolean).join(" · ")}
         action={
           <div className="flex flex-wrap items-center gap-3">
             <LiveRefresh />
-            {folder && <Link href={`/campaigns/projects/${folder.key}`} className="btn-ghost text-sm" title="The campaign together with its EwA2oGX / EwA2MXP campaigns">Project folder: {folder.title} →</Link>}
-            {editable && <Link href={`/campaigns/${campaign.id}/utm-links`} className="btn-primary text-sm">Create UTM links</Link>}
+            {folder && <Link href={`/campaigns/projects/${folder.key}`} className="btn-ghost text-sm" title={t("The campaign together with its EwA2oGX / EwA2MXP campaigns")}>{t("Project folder: {title}", { title: folder.title })} →</Link>}
+            {editable && <Link href={`/campaigns/${campaign.id}/utm-links`} className="btn-primary text-sm">{t("Create UTM links")}</Link>}
             {editable && <CampaignActions id={campaign.id} status={campaign.status} canDelete={isAdmin(actor)}
               campaign={{ name: campaign.name, label: campaign.label, type: campaign.type, funnel: campaign.funnel, description: campaign.description }} />}
           </div>
         }
       />
       <section className="grid grid-cols-2 gap-4 lg:grid-cols-4 mb-6">
-        <StatCard label="Total clicks"    value={formatNumber(totalClicks)}  sub="all recorded"     accent="clicks" />
-        <StatCard label="Unique clicks"   value={formatNumber(uniqueClicks)} sub="devices that clicked"  accent="clicks" />
-        <StatCard label="Leads"           value={formatNumber(totalLeads)}   sub="form submissions" accent="leads"  />
-        <StatCard label="Conversion rate" value={formatPercent(cr)}          sub="unique clicks → leads" accent="accent" />
+        <StatCard label={t("Total clicks")} value={formatNumber(totalClicks)} sub={t("all recorded")} accent="clicks" />
+        <StatCard label={t("Unique clicks")} value={formatNumber(uniqueClicks)} sub={t("devices that clicked")} accent="clicks" />
+        <StatCard label={t("Leads")} value={formatNumber(totalLeads)} sub={t("form submissions")} accent="leads" />
+        <StatCard label={t("Conversion rate")} value={formatPercent(cr)} sub={t("unique clicks → leads")} accent="accent" />
       </section>
       <section className="grid gap-6 lg:grid-cols-2">
-        <BreakdownPanel title="By source"  head="Source"  rows={bySource}  />
-        <BreakdownPanel title="By content" head="Content" rows={byContent} />
+        <BreakdownPanel title={t("By source")} head={t("Source")} rows={bySource} />
+        <BreakdownPanel title={t("By content")} head={t("Content")} rows={byContent} />
       </section>
       <CampaignLinks
         base={BASE}

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import type { CellValue, TableSection, TableView } from "@/lib/reports/types";
 import { cn } from "@/lib/utils";
 import { csvValue, formatValue, isNumericCol, legacyText, readableTitle } from "./format";
+import { useT } from "@/lib/i18n/client";
 
 const SMALL_N = 10;
 
@@ -35,9 +36,10 @@ function badgeClass(v: string): string | undefined {
 }
 
 export function SmallSampleBadge() {
+  const tr = useT();
   return (
-    <span className="ml-1.5 inline-flex rounded-full bg-ink-faint/15 px-1.5 py-0.5 text-[10px] font-medium text-ink-muted" title={`Fewer than ${SMALL_N} people — directional only`}>
-      small sample
+    <span className="ml-1.5 inline-flex rounded-full bg-ink-faint/15 px-1.5 py-0.5 text-[10px] font-medium text-ink-muted" title={tr("Fewer than {n} people — directional only", { n: SMALL_N })}>
+      {tr("small sample")}
     </span>
   );
 }
@@ -56,6 +58,7 @@ export function DataTable({
   smallSamples?: boolean;
 }) {
   const [sort, setSort] = useState<{ col: number; dir: 1 | -1 } | null>(null);
+  const tr = useT();
   const [q, setQ] = useState("");
   const showSearch = searchable || t.rows.length > 15;
   const nCol = smallSamples ? sampleCol(t) : -1;
@@ -119,14 +122,14 @@ export function DataTable({
         <div className="mb-3 flex flex-wrap items-center gap-2 print:hidden">
           <input
             className="input max-w-xs py-2"
-            placeholder="Search…"
+            placeholder={tr("Search…")}
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            aria-label={`Search in ${readableTitle(t.title)}`}
+            aria-label={tr("Search in {name}", { name: readableTitle(t.title) })}
           />
           {searchable && (
             <button type="button" className="btn-ghost py-2 text-xs" onClick={() => downloadCsv(t)}>
-              Download CSV
+              {tr("Download CSV")}
             </button>
           )}
         </div>
@@ -155,7 +158,7 @@ export function DataTable({
             {t.totalRow !== undefined && !q && renderRow(t.totalRow, true)}
             {body.length === 0 && (
               <tr>
-                <td colSpan={t.columns.length} className="px-3 py-6 text-center text-ink-faint">Nothing found</td>
+                <td colSpan={t.columns.length} className="px-3 py-6 text-center text-ink-faint">{tr("Nothing found")}</td>
               </tr>
             )}
           </tbody>
@@ -167,22 +170,23 @@ export function DataTable({
 }
 
 function HeatLegend({ mode }: { mode: HeatMode["mode"] }) {
+  const tr = useT();
   return (
     <p className="mt-2 flex flex-wrap items-center gap-3 text-xs text-ink-faint">
       {mode === "diverging" && (
         <>
-          <span className="flex items-center gap-1"><span className="h-2.5 w-4 rounded-sm" style={{ background: "rgba(91,155,255,0.45)" }} /> ▲ above average</span>
-          <span className="flex items-center gap-1"><span className="h-2.5 w-4 rounded-sm" style={{ background: "rgba(249,115,22,0.45)" }} /> ▼ below average</span>
+          <span className="flex items-center gap-1"><span className="h-2.5 w-4 rounded-sm" style={{ background: "rgba(91,155,255,0.45)" }} /> ▲ {tr("above average")}</span>
+          <span className="flex items-center gap-1"><span className="h-2.5 w-4 rounded-sm" style={{ background: "rgba(249,115,22,0.45)" }} /> ▼ {tr("below average")}</span>
         </>
       )}
       {mode === "minmax" && (
         <>
-          <span className="flex items-center gap-1"><span className="h-2.5 w-4 rounded-sm" style={{ background: "rgba(62,207,142,0.35)" }} /> best in column</span>
-          <span className="flex items-center gap-1"><span className="h-2.5 w-4 rounded-sm" style={{ background: "rgba(246,179,82,0.35)" }} /> worst in column</span>
+          <span className="flex items-center gap-1"><span className="h-2.5 w-4 rounded-sm" style={{ background: "rgba(62,207,142,0.35)" }} /> {tr("best in column")}</span>
+          <span className="flex items-center gap-1"><span className="h-2.5 w-4 rounded-sm" style={{ background: "rgba(246,179,82,0.35)" }} /> {tr("worst in column")}</span>
         </>
       )}
       {mode === "sequential" && (
-        <span className="flex items-center gap-1"><span className="h-2.5 w-10 rounded-sm" style={{ background: "linear-gradient(90deg, rgba(91,155,255,0.06), rgba(91,155,255,0.6))" }} /> darker = larger</span>
+        <span className="flex items-center gap-1"><span className="h-2.5 w-10 rounded-sm" style={{ background: "linear-gradient(90deg, rgba(91,155,255,0.06), rgba(91,155,255,0.6))" }} /> {tr("darker = larger")}</span>
       )}
     </p>
   );
@@ -244,6 +248,7 @@ function downloadCsv(t: TableSection) {
 /* ─── Ranked bars with verbatim quotes ──────────────────────────── */
 
 export function RankedBars({ t, v }: { t: TableSection; v: Extract<TableView, { type: "ranked" }> }) {
+  const tr = useT();
   const rows = t.rows.filter((_, i) => i !== t.totalRow);
   const max = Math.max(...rows.map((r) => (typeof r[v.value] === "number" ? (r[v.value] as number) : 0)), 1);
   const rankCol = t.columns.findIndex((c) => /^(rank|#)$/i.test(c.label));
@@ -268,7 +273,7 @@ export function RankedBars({ t, v }: { t: TableSection; v: Extract<TableView, { 
             </div>
             {typeof quote === "string" && quote && (
               <details className="ml-9 mt-1.5 group">
-                <summary className="cursor-pointer select-none text-xs text-ink-faint hover:text-ink-muted">Example answer</summary>
+                <summary className="cursor-pointer select-none text-xs text-ink-faint hover:text-ink-muted">{tr("Example answer")}</summary>
                 <blockquote className="mt-1.5 border-l-2 border-line pl-3 text-sm italic text-ink-muted">{quote}</blockquote>
               </details>
             )}
@@ -282,12 +287,13 @@ export function RankedBars({ t, v }: { t: TableSection; v: Extract<TableView, { 
 /* ─── Segment tables behind a switcher ──────────────────────────── */
 
 export function SegmentSwitcher({ tables }: { tables: TableSection[] }) {
+  const tr = useT();
   const [i, setI] = useState(0);
   const t = tables[i];
   const heatView = t.views.find((v) => v.type === "heat") as Extract<TableView, { type: "heat" }> | undefined;
   return (
     <div>
-      <div role="tablist" aria-label="Segment" className="mb-4 flex flex-wrap gap-1.5 print:hidden">
+      <div role="tablist" aria-label={tr("Segment")} className="mb-4 flex flex-wrap gap-1.5 print:hidden">
         {tables.map((s, j) => (
           <button
             key={s.id}
@@ -309,6 +315,7 @@ export function SegmentSwitcher({ tables }: { tables: TableSection[] }) {
 /* ─── HHI concentration meter ───────────────────────────────────── */
 
 export function ConcentrationMeter({ t, v }: { t: TableSection; v: Extract<TableView, { type: "concentration" }> }) {
+  const tr = useT();
   const SCALE = 0.5;
   return (
     <ul className="space-y-4">
@@ -334,7 +341,7 @@ export function ConcentrationMeter({ t, v }: { t: TableSection; v: Extract<Table
         );
       })}
       <li className="flex justify-between text-[11px] text-ink-faint" aria-hidden>
-        <span>0 · low</span><span>0.15</span><span>0.25 · high</span><span>0.5+</span>
+        <span>0 · {tr("low")}</span><span>0.15</span><span>0.25 · {tr("high")}</span><span>0.5+</span>
       </li>
     </ul>
   );

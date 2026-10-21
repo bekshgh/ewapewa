@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { NameWithTerm } from "@/components/ui/NameWithTerm";
+import { useT } from "@/lib/i18n/client";
 
 export interface ProjectFormValue {
   id?: string;
@@ -24,6 +25,7 @@ export const EMPTY_PROJECT: ProjectFormValue = {
 
 /** Create / edit a project. Types come from the dictionary; a new type can be added inline. */
 export function ProjectForm({ initial, types }: { initial: ProjectFormValue; types: { value: string; label: string }[] }) {
+  const t = useT();
   const router = useRouter();
   const [v, setV] = useState(initial);
   const [typeList, setTypeList] = useState(types);
@@ -40,7 +42,7 @@ export function ProjectForm({ initial, types }: { initial: ProjectFormValue; typ
     if (!newType?.trim()) return;
     const res = await fetch("/api/project-types", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: newType.trim() }) });
     const body = await res.json().catch(() => ({}));
-    if (!res.ok) return setError(body.error ?? "Could not add the type");
+    if (!res.ok) return setError(body.error ?? t("Could not add the type"));
     setTypeList([...typeList, { value: body.key, label: body.name }]);
     setV({ ...v, typeKey: body.key });
     setNewType(null);
@@ -48,7 +50,7 @@ export function ProjectForm({ initial, types }: { initial: ProjectFormValue; typ
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!v.name) return setError("Enter the project name and pick its term (F'26 / S'26).");
+    if (!v.name) return setError(t("Enter the project name and pick its term (F'26 / S'26)."));
     setBusy(true);
     setError(null);
     const payload = {
@@ -70,7 +72,7 @@ export function ProjectForm({ initial, types }: { initial: ProjectFormValue; typ
     }).catch(() => null);
     const body = res ? await res.json().catch(() => ({})) : {};
     setBusy(false);
-    if (!res?.ok) return setError(body.error === "Validation failed" ? "Check the fields: the name with its term and the type are required." : body.error ?? "Could not save");
+    if (!res?.ok) return setError(body.error === "Validation failed" ? t("Check the fields: the name with its term and the type are required.") : body.error ?? t("Could not save"));
     router.push(`/projects/${body.slug}`);
     router.refresh();
   }
@@ -87,80 +89,80 @@ export function ProjectForm({ initial, types }: { initial: ProjectFormValue; typ
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
           <NameWithTerm id="p-name" value={v.name} onChange={(name) => setV((cur) => ({ ...cur, name }))} placeholder="ÖZGE Forum" />
-          {!v.id && <p className="hint">A campaign with the same name is created too, ready for UTM links.</p>}
+          {!v.id && <p className="hint">{t("A campaign with the same name is created too, ready for UTM links.")}</p>}
         </div>
         <div>
-          <label className="label" htmlFor="p-type">Project type</label>
+          <label className="label" htmlFor="p-type">{t("Project type")}</label>
           {newType === null ? (
             <div className="flex gap-2">
               <select id="p-type" className="input" required {...field("typeKey")}>
-                <option value="" disabled>Choose a type</option>
-                {typeList.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                <option value="" disabled>{t("Choose a type")}</option>
+                {typeList.map((x) => <option key={x.value} value={x.value}>{x.label}</option>)}
               </select>
-              <button type="button" className="btn-ghost shrink-0 py-2 text-xs" onClick={() => setNewType("")}>+ type</button>
+              <button type="button" className="btn-ghost shrink-0 py-2 text-xs" onClick={() => setNewType("")}>+ {t("type")}</button>
             </div>
           ) : (
             <div className="flex gap-2">
-              <input className="input" autoFocus placeholder="e.g. Workshop" value={newType} onChange={(e) => setNewType(e.target.value)} aria-label="New type name" />
-              <button type="button" className="btn-primary shrink-0 py-2 text-xs" onClick={addType}>Add</button>
+              <input className="input" autoFocus placeholder={t("e.g. Workshop")} value={newType} onChange={(e) => setNewType(e.target.value)} aria-label={t("New type name")} />
+              <button type="button" className="btn-primary shrink-0 py-2 text-xs" onClick={addType}>{t("Add")}</button>
               <button type="button" className="btn-ghost shrink-0 py-2 text-xs" onClick={() => setNewType(null)}>✕</button>
             </div>
           )}
         </div>
         <div>
-          <label className="label" htmlFor="p-status">Status</label>
+          <label className="label" htmlFor="p-status">{t("Status")}</label>
           <select id="p-status" className="input" {...field("status")}>
-            <option value="planned">Planned</option>
-            <option value="registration">Registration open</option>
-            <option value="done">Done</option>
-            <option value="archived">Archived</option>
+            <option value="planned">{t("Planned")}</option>
+            <option value="registration">{t("Registration open")}</option>
+            <option value="done">{t("Done")}</option>
+            <option value="archived">{t("Archived")}</option>
           </select>
         </div>
         <div>
-          <label className="label" htmlFor="p-start">Start date</label>
+          <label className="label" htmlFor="p-start">{t("Start date")}</label>
           <input id="p-start" type="date" className="input" {...field("startDate")} />
         </div>
         <div>
-          <label className="label" htmlFor="p-end">End date</label>
+          <label className="label" htmlFor="p-end">{t("End date")}</label>
           <input id="p-end" type="date" className="input" {...field("endDate")} />
         </div>
         <div>
-          <label className="label" htmlFor="p-format">Format</label>
+          <label className="label" htmlFor="p-format">{t("Format")}</label>
           <select id="p-format" className="input" {...field("format")}>
-            <option value="">Not set</option>
-            <option value="offline">Offline</option>
-            <option value="online">Online</option>
-            <option value="hybrid">Hybrid</option>
+            <option value="">{t("Not set")}</option>
+            <option value="offline">{t("Offline")}</option>
+            <option value="online">{t("Online")}</option>
+            <option value="hybrid">{t("Hybrid")}</option>
           </select>
         </div>
         <div>
-          <label className="label" htmlFor="p-city">City</label>
-          <input id="p-city" className="input" maxLength={80} placeholder="Astana" {...field("city")} />
+          <label className="label" htmlFor="p-city">{t("City")}</label>
+          <input id="p-city" className="input" maxLength={80} placeholder={t("Astana")} {...field("city")} />
         </div>
         <div>
-          <label className="label" htmlFor="p-venue">Venue</label>
+          <label className="label" htmlFor="p-venue">{t("Venue")}</label>
           <input id="p-venue" className="input" maxLength={120} {...field("venue")} />
         </div>
         <div>
-          <label className="label" htmlFor="p-team">Owner team</label>
+          <label className="label" htmlFor="p-team">{t("Owner team")}</label>
           <input id="p-team" className="input" maxLength={80} placeholder="AIESEC NU" {...field("ownerTeam")} />
         </div>
         <div className="sm:col-span-2">
-          <label className="label" htmlFor="p-tags">Tags</label>
+          <label className="label" htmlFor="p-tags">{t("Tags")}</label>
           <input id="p-tags" className="input" placeholder="IT, Women in tech" {...field("tags")} />
-          <p className="hint">Comma-separated.</p>
+          <p className="hint">{t("Comma-separated.")}</p>
         </div>
       </div>
       {error && <p role="alert" className="rounded-xl border border-danger/40 bg-danger/5 px-4 py-3 text-sm text-danger">{error}</p>}
       <div className="flex flex-wrap items-center gap-2">
-        <button type="submit" className="btn-primary" disabled={busy}>{busy ? "Saving…" : v.id ? "Save" : "Create project"}</button>
+        <button type="submit" className="btn-primary" disabled={busy}>{busy ? t("Saving…") : v.id ? t("Save") : t("Create project")}</button>
         {v.id && (!confirmDelete ? (
-          <button type="button" className="btn-danger" onClick={() => setConfirmDelete(true)}>Delete project</button>
+          <button type="button" className="btn-danger" onClick={() => setConfirmDelete(true)}>{t("Delete project")}</button>
         ) : (
           <>
-            <span className="text-sm text-ink-muted">Its reports stay but are detached from the project. Delete?</span>
-            <button type="button" className="btn-danger" onClick={remove}>Yes, delete</button>
-            <button type="button" className="btn-ghost" onClick={() => setConfirmDelete(false)}>Cancel</button>
+            <span className="text-sm text-ink-muted">{t("Its reports stay but are detached from the project. Delete?")}</span>
+            <button type="button" className="btn-danger" onClick={remove}>{t("Yes, delete")}</button>
+            <button type="button" className="btn-ghost" onClick={() => setConfirmDelete(false)}>{t("Cancel")}</button>
           </>
         ))}
       </div>

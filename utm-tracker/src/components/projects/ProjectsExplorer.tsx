@@ -30,6 +30,8 @@ import { cn } from "@/lib/utils";
 import { chipText } from "./format";
 import { BooleanSwitch, MultiSelect, PeriodControl, Popover, RangeControl } from "./FilterWidgets";
 import { ComparePanel, ProjectList } from "./ProjectList";
+import { useLang, useT } from "@/lib/i18n/client";
+import { plural } from "@/lib/i18n";
 
 export interface SavedViewItem {
   id: string;
@@ -40,14 +42,6 @@ export interface SavedViewItem {
 const PANEL_GROUPS: FilterGroup[] = ["context", "scale", "results", "acquisition", "relative", "admin"];
 const MAIN_IN_BAR = new Set(["type", "date", "season", "status", "data"]);
 
-function plural(n: number, one: string, few: string, many: string) {
-  const m10 = n % 10;
-  const m100 = n % 100;
-  if (m10 === 1 && m100 !== 11) return one;
-  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
-  return many;
-}
-const projectsWord = (n: number) => (n === 1 ? "project" : "projects");
 
 export function ProjectsExplorer({
   state: initial,
@@ -62,6 +56,9 @@ export function ProjectsExplorer({
   views: SavedViewItem[];
   compareRows: ProjectRow[];
 }) {
+  const t = useT();
+  const lang = useLang();
+  const projectsWord = (n: number) => plural(lang, n, "проект", "проекта", "проектов", "project", "projects");
   const router = useRouter();
   const pathname = usePathname();
   const [state, setState] = useState(initial);
@@ -136,7 +133,7 @@ export function ProjectsExplorer({
       if (!fs.length) return null;
       return (
         <fieldset key={g} className="min-w-0 space-y-4 rounded-xl border border-line p-4">
-          <legend className="px-1 font-display text-sm font-semibold text-ink">{GROUP_LABEL[g]}</legend>
+          <legend className="px-1 font-display text-sm font-semibold text-ink">{t(GROUP_LABEL[g])}</legend>
           {fs.map(widget)}
         </fieldset>
       );
@@ -173,12 +170,12 @@ export function ProjectsExplorer({
       {/* ─── search + main filters ─────────────────────────── */}
       <div className="flex flex-wrap items-center gap-2">
         <label className="relative min-w-[220px] flex-1">
-          <span className="sr-only">Search projects</span>
+          <span className="sr-only">{t("Search projects")}</span>
           <span aria-hidden className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-faint">⌕</span>
           <input
             type="search"
             className="input rounded-full pl-9"
-            placeholder="Search projects…"
+            placeholder={t("Search projects…")}
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -186,10 +183,10 @@ export function ProjectsExplorer({
             }}
           />
         </label>
-        <Popover label="Type" badge={selectedTypes.length || undefined}>
+        <Popover label={t("Type")} badge={selectedTypes.length || undefined}>
           {widget(FILTER_BY_KEY.get("type")!)}
         </Popover>
-        <Popover label="Period" badge={(state.values.date ? 1 : 0) + ((state.values.season as string[] | undefined)?.length ?? 0) || undefined} wide>
+        <Popover label={t("Period")} badge={(state.values.date ? 1 : 0) + ((state.values.season as string[] | undefined)?.length ?? 0) || undefined} wide>
           <PeriodControl
             value={state.values.date as DateRange | undefined}
             onChange={(v) => set("date", v, v && !v.preset ? 400 : 0)}
@@ -198,10 +195,10 @@ export function ProjectsExplorer({
             onSeasons={(v) => set("season", v)}
           />
         </Popover>
-        <Popover label="Status" badge={(state.values.status as string[] | undefined)?.length || undefined}>
+        <Popover label={t("Status")} badge={(state.values.status as string[] | undefined)?.length || undefined}>
           {widget(FILTER_BY_KEY.get("status")!)}
         </Popover>
-        <Popover label="Data" badge={(state.values.data as string[] | undefined)?.length || undefined}>
+        <Popover label={t("Data")} badge={(state.values.data as string[] | undefined)?.length || undefined}>
           {widget(FILTER_BY_KEY.get("data")!)}
         </Popover>
         <button
@@ -211,39 +208,39 @@ export function ProjectsExplorer({
           onClick={() => setPanel((v) => !v)}
           className={cn("inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm transition", panelActive ? "border-accent/50 bg-accent/10 text-ink" : "border-line bg-bg-raised text-ink-muted hover:text-ink")}
         >
-          More filters{panelActive ? ` (${panelActive})` : ""}
+          {t("More filters")}{panelActive ? ` (${panelActive})` : ""}
         </button>
       </div>
 
       {/* ─── quick views ───────────────────────────────────── */}
-      <nav aria-label="Quick views" className="mt-4 flex flex-wrap items-center gap-1.5 text-sm">
-        <span className="mr-1 text-xs text-ink-faint">Quick views:</span>
+      <nav aria-label={t("Quick views")} className="mt-4 flex flex-wrap items-center gap-1.5 text-sm">
+        <span className="mr-1 text-xs text-ink-faint">{t("Quick views:")}</span>
         {PRESETS.map((p) => {
           const on = p.query === currentQuery;
           const def = FILTER_BY_KEY.get(p.key);
           return (
-            <button key={p.key} type="button" aria-pressed={on} title={def?.help} onClick={() => go(p.query)}
+            <button key={p.key} type="button" aria-pressed={on} title={def?.help && t(def.help)} onClick={() => go(p.query)}
               className={cn("rounded-full px-3 py-1.5 text-xs transition", on ? "bg-accent text-black" : "bg-bg-raised text-ink-muted hover:text-ink")}>
-              {p.label}
+              {t(p.label)}
             </button>
           );
         })}
         {views.map((v) => (
           <span key={v.id} className={cn("inline-flex items-center rounded-full text-xs", v.query === toQuery({ ...state, cmp: [] }) ? "bg-accent text-black" : "bg-bg-raised text-ink-muted")}>
             <button type="button" className="py-1.5 pl-3 pr-1.5 hover:text-ink" onClick={() => go(v.query)}>★ {v.name}</button>
-            <button type="button" className="py-1.5 pr-2.5 opacity-60 hover:opacity-100" aria-label={`Delete view “${v.name}”`} onClick={() => deleteView(v.id)}>✕</button>
+            <button type="button" className="py-1.5 pr-2.5 opacity-60 hover:opacity-100" aria-label={t("Delete view “{name}”", { name: v.name })} onClick={() => deleteView(v.id)}>✕</button>
           </span>
         ))}
         {saving ? (
           <form onSubmit={saveView} className="inline-flex items-center gap-1">
-            <input autoFocus className="input w-44 rounded-full py-1 text-xs" placeholder="View name" value={viewName} maxLength={60}
-              onChange={(e) => setViewName(e.target.value)} onKeyDown={(e) => e.key === "Escape" && setSaving(false)} aria-label="View name" />
-            <button type="submit" className="rounded-full bg-accent px-3 py-1.5 text-xs text-black">Save</button>
+            <input autoFocus className="input w-44 rounded-full py-1 text-xs" placeholder={t("View name")} value={viewName} maxLength={60}
+              onChange={(e) => setViewName(e.target.value)} onKeyDown={(e) => e.key === "Escape" && setSaving(false)} aria-label={t("View name")} />
+            <button type="submit" className="rounded-full bg-accent px-3 py-1.5 text-xs text-black">{t("Save")}</button>
           </form>
         ) : (
           active.length > 0 && (
             <button type="button" className="rounded-full border border-dashed border-line px-3 py-1.5 text-xs text-ink-faint hover:text-ink" onClick={() => setSaving(true)}>
-              + Save view
+              + {t("Save view")}
             </button>
           )
         )}
@@ -251,13 +248,13 @@ export function ProjectsExplorer({
 
       {/* ─── active chips ──────────────────────────────────── */}
       {active.length > 0 && (
-        <div className="mt-3 flex flex-wrap items-center gap-1.5" aria-label="Active filters">
+        <div className="mt-3 flex flex-wrap items-center gap-1.5" aria-label={t("Active filters")}>
           {active.map((k) => {
             const f = FILTER_BY_KEY.get(k)!;
             return (
               <span key={k} className="inline-flex items-center gap-1 rounded-full border border-line bg-bg-raised py-1 pl-3 pr-1 text-xs text-ink">
-                {chipText(f, state.values[k], labelFor(k))}
-                <button type="button" className="grid h-5 w-5 place-items-center rounded-full text-ink-faint hover:bg-bg-hover hover:text-ink" aria-label={`Remove filter: ${f.label}`}
+                {chipText(f, state.values[k], labelFor(k), lang)}
+                <button type="button" className="grid h-5 w-5 place-items-center rounded-full text-ink-faint hover:bg-bg-hover hover:text-ink" aria-label={t("Remove filter: {name}", { name: t(f.label) })}
                   onClick={() => (k === "q" ? (setSearch(""), set("q", null)) : set(k, null))}>
                   ✕
                 </button>
@@ -265,7 +262,7 @@ export function ProjectsExplorer({
             );
           })}
           <button type="button" className="ml-1 text-xs text-ink-faint underline-offset-2 hover:text-ink hover:underline" onClick={() => (setSearch(""), go(""))}>
-            Reset all
+            {t("Reset all")}
           </button>
         </div>
       )}
@@ -276,13 +273,13 @@ export function ProjectsExplorer({
           <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" aria-hidden onClick={() => setPanel(false)} />
           <section
             id="more-filters"
-            aria-label="More filters"
+            aria-label={t("More filters")}
             className="fixed inset-x-0 bottom-0 z-50 max-h-[85vh] overflow-y-auto rounded-t-2xl border border-line bg-bg-card p-4 shadow-card lg:static lg:z-auto lg:mt-4 lg:max-h-none lg:rounded-2xl lg:p-5"
           >
             <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-line lg:hidden" aria-hidden />
             {typeSpecificFirst.length > 0 && (
               <div className="mb-4">
-                <p className="mb-2 text-xs font-medium uppercase tracking-wide text-accent">For type “{typeName(selectedTypes[0])}”</p>
+                <p className="mb-2 text-xs font-medium uppercase tracking-wide text-accent">{t("For type “{name}”", { name: typeName(selectedTypes[0]) })}</p>
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{groupBlocks(typeSpecificFirst)}</div>
               </div>
             )}
@@ -290,7 +287,7 @@ export function ProjectsExplorer({
             {otherTypes.length > 0 && (
               <div className="mt-4">
                 <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-faint">
-                  {selectedTypes.length === 1 ? "For other types" : "Only for some types"}
+                  {selectedTypes.length === 1 ? t("For other types") : t("Only for some types")}
                 </p>
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                   {otherTypes.map((f) => (
@@ -304,7 +301,7 @@ export function ProjectsExplorer({
             )}
             <div className="sticky bottom-0 -mx-4 mt-4 border-t border-line bg-bg-card px-4 pb-1 pt-3 lg:hidden">
               <button type="button" className="btn-primary w-full" onClick={() => setPanel(false)}>
-                Show {result.matched} {projectsWord(result.matched)}
+                {t("Show {n} {word}", { n: result.matched, word: projectsWord(result.matched) })}
               </button>
             </div>
           </section>
@@ -314,12 +311,12 @@ export function ProjectsExplorer({
       {/* ─── summary, sort, view ───────────────────────────── */}
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
         <p className="text-sm text-ink-muted" aria-live="polite" aria-atomic="true">
-          Found <strong className="text-ink">{result.matched}</strong> of {result.total}
+          {t("Found")} <strong className="text-ink">{result.matched}</strong> {t("of {n}", { n: result.total })}
           {result.hiddenNoData > 0 && (
             <>
-              {" · "}{result.hiddenNoData} hidden with no data for this filter{" "}
+              {" · "}{t("{n} hidden with no data for this filter", { n: result.hiddenNoData })}{" "}
               <button type="button" className="text-accent underline-offset-2 hover:underline" onClick={() => push({ ...state, nulls: true })}>
-                Show
+                {t("Show")}
               </button>
             </>
           )}
@@ -327,28 +324,28 @@ export function ProjectsExplorer({
             <>
               {" · "}
               <button type="button" className="text-accent underline-offset-2 hover:underline" onClick={() => push({ ...state, nulls: false })}>
-                Hide projects without data
+                {t("Hide projects without data")}
               </button>
             </>
           )}
         </p>
         <div className="flex flex-wrap items-center gap-2">
           <label className="flex items-center gap-2 text-xs text-ink-faint">
-            Sort
+            {t("Sort")}
             <select className="input w-auto py-1.5 text-xs" value={`${state.sort.dir === -1 ? "-" : ""}${state.sort.key}`}
               onChange={(e) => push({ ...state, sort: { key: e.target.value.replace(/^-/, ""), dir: e.target.value.startsWith("-") ? -1 : 1 } })}>
               {SORTS.flatMap((s) =>
                 s.key === "name"
-                  ? [<option key="name" value="name">{s.label} (A–Z)</option>]
-                  : [<option key={`-${s.key}`} value={`-${s.key}`}>{s.label} ↓</option>, <option key={s.key} value={s.key}>{s.label} ↑</option>],
+                  ? [<option key="name" value="name">{t(s.label)} (A–Z)</option>]
+                  : [<option key={`-${s.key}`} value={`-${s.key}`}>{t(s.label)} ↓</option>, <option key={s.key} value={s.key}>{t(s.label)} ↑</option>],
               )}
             </select>
           </label>
-          <div role="group" aria-label="List view" className="inline-flex rounded-full border border-line bg-bg-raised p-0.5">
+          <div role="group" aria-label={t("List view")} className="inline-flex rounded-full border border-line bg-bg-raised p-0.5">
             {(["cards", "table"] as const).map((v) => (
               <button key={v} type="button" aria-pressed={state.view === v} onClick={() => push({ ...state, view: v })}
                 className={cn("rounded-full px-3 py-1 text-xs", state.view === v ? "bg-bg-hover text-ink" : "text-ink-muted")}>
-                {v === "cards" ? "▦ cards" : "☰ table"}
+                {v === "cards" ? "▦ " + t("cards") : "☰ " + t("table")}
               </button>
             ))}
           </div>
@@ -358,12 +355,12 @@ export function ProjectsExplorer({
       {/* ─── compare bar & panel ───────────────────────────── */}
       {state.cmp.length > 0 && (
         <div className="sticky top-2 z-20 mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-accent/40 bg-bg-card/95 px-4 py-3 text-sm shadow-card backdrop-blur">
-          <span>Selected to compare: <strong>{state.cmp.length}</strong> of {MAX_COMPARE}</span>
+          <span>{t("Selected to compare:")} <strong>{state.cmp.length}</strong> {t("of {n}", { n: MAX_COMPARE })}</span>
           <button type="button" className="btn-primary py-1.5 text-xs" disabled={state.cmp.length < 2} onClick={() => setShowCompare(true)}>
-            Compare
+            {t("Compare")}
           </button>
-          <button type="button" className="text-xs text-ink-faint hover:text-ink" onClick={() => (setShowCompare(false), push({ ...state, cmp: [] }))}>Clear</button>
-          {state.cmp.length < 2 && <span className="text-xs text-ink-faint">Pick at least one more project</span>}
+          <button type="button" className="text-xs text-ink-faint hover:text-ink" onClick={() => (setShowCompare(false), push({ ...state, cmp: [] }))}>{t("Clear")}</button>
+          {state.cmp.length < 2 && <span className="text-xs text-ink-faint">{t("Pick at least one more project")}</span>}
         </div>
       )}
       {showCompare && compareRows.length >= 2 && (
@@ -376,17 +373,17 @@ export function ProjectsExplorer({
       <div className={cn("mt-5 transition-opacity", pending && "opacity-60")} aria-busy={pending}>
         {result.matched === 0 ? (
           <div className="card px-6 py-12 text-center">
-            <h2 className="font-display text-lg font-semibold">Nothing found</h2>
+            <h2 className="font-display text-lg font-semibold">{t("Nothing found")}</h2>
             <p className="mt-2 text-sm text-ink-muted">
               {result.hiddenNoData > 0
-                ? `${result.hiddenNoData} ${projectsWord(result.hiddenNoData)} hidden because they have no data for the selected filters.`
-                : "No project matches all the filters at once."}
+                ? t("{n} {word} hidden because they have no data for the selected filters.", { n: result.hiddenNoData, word: projectsWord(result.hiddenNoData) })
+                : t("No project matches all the filters at once.")}
             </p>
             {result.emptyHints.length > 0 && (
               <div className="mt-4 flex flex-wrap justify-center gap-2">
                 {result.emptyHints.slice(0, 4).map((h) => (
                   <button key={h.key} type="button" className="btn-ghost py-1.5 text-xs" onClick={() => (h.key === "q" && setSearch(""), set(h.key, null))}>
-                    Remove “{h.label}” (+{h.gain})
+                    {t("Remove “{name}” (+{n})", { name: t(h.label), n: h.gain })}
                   </button>
                 ))}
               </div>

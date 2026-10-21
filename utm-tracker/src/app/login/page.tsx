@@ -3,11 +3,13 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useT } from "@/lib/i18n/client";
+import { LangSwitch } from "@/components/Sidebar";
 
 const REASON: Record<string, string> = {
   pending: "Your account is waiting for an admin's approval.",
   disabled: "Your account is disabled. Ask an admin.",
-};
+}; // t() below
 
 export default function LoginPage() {
   return (
@@ -18,6 +20,7 @@ export default function LoginPage() {
 }
 
 function LoginForm() {
+  const t = useT();
   const router = useRouter();
   const reason = REASON[useSearchParams().get("reason") ?? ""];
   const [email, setEmail] = useState("");
@@ -40,10 +43,10 @@ function LoginForm() {
         router.refresh();
       } else {
         const data = await res.json().catch(() => null);
-        setError((res.status === 403 || res.status === 429) && data?.error ? data.error : "Wrong email or password");
+        setError((res.status === 403 || res.status === 429) && data?.error ? t(data.error) : t("Wrong email or password"));
       }
     } catch {
-      setError("Connection error. Please try again.");
+      setError(t("Connection error. Please try again."));
     } finally {
       setLoading(false);
     }
@@ -55,7 +58,7 @@ function LoginForm() {
         <div className="card p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="label">Email</label>
+              <label className="label">{t("Email")}</label>
               <input
                 className="input"
                 type="email"
@@ -69,7 +72,7 @@ function LoginForm() {
             </div>
 
             <div>
-              <label className="label">Password</label>
+              <label className="label">{t("Password")}</label>
               <input
                 className="input"
                 type="password"
@@ -82,7 +85,7 @@ function LoginForm() {
             </div>
 
             {reason && !error && (
-              <p className="rounded-xl border border-accent/30 bg-accent/10 px-4 py-2.5 text-sm text-accent">{reason}</p>
+              <p className="rounded-xl border border-accent/30 bg-accent/10 px-4 py-2.5 text-sm text-accent">{t(reason)}</p>
             )}
 
             {error && (
@@ -96,13 +99,14 @@ function LoginForm() {
               disabled={loading}
               className="btn-primary w-full justify-center"
             >
-              {loading ? "Signing in…" : "Sign in"}
+              {loading ? t("Signing in…") : t("Sign in")}
             </button>
           </form>
           <p className="mt-4 text-center text-sm text-ink-faint">
-            New to the team? <Link href="/register" className="text-accent hover:underline">Create an account</Link>
+            {t("New to the team?")} <Link href="/register" className="text-accent hover:underline">{t("Create an account")}</Link>
           </p>
         </div>
+        <LangSwitch className="mt-4 justify-center" />
       </div>
     </div>
   );

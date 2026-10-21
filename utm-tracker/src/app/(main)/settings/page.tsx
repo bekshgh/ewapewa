@@ -10,6 +10,8 @@ import { isAdmin } from "@/lib/permissions";
 import { LinkDomainsEditor } from "@/components/LinkDomainsEditor";
 import { OldNamesFixer } from "@/components/OldNamesFixer";
 import { linkDomains } from "@/lib/linkDomainsServer";
+import { getLang, getT } from "@/lib/i18n/server";
+import type { T } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -27,11 +29,13 @@ function EnvRow({
   value,
   required,
   hint,
+  t,
 }: {
   name: string;
   value: string | undefined;
   required?: boolean;
   hint: string;
+  t: T;
 }) {
   const isSet = Boolean(value && value.trim());
   const secret = /SECRET|SALT|URL/.test(name) && name !== "NEXT_PUBLIC_BASE_URL";
@@ -39,7 +43,7 @@ function EnvRow({
     <tr className="hover:bg-bg-hover/40">
       <td className="px-5 py-3.5 align-top">
         <div className="font-mono text-[13px] text-ink">{name}</div>
-        <div className="mt-0.5 text-xs text-ink-faint">{hint}</div>
+        <div className="mt-0.5 text-xs text-ink-faint">{t(hint)}</div>
       </td>
       <td className="px-5 py-3.5 align-top font-mono text-xs text-ink-muted">
         {isSet ? (secret ? maskSecret(value) : value) : <span className="text-ink-faint">—</span>}
@@ -59,6 +63,7 @@ function EnvRow({
 
 export default async function SettingsPage() {
   if (!isAdmin(await currentActor())) return <AccessDenied />;
+  const [t, lang] = await Promise.all([getT(), getLang()]);
   const [thresholds, domains] = await Promise.all([getProjectSettings(prisma), linkDomains()]);
   const [links, clicks, leads, campaigns, webhookLogs] = await Promise.all([
     prisma.trackingLink.count(),
@@ -77,24 +82,24 @@ export default async function SettingsPage() {
   };
 
   const stats = [
-    { label: "Tracking links", value: links },
-    { label: "Clicks recorded", value: clicks },
-    { label: "Leads attributed", value: leads },
-    { label: "Campaigns", value: campaigns },
-    { label: "Webhook events", value: webhookLogs },
+    { label: t("Tracking links"), value: links },
+    { label: t("Clicks recorded"), value: clicks },
+    { label: t("Leads attributed"), value: leads },
+    { label: t("Campaigns"), value: campaigns },
+    { label: t("Webhook events"), value: webhookLogs },
   ];
 
   return (
     <>
-      <PageHeader breadcrumb="Settings" title="Settings" subtitle="Configuration, environment and data overview" />
+      <PageHeader breadcrumb={t("Settings")} title={t("Settings")} subtitle={t("Configuration, environment and data overview")} />
 
       {/* Workspace */}
       <section className="mb-8 animate-fade-up">
-        <h2 className="mb-3 font-display text-lg font-semibold">Workspace</h2>
+        <h2 className="mb-3 font-display text-lg font-semibold">{t("Workspace")}</h2>
         <div className="card p-5">
           <div className="grid gap-5 sm:grid-cols-2">
             <div className="min-w-0">
-              <label className="text-xs uppercase tracking-wide text-ink-faint">Tracker base URL</label>
+              <label className="text-xs uppercase tracking-wide text-ink-faint">{t("Tracker base URL")}</label>
               <div className="mt-1.5 flex items-center gap-2">
                 <code className="min-w-0 flex-1 truncate rounded-lg border border-line bg-bg-base px-3 py-2 font-mono text-sm text-ink">
                   {BASE}
@@ -102,18 +107,18 @@ export default async function SettingsPage() {
                 <CopyButton value={BASE} />
               </div>
               <p className="mt-1.5 text-xs text-ink-faint">
-                Used to build short links <span className="font-mono">{BASE}/r/&#123;slug&#125;</span>.
+                {t("Used to build short links")} <span className="font-mono">{BASE}/r/&#123;slug&#125;</span>.
               </p>
             </div>
             <div className="min-w-0">
-              <label className="text-xs uppercase tracking-wide text-ink-faint">Webhook endpoint</label>
+              <label className="text-xs uppercase tracking-wide text-ink-faint">{t("Webhook endpoint")}</label>
               <div className="mt-1.5 flex items-center gap-2">
                 <code className="min-w-0 flex-1 truncate rounded-lg border border-line bg-bg-base px-3 py-2 font-mono text-sm text-ink">
                   {BASE}/api/webhooks/tilda-lead
                 </code>
                 <CopyButton value={`${BASE}/api/webhooks/tilda-lead`} />
               </div>
-              <p className="mt-1.5 text-xs text-ink-faint">Paste this into your form platform → Forms → Webhook.</p>
+              <p className="mt-1.5 text-xs text-ink-faint">{t("Paste this into your form platform → Forms → Webhook.")}</p>
             </div>
           </div>
         </div>
@@ -121,40 +126,40 @@ export default async function SettingsPage() {
 
       {/* Short link domains */}
       <section className="card mb-8 p-6">
-        <h2 className="font-display text-lg font-semibold">Short link domains</h2>
-        <p className="mb-4 mt-1 text-sm text-ink-muted">Domains a link can be handed out with, e.g. zimran-aiesec.vercel.app/r/…  Pick one when creating or editing a link.</p>
+        <h2 className="font-display text-lg font-semibold">{t("Short link domains")}</h2>
+        <p className="mb-4 mt-1 text-sm text-ink-muted">{t("Domains a link can be handed out with, e.g. zimran-aiesec.vercel.app/r/… Pick one when creating or editing a link.")}</p>
         <LinkDomainsEditor domains={domains} />
       </section>
 
       {/* Old names */}
       <section className="card mb-8 p-6">
-        <h2 className="font-display text-lg font-semibold">Old names</h2>
-        <p className="mb-4 mt-1 text-sm text-ink-muted">Projects and campaigns named before the &quot;Name F&apos;26 / S&apos;26&quot; rule.</p>
+        <h2 className="font-display text-lg font-semibold">{t("Old names")}</h2>
+        <p className="mb-4 mt-1 text-sm text-ink-muted">{t("Projects and campaigns named before the “Name F'26 / S'26” rule.")}</p>
         <OldNamesFixer />
       </section>
 
       {/* Environment */}
       <section className="mb-8 animate-fade-up">
-        <h2 className="mb-1 font-display text-lg font-semibold">Environment variables</h2>
+        <h2 className="mb-1 font-display text-lg font-semibold">{t("Environment variables")}</h2>
         <p className="mb-3 text-sm text-ink-muted">
-          These are read from the server at runtime. On Vercel, set them under Project → Settings → Environment Variables.
+          {t("These are read from the server at runtime. On Vercel, set them under Project → Settings → Environment Variables.")}
         </p>
         <div className="card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-faint">
-                  <th className="px-5 py-3.5 font-medium">Variable</th>
-                  <th className="px-5 py-3.5 font-medium">Value</th>
-                  <th className="px-5 py-3.5 text-right font-medium">Status</th>
+                  <th className="px-5 py-3.5 font-medium">{t("Variable")}</th>
+                  <th className="px-5 py-3.5 font-medium">{t("Value")}</th>
+                  <th className="px-5 py-3.5 text-right font-medium">{t("Status")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
-                <EnvRow name="DATABASE_URL" value={env.DATABASE_URL} required hint="Pooled PostgreSQL connection (app runtime)" />
-                <EnvRow name="DIRECT_URL" value={env.DIRECT_URL} required hint="Direct connection used for migrations" />
-                <EnvRow name="NEXT_PUBLIC_BASE_URL" value={env.NEXT_PUBLIC_BASE_URL} required hint="Public URL of this tracker" />
-                <EnvRow name="WEBHOOK_SECRET" value={env.WEBHOOK_SECRET} required hint="Shared secret that authorises the webhook" />
-                <EnvRow name="IP_HASH_SALT" value={env.IP_HASH_SALT} hint="Salt for hashing IPs (raw IPs are never stored)" />
+                <EnvRow name="DATABASE_URL" value={env.DATABASE_URL} required hint={t("Pooled PostgreSQL connection (app runtime)")} t={t} />
+                <EnvRow name="DIRECT_URL" value={env.DIRECT_URL} required hint={t("Direct connection used for migrations")} t={t} />
+                <EnvRow name="NEXT_PUBLIC_BASE_URL" value={env.NEXT_PUBLIC_BASE_URL} required hint={t("Public URL of this tracker")} t={t} />
+                <EnvRow name="WEBHOOK_SECRET" value={env.WEBHOOK_SECRET} required hint={t("Shared secret that authorises the webhook")} t={t} />
+                <EnvRow name="IP_HASH_SALT" value={env.IP_HASH_SALT} hint={t("Salt for hashing IPs (raw IPs are never stored)")} t={t} />
               </tbody>
             </table>
           </div>
@@ -163,25 +168,24 @@ export default async function SettingsPage() {
 
       {/* Project thresholds */}
       <section className="card mb-8 p-6">
-        <h2 className="font-display text-lg font-semibold">Project thresholds</h2>
-        <p className="mb-5 mt-1 text-sm text-ink-muted">Used by the filters and quick views on the Projects page.</p>
+        <h2 className="font-display text-lg font-semibold">{t("Project thresholds")}</h2>
+        <p className="mb-5 mt-1 text-sm text-ink-muted">{t("Used by the filters and quick views on the Projects page.")}</p>
         <ThresholdsForm initial={thresholds} />
       </section>
 
       {/* Data overview */}
       <section className="animate-fade-up">
-        <h2 className="mb-3 font-display text-lg font-semibold">Data overview</h2>
+        <h2 className="mb-3 font-display text-lg font-semibold">{t("Data overview")}</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {stats.map((s) => (
             <div key={s.label} className="card p-4">
-              <div className="num text-2xl font-bold text-ink">{s.value.toLocaleString("en-US")}</div>
+              <div className="num text-2xl font-bold text-ink">{s.value.toLocaleString(lang === "ru" ? "ru-RU" : "en-US")}</div>
               <div className="mt-1 text-xs text-ink-muted">{s.label}</div>
             </div>
           ))}
         </div>
         <p className="mt-4 text-xs text-ink-faint">
-          This is a single-workspace MVP — there is no multi-tenant auth yet. See the README for post-MVP ideas like
-          authentication, roles and per-user workspaces.
+          {t("One shared workspace for the whole team: everyone sees the same data; roles decide who can change what.")}
         </p>
       </section>
     </>

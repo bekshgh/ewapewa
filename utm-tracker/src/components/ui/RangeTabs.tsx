@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/client";
 
 const OPTIONS = [
   { value: "7d", label: "7 days" },
@@ -11,6 +12,7 @@ const OPTIONS = [
 ];
 
 export function RangeTabs({ current }: { current: string }) {
+  const t = useT();
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -32,7 +34,7 @@ export function RangeTabs({ current }: { current: string }) {
             current === o.value ? "bg-bg-hover font-medium text-ink" : "text-ink-muted hover:text-ink"
           )}
         >
-          {o.label}
+          {t(o.label)}
         </button>
       ))}
     </div>

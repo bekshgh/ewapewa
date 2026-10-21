@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ProjectSettings } from "@/lib/projects/settings";
+import { useT } from "@/lib/i18n/client";
 
 type Field = { key: keyof ProjectSettings; label: string; help: string; percent?: boolean; step?: number };
 
@@ -19,6 +20,7 @@ const FIELDS: Field[] = [
 
 /** Thresholds behind presets and badges, editable without a deploy. */
 export function ThresholdsForm({ initial }: { initial: ProjectSettings }) {
+  const t = useT();
   const router = useRouter();
   const [v, setV] = useState(() =>
     Object.fromEntries(FIELDS.map((f) => [f.key, String(f.percent ? +(initial[f.key] * 100).toFixed(2) : initial[f.key])])),
@@ -39,17 +41,17 @@ export function ThresholdsForm({ initial }: { initial: ProjectSettings }) {
       <div className="grid gap-4 sm:grid-cols-2">
         {FIELDS.map((f) => (
           <div key={f.key}>
-            <label className="label" htmlFor={`th-${f.key}`}>{f.label}{f.percent ? ", %" : ""}</label>
+            <label className="label" htmlFor={`th-${f.key}`}>{t(f.label)}{f.percent ? ", %" : ""}</label>
             <input id={`th-${f.key}`} type="number" className="input" min={0} step={f.step ?? 1} required value={v[f.key]}
               onChange={(e) => (setState("idle"), setV({ ...v, [f.key]: e.target.value }))} />
-            <p className="hint">{f.help}</p>
+            <p className="hint">{t(f.help)}</p>
           </div>
         ))}
       </div>
       <div className="flex items-center gap-3">
-        <button type="submit" className="btn-primary" disabled={state === "busy"}>{state === "busy" ? "Saving…" : "Save thresholds"}</button>
-        {state === "saved" && <span className="text-sm text-leads">Saved ✓</span>}
-        {state === "error" && <span role="alert" className="text-sm text-danger">Check the values</span>}
+        <button type="submit" className="btn-primary" disabled={state === "busy"}>{state === "busy" ? t("Saving…") : t("Save thresholds")}</button>
+        {state === "saved" && <span className="text-sm text-leads">{t("Saved ✓")}</span>}
+        {state === "error" && <span role="alert" className="text-sm text-danger">{t("Check the values")}</span>}
       </div>
     </form>
   );

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { LangProvider } from "@/lib/i18n/client";
+import { getLang } from "@/lib/i18n/server";
 
 // Fonts live in the repository (src/app/fonts, from Google Fonts): the build no longer
 // downloads them, so a hiccup at fonts.googleapis.com cannot fail it. These faces have
@@ -17,10 +19,11 @@ export const metadata: Metadata = {
   description: "Create UTM links, count clicks server-side, and attribute leads.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const lang = await getLang();
   return (
-    <html lang="en" className={`${display.variable} ${sans.variable} ${cyrillic.variable} ${mono.variable} ${monoCyrillic.variable}`}>
-      <body>{children}</body>
+    <html lang={lang} className={`${display.variable} ${sans.variable} ${cyrillic.variable} ${mono.variable} ${monoCyrillic.variable}`}>
+      <body><LangProvider lang={lang}>{children}</LangProvider></body>
     </html>
   );
 }

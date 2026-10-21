@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useT } from "@/lib/i18n/client";
 
 /**
  * Keeps a page's numbers fresh without reloading the site: re-fetches the
@@ -10,6 +11,7 @@ import { useRouter } from "next/navigation";
  * anything typed on the page stay.
  */
 export function LiveRefresh({ every = 30 }: { every?: number }) {
+  const t = useT();
   const router = useRouter();
   const [pending, start] = useTransition();
   const [at, setAt] = useState<Date | null>(null);
@@ -36,13 +38,13 @@ export function LiveRefresh({ every = 30 }: { every?: number }) {
       type="button"
       onClick={() => { last.current = Date.now(); start(() => router.refresh()); }}
       className="inline-flex items-center gap-2 rounded-xl border border-line px-3 py-2 text-xs text-ink-muted transition hover:border-accent/60 hover:text-ink"
-      title={`Updates by itself every ${every} seconds`}
+      title={t("Updates by itself every {n} seconds", { n: every })}
     >
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
         className={pending ? "animate-spin motion-reduce:animate-none" : ""} aria-hidden>
         <path d="M21 12a9 9 0 1 1-3-6.7L21 8" /><path d="M21 3v5h-5" />
       </svg>
-      {pending ? "Updating…" : at ? `Updated ${at.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Refresh"}
+      {pending ? t("Updating…") : at ? t("Updated {time}", { time: at.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }) : t("Refresh")}
     </button>
   );
 }

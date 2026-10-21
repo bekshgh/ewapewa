@@ -1,4 +1,5 @@
 import { PageHeader } from "@/components/ui/PageHeader";
+import { getT } from "@/lib/i18n/server";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LinksTable, type LinkRow } from "@/components/LinksTable";
 import { getLinkStats, uniqueClicksByLink } from "@/lib/analytics";
@@ -11,6 +12,7 @@ export const dynamic = "force-dynamic";
 
 export default async function LinksPage() {
   const actor = await currentActor();
+  const t = await getT();
   const [withStats, archived, editableIds, campaigns] = await Promise.all([
     getLinkStats("all"),
     prisma.trackingLink.findMany({
@@ -55,13 +57,13 @@ export default async function LinksPage() {
 
   return (
     <>
-      <PageHeader breadcrumb="Links" title="All links" subtitle={`${total} link${total === 1 ? "" : "s"} total`} />
+      <PageHeader breadcrumb={t("Links")} title={t("All links")} subtitle={t("{n} links total", { n: total })} />
       {total === 0 ? (
         <EmptyState
-          title="No links yet"
-          description="Create your first tracked link to start counting clicks and attributing leads from Tilda."
+          title={t("No links yet")}
+          description={t("Create your first tracked link to start counting clicks and attributing leads from Tilda.")}
           ctaHref="/links/new"
-          ctaLabel="Create your first link"
+          ctaLabel={t("Create your first link")}
         />
       ) : (
         <LinksTable links={rows} />

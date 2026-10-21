@@ -1,6 +1,9 @@
-export default function Loading() {
+import { getT } from "@/lib/i18n/server";
+
+export default async function Loading() {
+  const t = await getT();
   return (
-    <div className="animate-pulse" aria-busy="true" aria-label="Loading projects">
+    <div className="animate-pulse" aria-busy="true" aria-label={t("Loading projects")}>
       <div className="mb-8 h-10 w-48 rounded-lg bg-bg-raised" />
       <div className="flex flex-wrap gap-2">
         <div className="h-10 min-w-[220px] flex-1 rounded-full bg-bg-raised" />

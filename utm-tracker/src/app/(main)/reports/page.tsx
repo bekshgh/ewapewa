@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { formatDateTime } from "@/lib/utils";
 import { currentActor } from "@/lib/auth";
 import { isAdmin } from "@/lib/permissions";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,7 @@ const VIS = { private: "private", link: "link", public: "public" } as const;
 
 export default async function ReportsPage() {
   const admin = isAdmin(await currentActor());
+  const t = await getT();
   const [reports, projects] = await Promise.all([
     prisma.report.findMany({
       orderBy: { createdAt: "desc" },
@@ -25,54 +27,54 @@ export default async function ReportsPage() {
   return (
     <>
       <PageHeader
-        breadcrumb="Reports"
-        title="Reports"
-        subtitle="Upload an event's Excel analysis (Feedback or Registration) and get an interactive report."
+        breadcrumb={t("Reports")}
+        title={t("Reports")}
+        subtitle={t("Upload an event's Excel analysis (Feedback or Registration) and get an interactive report.")}
       />
 
       {admin && (
         <section className="card mb-6 p-6">
           <div className="mb-1 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-            <h2 className="font-display text-lg font-semibold">Upload reports</h2>
-            <Link href="/reports/guide" className="text-sm font-medium text-accent hover:underline">How to prepare a file →</Link>
+            <h2 className="font-display text-lg font-semibold">{t("Upload reports")}</h2>
+            <Link href="/reports/guide" className="text-sm font-medium text-accent hover:underline">{t("How to prepare a file")} →</Link>
           </div>
-          <p className="mb-4 text-sm text-ink-muted">One file or many at once. Each event becomes a project, ready to compare in Projects.</p>
-          <BulkReportUpload projects={projects} types={types.map((t) => ({ value: t.key, label: t.name }))} />
+          <p className="mb-4 text-sm text-ink-muted">{t("One file or many at once. Each event becomes a project, ready to compare in Projects.")}</p>
+          <BulkReportUpload projects={projects} types={types.map((x) => ({ value: x.key, label: x.name }))} />
         </section>
       )}
 
       <section className="card overflow-hidden">
         <div className="border-b border-line px-6 py-4">
-          <h2 className="font-display text-lg font-semibold">All reports</h2>
+          <h2 className="font-display text-lg font-semibold">{t("All reports")}</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-sm">
             <thead>
               <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-faint">
-                <th className="px-6 py-3 font-medium">Report</th>
-                <th className="px-6 py-3 font-medium">Type</th>
-                <th className="px-6 py-3 font-medium">Status</th>
-                <th className="px-6 py-3 font-medium">Visibility</th>
-                <th className="px-6 py-3 text-right font-medium">Uploaded</th>
+                <th className="px-6 py-3 font-medium">{t("Report")}</th>
+                <th className="px-6 py-3 font-medium">{t("Type")}</th>
+                <th className="px-6 py-3 font-medium">{t("Status")}</th>
+                <th className="px-6 py-3 font-medium">{t("Visibility")}</th>
+                <th className="px-6 py-3 text-right font-medium">{t("Uploaded")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
               {reports.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center text-ink-faint">No reports yet.</td>
+                  <td colSpan={5} className="px-6 py-10 text-center text-ink-faint">{t("No reports yet.")}</td>
                 </tr>
               )}
               {reports.map((r) => (
                 <tr key={r.id} className="hover:bg-bg-hover/40">
                   <td className="px-6 py-3">
                     <Link href={admin ? `/reports/${r.id}` : `/report/${r.slug}`} className="font-medium text-ink hover:text-accent">{r.title}</Link>
-                    <p className="text-xs text-ink-faint">{r.project ? `Project: ${r.project.name}` : r.eventName ?? ""}</p>
+                    <p className="text-xs text-ink-faint">{r.project ? t("Project: {name}", { name: r.project.name }) : r.eventName ?? ""}</p>
                   </td>
-                  <td className="px-6 py-3 text-ink-muted">{r.type === "feedback" ? "Feedback" : "Registration"}</td>
+                  <td className="px-6 py-3 text-ink-muted">{t(r.type === "feedback" ? "Feedback" : "Registration")}</td>
                   <td className="px-6 py-3">
                     <Pill label={r.status === "published" ? "published" : "draft"} tone={r.status === "published" ? "success" : "paused"} />
                   </td>
-                  <td className="px-6 py-3 text-ink-muted">{VIS[r.visibility]}</td>
+                  <td className="px-6 py-3 text-ink-muted">{t(VIS[r.visibility])}</td>
                   <td className="px-6 py-3 text-right text-xs text-ink-faint">{formatDateTime(r.createdAt)}</td>
                 </tr>
               ))}

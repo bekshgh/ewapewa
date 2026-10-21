@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { NewBadge } from "@/components/ui/NewBadge";
+import { saveLang, useLang, useT } from "@/lib/i18n/client";
+import { LANGS, type Lang } from "@/lib/i18n";
 
 type Access = "all" | "editors" | "admins";
 
@@ -68,6 +70,7 @@ function Icon({ name }: { name: string }) {
 
 export function Sidebar({ user }: { user: SidebarUser }) {
   const pathname = usePathname();
+  const t = useT();
   const allowed = (i: Item) => !i.access || i.access === "all" || (i.access === "admins" ? user.admin : user.editor);
   const items = NAV.filter(allowed);
   const others = OTHERS.filter(allowed);
@@ -110,10 +113,10 @@ export function Sidebar({ user }: { user: SidebarUser }) {
       <span className={cn("transition", isActive(item.href) ? "text-accent" : "text-ink-faint group-hover:text-ink-muted")}>
         <Icon name={item.icon} />
       </span>
-      {item.label}
+      {t(item.label)}
       {item.isNew && <NewBadge className="ml-auto" />}
       {item.href === "/users" && pending > 0 && (
-        <span className="ml-auto rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold text-bg-base" title={`${pending} sign-up${pending === 1 ? "" : "s"} waiting for approval`}>
+        <span className="ml-auto rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold text-bg-base" title={t("Sign-ups waiting for approval: {n}", { n: pending })}>
           {pending}
         </span>
       )}
@@ -137,7 +140,7 @@ export function Sidebar({ user }: { user: SidebarUser }) {
             <span className={cn("transition", inOthers ? "text-accent" : "text-ink-faint group-hover:text-ink-muted")}>
               <Icon name="more" />
             </span>
-            Others
+            {t("Others")}
             <span className={cn("ml-auto text-ink-faint transition-transform", othersOpen && "rotate-90")}>
               <Icon name="chevron" />
             </span>
@@ -153,7 +156,7 @@ export function Sidebar({ user }: { user: SidebarUser }) {
       {/* Mobile top bar */}
       <header className="fixed inset-x-0 top-0 z-40 flex items-center justify-between border-b border-line bg-bg-base/80 px-4 py-3 backdrop-blur lg:hidden">
         <Brand />
-        <button onClick={() => setOpen((v) => !v)} className="btn-ghost px-3 py-2" aria-label="Menu">
+        <button onClick={() => setOpen((v) => !v)} className="btn-ghost px-3 py-2" aria-label={t("Menu")}>
           <svg width="20" height="20" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round">
             {open ? <path d="M6 6l12 12M18 6 6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
           </svg>
@@ -163,7 +166,8 @@ export function Sidebar({ user }: { user: SidebarUser }) {
       {open && (
         <div className="fixed inset-0 top-[57px] z-30 overflow-y-auto bg-bg-base/95 px-4 py-4 backdrop-blur lg:hidden">
           {Nav}
-          <Link href="/profile" onClick={() => setOpen(false)} className="mt-3 block rounded-xl px-3 py-2.5 text-sm text-ink-muted">{user.name} · Profile</Link>
+          <Link href="/profile" onClick={() => setOpen(false)} className="mt-3 block rounded-xl px-3 py-2.5 text-sm text-ink-muted">{user.name} · {t("Profile")}</Link>
+          <LangSwitch />
           <LogoutButton />
         </div>
       )}
@@ -176,8 +180,9 @@ export function Sidebar({ user }: { user: SidebarUser }) {
         <div className="mt-8 flex-1">{Nav}</div>
         <Link href="/profile" className="block rounded-xl border border-line bg-bg-raised p-3 text-xs transition hover:border-accent/50">
           <p className="truncate font-medium text-ink">{user.name}</p>
-          <p className="mt-0.5 text-ink-faint">{user.roleLabel} · Profile →</p>
+          <p className="mt-0.5 text-ink-faint">{t(user.roleLabel)} · {t("Profile")} →</p>
         </Link>
+        <LangSwitch />
         <LogoutButton />
       </aside>
 
@@ -194,7 +199,31 @@ function Brand() {
   );
 }
 
+/** RU / EN: remembered in a cookie, the page re-renders in place. */
+export function LangSwitch({ className = "mt-3" }: { className?: string }) {
+  const lang = useLang();
+  const router = useRouter();
+  const t = useT();
+  const pick = (l: Lang) => { saveLang(l); router.refresh(); };
+  return (
+    <div className={cn("flex items-center gap-1 px-3 text-xs", className)} role="group" aria-label={t("Interface language")}>
+      {LANGS.map((l) => (
+        <button
+          key={l}
+          type="button"
+          onClick={() => pick(l)}
+          aria-pressed={lang === l}
+          className={cn("rounded-md px-2 py-1 transition", lang === l ? "bg-bg-hover font-medium text-ink" : "text-ink-faint hover:text-ink")}
+        >
+          {l.toUpperCase()}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function LogoutButton() {
+  const t = useT();
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
     window.location.href = "/login";
@@ -209,7 +238,7 @@ function LogoutButton() {
         <polyline points="16 17 21 12 16 7" />
         <line x1="21" y1="12" x2="9" y2="12" />
       </svg>
-      Sign out
+      {t("Sign out")}
     </button>
   );
 }

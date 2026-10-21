@@ -16,6 +16,7 @@ import { CONFIGS } from "@/lib/reports/configs";
 import { formatValue, readableTitle } from "./format";
 import { BarsChart, DoughnutChart, LineSeriesChart, describeChart } from "./ReportCharts";
 import { ConcentrationMeter, DataTable, RankedBars, SegmentSwitcher } from "./ReportTables";
+import { useLang, useT } from "@/lib/i18n/client";
 
 const TYPE_LABEL = { feedback: "Feedback", registration: "Registration" } as const;
 
@@ -24,6 +25,8 @@ const TYPE_LABEL = { feedback: "Feedback", registration: "Registration" } as con
  * mirrored to ?tab= so a tab can be linked directly.
  */
 export function ReportView({ doc, initialTab }: { doc: ReportDocument; initialTab?: string }) {
+  const tr = useT();
+  const lang = useLang();
   const keys = doc.sheets.map((s) => s.key);
   const [tab, setTab] = useState(initialTab && keys.includes(initialTab) ? initialTab : keys[0]);
   const [printAll, setPrintAll] = useState(false);
@@ -74,35 +77,35 @@ export function ReportView({ doc, initialTab }: { doc: ReportDocument; initialTa
 
   const visible = printAll ? doc.sheets : doc.sheets.filter((s) => s.key === tab);
   // Tab names come from the current config (stored documents may carry older labels).
-  const tabLabel = (s: SheetDoc) => CONFIGS[doc.type]?.sheets.find((c) => c.key === s.key)?.label ?? s.label;
+  const tabLabel = (s: SheetDoc) => tr(CONFIGS[doc.type]?.sheets.find((c) => c.key === s.key)?.label ?? s.label);
 
   return (
     <div className="report">
       <header className="mb-6">
         <div className="mb-3 flex flex-wrap items-center gap-2 text-xs">
-          <span className="pill bg-accent/15 text-accent">{TYPE_LABEL[doc.type]}</span>
+          <span className="pill bg-accent/15 text-accent">{tr(TYPE_LABEL[doc.type])}</span>
           {doc.meta.period && <span className="pill bg-bg-hover text-ink-muted">{doc.meta.period}</span>}
           {doc.meta.sampleSize !== undefined && (
-            <span className="pill bg-bg-hover text-ink-muted">n = {doc.meta.sampleSize.toLocaleString("en-US")}</span>
+            <span className="pill bg-bg-hover text-ink-muted">n = {doc.meta.sampleSize.toLocaleString(lang === "ru" ? "ru-RU" : "en-US")}</span>
           )}
         </div>
         <h1 className="font-display text-2xl font-bold tracking-tight sm:text-[32px] sm:leading-tight">{doc.title}</h1>
         {doc.subtitle && <p className="mt-1.5 text-sm text-ink-muted">{doc.subtitle}</p>}
         <div className="mt-4 flex flex-wrap gap-2 print:hidden">
           <button type="button" className="btn-ghost py-2 text-xs" onClick={copyLink}>
-            {copied ? "Link copied" : "Copy link"}
+            {copied ? tr("Link copied") : tr("Copy link")}
           </button>
           <button type="button" className="btn-ghost py-2 text-xs" onClick={() => window.print()}>
-            Print tab
+            {tr("Print tab")}
           </button>
           <button type="button" className="btn-ghost py-2 text-xs" onClick={() => setPrintAll(true)}>
-            Print / PDF whole report
+            {tr("Print / PDF whole report")}
           </button>
         </div>
       </header>
 
       <nav className="-mx-4 mb-6 overflow-x-auto px-4 print:hidden sm:mx-0 sm:px-0">
-        <div role="tablist" aria-label="Report sections" className="inline-flex min-w-max gap-1 rounded-full border border-line bg-bg-raised p-1">
+        <div role="tablist" aria-label={tr("Report sections")} className="inline-flex min-w-max gap-1 rounded-full border border-line bg-bg-raised p-1">
           {doc.sheets.map((s, i) => (
             <button
               key={s.key}
@@ -135,6 +138,7 @@ export function ReportView({ doc, initialTab }: { doc: ReportDocument; initialTa
 }
 
 function SheetPanel({ sheet, doc }: { sheet: SheetDoc; doc: ReportDocument }) {
+  const tr = useT();
   let sections = sheet.sections;
   if (sheet.key === "overview") {
     // First screen: headline numbers, then the key conclusions, then details.
@@ -153,7 +157,7 @@ function SheetPanel({ sheet, doc }: { sheet: SheetDoc; doc: ReportDocument }) {
       }
       i--;
       blocks.push(
-        <Card key={s.id} title="Scores by segment" subtitle="Colour compares segments within each column">
+        <Card key={s.id} title={tr("Scores by segment")} subtitle={tr("Colour compares segments within each column")}>
           <SegmentSwitcher tables={group} />
         </Card>,
       );
@@ -165,7 +169,7 @@ function SheetPanel({ sheet, doc }: { sheet: SheetDoc; doc: ReportDocument }) {
       if (caveats) blocks.push(<Caveats key="caveats" s={caveats} />);
     }
   }
-  if (blocks.length === 0) return <p className="text-sm text-ink-faint">No data was found in this part of the file.</p>;
+  if (blocks.length === 0) return <p className="text-sm text-ink-faint">{tr("No data was found in this part of the file.")}</p>;
   return <div className="space-y-6">{blocks}</div>;
 }
 
@@ -200,6 +204,7 @@ function SectionCard({ s, hero }: { s: Section; hero?: boolean }) {
 const TONE_TEXT = { neutral: "text-ink", good: "text-leads", warn: "text-accent", critical: "text-danger" } as const;
 
 function KpiGrid({ s, hero }: { s: KpiSection; hero?: boolean }) {
+  const tr = useT();
   return (
     <div className={cn("grid gap-3", hero ? "grid-cols-2 lg:grid-cols-3 xl:grid-cols-5" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6")}>
       {s.cards.map((c, i) => (
@@ -210,7 +215,7 @@ function KpiGrid({ s, hero }: { s: KpiSection; hero?: boolean }) {
           </p>
           {c.subtext && (
             <p className={cn("mt-1 text-xs", c.tone === "warn" ? "text-accent" : "text-ink-muted")}>
-              {c.tone === "warn" && <span aria-label="warning">⚠ </span>}
+              {c.tone === "warn" && <span aria-label={tr("warning")}>⚠ </span>}
               {c.subtext}
             </p>
           )}
@@ -230,6 +235,7 @@ const CALLOUT = {
 } as const;
 
 function Callouts({ s }: { s: CalloutSection }) {
+  const tr = useT();
   return (
     <ul className="grid gap-2.5 md:grid-cols-2">
       {s.items.map((it, i) => {
@@ -237,7 +243,7 @@ function Callouts({ s }: { s: CalloutSection }) {
         return (
           <li key={i} className={cn("flex gap-3 rounded-xl border p-3.5 text-sm", st.cls)}>
             <span className={cn("mt-0.5 shrink-0 font-bold", st.iconCls)} aria-hidden>{st.icon}</span>
-            <span className="sr-only">{st.sr}: </span>
+            <span className="sr-only">{tr(st.sr)}: </span>
             <span>
               {it.label && <strong className="block font-semibold text-ink">{it.label}</strong>}
               <span className="text-ink-muted">{it.text}</span>
@@ -263,9 +269,10 @@ function Definitions({ s }: { s: DefinitionsSection }) {
 }
 
 function Caveats({ s }: { s: DefinitionsSection }) {
+  const tr = useT();
   return (
     <section className="card border-accent/30 p-5 sm:p-6" aria-labelledby="h-caveats">
-      <h2 id="h-caveats" className="font-display text-lg font-semibold">How to read these numbers</h2>
+      <h2 id="h-caveats" className="font-display text-lg font-semibold">{tr("How to read these numbers")}</h2>
       <ul className="mt-3 space-y-2 text-sm">
         {s.items.map((d, i) => (
           <li key={i} className="flex gap-3">
@@ -283,6 +290,7 @@ function Caveats({ s }: { s: DefinitionsSection }) {
 const CHART_VIEWS = new Set<TableView["type"]>(["bars", "line", "doughnut"]);
 
 function TableBlock({ t }: { t: TableSection }) {
+  const tr = useT();
   const charts = t.views.filter((v) => CHART_VIEWS.has(v.type));
   const primary = t.views.find((v) => !CHART_VIEWS.has(v.type));
 
@@ -320,7 +328,7 @@ function TableBlock({ t }: { t: TableSection }) {
       ))}
       {charts.length > 0 && tableOnly && primary?.type === "table" ? (
         <details className="group">
-          <summary className="cursor-pointer select-none text-xs text-ink-faint hover:text-ink-muted print:hidden">Show table</summary>
+          <summary className="cursor-pointer select-none text-xs text-ink-faint hover:text-ink-muted print:hidden">{tr("Show table")}</summary>
           <div className="mt-3">{main}</div>
         </details>
       ) : (
@@ -328,7 +336,7 @@ function TableBlock({ t }: { t: TableSection }) {
       )}
       {secondaryTable && (
         <details>
-          <summary className="cursor-pointer select-none text-xs text-ink-faint hover:text-ink-muted print:hidden">Show table</summary>
+          <summary className="cursor-pointer select-none text-xs text-ink-faint hover:text-ink-muted print:hidden">{tr("Show table")}</summary>
           <div className="mt-3"><DataTable t={t} /></div>
         </details>
       )}

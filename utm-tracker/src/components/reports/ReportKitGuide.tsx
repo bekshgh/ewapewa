@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/client";
 
 const PLACEHOLDER = "[Project Name]";
 const NAME_KEY = "reportGuide.projectName";
@@ -34,6 +35,7 @@ async function copyText(text: string): Promise<boolean> {
 }
 
 function CopyAction({ text, label, primary }: { text: string; label: string; primary?: boolean }) {
+  const t = useT();
   const [state, setState] = useState<"idle" | "ok" | "fail">("idle");
   return (
     <button
@@ -44,18 +46,19 @@ function CopyAction({ text, label, primary }: { text: string; label: string; pri
         setTimeout(() => setState("idle"), 2500);
       }}
     >
-      {state === "ok" ? "Copied ✓" : state === "fail" ? "Copy failed — select the text below" : label}
+      {state === "ok" ? t("Copied ✓") : state === "fail" ? t("Copy failed — select the text below") : label}
     </button>
   );
 }
 
 function Preview({ title, text }: { title: string; text: string }) {
+  const t = useT();
   return (
     <details className="group rounded-xl border border-line bg-bg-base">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-2.5 text-sm font-medium text-ink">
         <span>{title}</span>
         <span className="text-xs text-ink-faint">
-          {text.split("\n").length} lines <span className="inline-block transition group-open:rotate-90">›</span>
+          {t("{n} lines", { n: text.split("\n").length })} <span className="inline-block transition group-open:rotate-90">›</span>
         </span>
       </summary>
       <pre className="max-h-96 overflow-auto whitespace-pre-wrap break-words border-t border-line p-4 text-xs leading-relaxed text-ink-muted">{text}</pre>
@@ -106,6 +109,7 @@ export function ReportKitGuide({
   kit: string;
   layouts: GuideLayout[];
 }) {
+  const t = useT();
   const [name, setName] = useState("");
   useEffect(() => {
     try {
@@ -119,76 +123,76 @@ export function ReportKitGuide({
     } catch {}
   };
   const project = name.trim();
-  const fill = (t: string) => (project ? t.split(PLACEHOLDER).join(project) : t);
+  const fill = (s: string) => (project ? s.split(PLACEHOLDER).join(project) : s);
   const prompt = fill(mainPrompt + "\n" + skillReference);
 
   return (
     <div className="space-y-6">
       <section className="card p-6">
-        <h2 className="mb-1 font-display text-lg font-semibold">What this is</h2>
+        <h2 className="mb-1 font-display text-lg font-semibold">{t("What this is")}</h2>
         <p className="text-sm text-ink-muted">
-          Every project&apos;s Excel analysis must come out in the same layout, or Reports warns and skips sections. The report kit
-          (<Code>report_kit.py</Code>) builds the Registration or Feedback workbook exactly the way the site reads it, and its{" "}
-          <Code>check_report</Code> runs the same checks before you upload. You only give Claude the form export.
+          {t("Every project's Excel analysis must come out in the same layout, or Reports warns and skips sections. The report kit")}
+          (<Code>report_kit.py</Code>) {t("builds the Registration or Feedback workbook exactly the way the site reads it, and its")}{" "}
+          <Code>check_report</Code> {t("runs the same checks before you upload. You only give Claude the form export.")}
         </p>
       </section>
 
       <section className="card p-6">
-        <h2 className="mb-4 font-display text-lg font-semibold">Steps</h2>
+        <h2 className="mb-4 font-display text-lg font-semibold">{t("Steps")}</h2>
         <div className="mb-5 max-w-md">
-          <label className="label" htmlFor="guide-project">Project name</label>
+          <label className="label" htmlFor="guide-project">{t("Project name")}</label>
           <input
             id="guide-project"
             className="input"
-            placeholder="e.g. Business Cup"
+            placeholder={t("e.g. Business Cup")}
             value={name}
             maxLength={80}
             onChange={(e) => onName(e.target.value)}
           />
           <p className="mt-1 text-xs text-ink-faint">
-            Replaces every <Code>{PLACEHOLDER}</Code> in the copied prompt.
+            {t("Replaces every")} <Code>{PLACEHOLDER}</Code> {t("in the copied prompt.")}
           </p>
         </div>
         <ol className="space-y-5">
-          <Step n={1} title="Open a new Claude chat and attach two files">
-            The form export (<Code>.xlsx</Code>) and <Code>report_kit.py</Code>.
+          <Step n={1} title={t("Open a new Claude chat and attach two files")}>
+            {t("The form export")} (<Code>.xlsx</Code>) {t("and")} <Code>report_kit.py</Code>.
             <div className="mt-3 flex flex-wrap gap-2">
-              <a href="/reports/guide/kit" download className="btn-ghost">Download report_kit.py</a>
-              <CopyAction text={kit} label="Copy report_kit.py text" />
+              <a href="/reports/guide/kit" download className="btn-ghost">{t("Download report_kit.py")}</a>
+              <CopyAction text={kit} label={t("Copy report_kit.py text")} />
             </div>
-            <p className="mt-2 text-xs text-ink-faint">If the attachment fails, paste the copied kit text at the end of your message (it becomes PART C of the prompt).</p>
+            <p className="mt-2 text-xs text-ink-faint">{t("If the attachment fails, paste the copied kit text at the end of your message (it becomes PART C of the prompt).")}</p>
           </Step>
-          <Step n={2} title="Copy the prompt and paste it into the chat">
+          <Step n={2} title={t("Copy the prompt and paste it into the chat")}>
             <div className="mt-2">
-              <CopyAction text={prompt} label="Copy prompt (Main + Copy/Paste 1)" primary />
+              <CopyAction text={prompt} label={t("Copy prompt (Main + Copy/Paste 1)")} primary />
             </div>
-            {!project && <p className="mt-2 text-xs text-accent">Enter the project name above first, or replace {PLACEHOLDER} by hand.</p>}
+            {!project && <p className="mt-2 text-xs text-accent">{t("Enter the project name above first, or replace {ph} by hand.", { ph: PLACEHOLDER })}</p>}
           </Step>
-          <Step n={3} title="Send it and wait">
-            Claude cleans the export, builds the workbook with the kit and checks it. This takes a few minutes.
+          <Step n={3} title={t("Send it and wait")}>
+            {t("Claude cleans the export, builds the workbook with the kit and checks it. This takes a few minutes.")}
           </Step>
-          <Step n={4} title="Check the reply">
-            It must contain <Code>check_report: PASS</Code>. If not, reply: <Code>Run check_report and fix it</Code>.
+          <Step n={4} title={t("Check the reply")}>
+            {t("It must contain")} <Code>check_report: PASS</Code>. {t("If not, reply:")} <Code>Run check_report and fix it</Code>.
           </Step>
-          <Step n={5} title="Download the file and upload it on Reports">
-            The name follows <Code>Project_S_26_Registration_Form_Analysis.xlsx</Code> (S = spring, F = fall). Upload it on{" "}
-            <a href="/reports" className="text-accent hover:underline">Reports → Upload reports</a>.
+          <Step n={5} title={t("Download the file and upload it on Reports")}>
+            {t("The name follows")} <Code>Project_S_26_Registration_Form_Analysis.xlsx</Code> ({t("S = spring, F = fall")}). {t("Upload it on")}{" "}
+            <a href="/reports" className="text-accent hover:underline">{t("Reports → Upload reports")}</a>.
           </Step>
         </ol>
       </section>
 
       <section className="card p-6">
-        <h2 className="mb-4 font-display text-lg font-semibold">What is being copied</h2>
+        <h2 className="mb-4 font-display text-lg font-semibold">{t("What is being copied")}</h2>
         <div className="space-y-2">
-          <Preview title="Main prompt" text={fill(mainPrompt)} />
-          <Preview title="Copy/Paste 1 (background notes on Excel)" text={skillReference} />
+          <Preview title={t("Main prompt")} text={fill(mainPrompt)} />
+          <Preview title={t("Copy/Paste 1 (background notes on Excel)")} text={skillReference} />
           <Preview title="report_kit.py" text={kit} />
         </div>
       </section>
 
       <section className="card overflow-hidden">
         <div className="border-b border-line px-6 py-4">
-          <h2 className="font-display text-lg font-semibold">What you can / cannot change after downloading</h2>
+          <h2 className="font-display text-lg font-semibold">{t("What you can / cannot change after downloading")}</h2>
         </div>
         <div className="grid sm:grid-cols-2 sm:divide-x sm:divide-line">
           {[
@@ -196,12 +200,12 @@ export function ReportKitGuide({
             { title: "You cannot", items: CANNOT, mark: "✗", tone: "text-danger" },
           ].map((c, i) => (
             <div key={c.title} className={cn("px-6 py-4", i > 0 && "border-t border-line sm:border-t-0")}>
-              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-faint">{c.title}</p>
+              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-faint">{t(c.title)}</p>
               <ul className="space-y-1.5 text-sm text-ink-muted">
-                {c.items.map((t) => (
-                  <li key={t} className="flex gap-2">
+                {c.items.map((x) => (
+                  <li key={x} className="flex gap-2">
                     <span className={cn("shrink-0 font-semibold", c.tone)}>{c.mark}</span>
-                    <span>{t}</span>
+                    <span>{t(x)}</span>
                   </li>
                 ))}
               </ul>
@@ -213,8 +217,8 @@ export function ReportKitGuide({
       <section className="grid gap-6 md:grid-cols-2">
         {layouts.map((l) => (
           <div key={l.label} className="card p-6">
-            <h2 className="mb-1 font-display text-lg font-semibold">{l.label} sheets</h2>
-            <p className="mb-3 text-xs text-ink-faint">Sheet names the site reads, with the section headings it expects.</p>
+            <h2 className="mb-1 font-display text-lg font-semibold">{t("{type} sheets", { type: t(l.label) })}</h2>
+            <p className="mb-3 text-xs text-ink-faint">{t("Sheet names the site reads, with the section headings it expects.")}</p>
             <ol className="space-y-2 text-sm">
               {l.sheets.map((s, i) => (
                 <li key={s.name}>

@@ -1,4 +1,7 @@
+"use client";
+
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/client";
 
 const styles: Record<string, string> = {
   exact: "bg-leads/12 text-leads",
@@ -15,6 +18,8 @@ const styles: Record<string, string> = {
   default: "bg-bg-hover text-ink-muted",
 };
 
+/** A status word: translated when the dictionary knows it (active, paused, exact, draft…). */
 export function Pill({ label, tone = "default" }: { label: string; tone?: string }) {
-  return <span className={cn("pill", styles[tone] || styles.default)}>{label}</span>;
+  const t = useT();
+  return <span className={cn("pill", styles[tone] || styles.default)}>{t(label)}</span>;
 }

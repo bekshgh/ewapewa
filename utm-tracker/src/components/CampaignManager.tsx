@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Pill } from "@/components/ui/Pill";
 import { NameWithTerm } from "@/components/ui/NameWithTerm";
 import { utmCampaignOf } from "@/lib/naming";
+import { useT } from "@/lib/i18n/client";
 
 type Row = {
   id: string; name: string; label: string | null; description: string | null;
@@ -14,6 +15,7 @@ type Row = {
 };
 
 export function CampaignManager({ campaigns, canCreate, editable }: { campaigns: Row[]; canCreate: boolean; editable: string[] }) {
+  const t = useT();
   const canEdit = new Set(editable);
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -25,7 +27,7 @@ export function CampaignManager({ campaigns, canCreate, editable }: { campaigns:
   const [patching, setPatching] = useState<string | null>(null);
 
   async function add() {
-    if (!form.label) { setError("Enter the campaign name and pick its term (F'26 / S'26)"); return; }
+    if (!form.label) { setError(t("Enter the campaign name and pick its term (F'26 / S'26)")); return; }
     setSaving(true); setError("");
     const res = await fetch("/api/campaigns", {
       method: "POST", headers: { "Content-Type": "application/json" },
@@ -35,7 +37,7 @@ export function CampaignManager({ campaigns, canCreate, editable }: { campaigns:
     if (res.ok) { setForm(EMPTY); setNameKey((k) => k + 1); setOpen(false); router.refresh(); }
     else {
       const err = (await res.json().catch(() => null))?.error;
-      setError((res.status === 403 || res.status === 422) && err && err !== "Validation failed" ? err : "Could not save. Check the campaign name is unique and valid.");
+      setError((res.status === 403 || res.status === 422) && err && err !== "Validation failed" ? err : t("Could not save. Check the campaign name is unique and valid."));
     }
   }
 
@@ -55,7 +57,7 @@ export function CampaignManager({ campaigns, canCreate, editable }: { campaigns:
     <>
       {canCreate && (
         <div className="mb-5">
-          <button className="btn-primary" onClick={() => setOpen((v) => !v)}>{open ? "Close" : "+ Add campaign"}</button>
+          <button className="btn-primary" onClick={() => setOpen((v) => !v)}>{open ? t("Close") : t("+ Add campaign")}</button>
         </div>
       )}
 
@@ -63,22 +65,22 @@ export function CampaignManager({ campaigns, canCreate, editable }: { campaigns:
         <div className="card mb-6 p-6">
           <div className="grid gap-5 sm:grid-cols-2">
             <div className="sm:col-span-2">
-              <NameWithTerm key={nameKey} id="c-name" label="Campaign name" placeholder="ICY  ·  or  TopTalents Sprint EwA2oGX" value={form.label} onChange={(label) => set("label", label)} />
+              <NameWithTerm key={nameKey} id="c-name" label={t("Campaign name")} placeholder={t("ICY  ·  or  TopTalents Sprint EwA2oGX")} value={form.label} onChange={(label) => set("label", label)} />
             </div>
-            <Field label="utm_campaign value" hint="Made from the name; change only if you need another value">
+            <Field label={t("utm_campaign value")} hint={t("Made from the name; change only if you need another value")}>
               <input className="input" value={form.name} onChange={(e) => set("name", e.target.value)} placeholder={form.label ? utmCampaignOf(form.label) : "icy_s26"} />
             </Field>
-            <Field label="Funnel / project"><input className="input" value={form.funnel} onChange={(e) => set("funnel", e.target.value)} placeholder="Projects" /></Field>
-            <Field label="Type">
+            <Field label={t("Funnel / project")}><input className="input" value={form.funnel} onChange={(e) => set("funnel", e.target.value)} placeholder="Projects" /></Field>
+            <Field label={t("Type")}>
               <select className="input" value={form.type} onChange={(e) => set("type", e.target.value)}>
-                <option value="">Select type…</option>
+                <option value="">{t("Select type…")}</option>
                 <option>Case-Championship</option><option>Forum</option><option>Hackathon</option>
               </select>
             </Field>
-            <Field label="Description"><input className="input" value={form.description} onChange={(e) => set("description", e.target.value)} /></Field>
+            <Field label={t("Description")}><input className="input" value={form.description} onChange={(e) => set("description", e.target.value)} /></Field>
           </div>
           {error && <p className="hint text-danger">{error}</p>}
-          <button className="btn-primary mt-5" disabled={saving} onClick={add}>{saving ? "Saving…" : "Save campaign"}</button>
+          <button className="btn-primary mt-5" disabled={saving} onClick={add}>{saving ? t("Saving…") : t("Save campaign")}</button>
         </div>
       )}
 
@@ -87,16 +89,16 @@ export function CampaignManager({ campaigns, canCreate, editable }: { campaigns:
           <table className="w-full min-w-[760px] text-sm">
             <thead>
               <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-faint">
-                <th className="px-5 py-3.5 font-medium">Name</th>
-                <th className="px-5 py-3.5 font-medium">Funnel</th>
-                <th className="px-5 py-3.5 font-medium">Term</th>
-                <th className="px-5 py-3.5 font-medium">Status</th>
-                <th className="px-5 py-3.5 text-right font-medium">Links</th>
-                <th className="px-5 py-3.5 text-right font-medium">Actions</th>
+                <th className="px-5 py-3.5 font-medium">{t("Name")}</th>
+                <th className="px-5 py-3.5 font-medium">{t("Funnel")}</th>
+                <th className="px-5 py-3.5 font-medium">{t("Term")}</th>
+                <th className="px-5 py-3.5 font-medium">{t("Status")}</th>
+                <th className="px-5 py-3.5 text-right font-medium">{t("Links")}</th>
+                <th className="px-5 py-3.5 text-right font-medium">{t("Actions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {campaigns.length === 0 && <tr><td colSpan={6} className="px-5 py-10 text-center text-ink-faint">No campaigns yet.</td></tr>}
+              {campaigns.length === 0 && <tr><td colSpan={6} className="px-5 py-10 text-center text-ink-faint">{t("No campaigns yet.")}</td></tr>}
               {campaigns.map((c) => (
                 <tr key={c.id} className="hover:bg-bg-hover/40">
                   <td className="px-5 py-3.5">
@@ -113,15 +115,15 @@ export function CampaignManager({ campaigns, canCreate, editable }: { campaigns:
                   <td className="px-5 py-3.5 text-right">
                     <div className="flex items-center justify-end gap-2 text-xs">
                       {!canEdit.has(c.id) ? null : c.status === "active" ? (
-                        <button onClick={() => patch(c.id, "paused")} disabled={patching === c.id + "paused"} title="Links keep opening the page, clicks stop being counted" className="text-ink-faint hover:text-accent transition">
-                          {patching === c.id + "paused" ? "…" : "Pause"}
+                        <button onClick={() => patch(c.id, "paused")} disabled={patching === c.id + "paused"} title={t("Links keep opening the page, clicks stop being counted")} className="text-ink-faint hover:text-accent transition">
+                          {patching === c.id + "paused" ? "…" : t("Pause")}
                         </button>
                       ) : (
                         <button onClick={() => patch(c.id, "active")} disabled={patching === c.id + "active"} className="text-leads hover:opacity-80 transition">
-                          {patching === c.id + "active" ? "…" : "Resume"}
+                          {patching === c.id + "active" ? "…" : t("Resume")}
                         </button>
                       )}
-                      <Link href={`/campaigns/${c.id}`} className="text-ink-faint hover:text-ink transition">Analytics →</Link>
+                      <Link href={`/campaigns/${c.id}`} className="text-ink-faint hover:text-ink transition">{t("Analytics")} →</Link>
                     </div>
                   </td>
                 </tr>

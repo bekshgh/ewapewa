@@ -10,6 +10,8 @@ import { canEditFolder } from "@/lib/permissions";
 import { folderNumbers } from "@/lib/projectNumbers";
 import { formatNumber, formatPercent } from "@/lib/utils";
 import { manualNumbers, projectStats, type ChannelRow, type CampaignStats } from "@/lib/projectStats";
+import { getT } from "@/lib/i18n/server";
+import type { T } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +23,7 @@ function formPage(f: { id: string; pageUrl: string | null }): string {
 
 export default async function ProjectFolderPage(props: { params: Promise<{ key: string }> }) {
   const { key } = await props.params;
+  const t = await getT();
   const [s, manual, actor, forms] = await Promise.all([
     projectStats(key), manualNumbers(key), currentActor(),
     prisma.analyticsForm.findMany({ where: { projectSlug: key }, select: { id: true, pageUrl: true, customTitle: true }, orderBy: { createdAt: "asc" } }),
@@ -33,19 +36,19 @@ export default async function ProjectFolderPage(props: { params: Promise<{ key: 
   return (
     <>
       <PageHeader
-        breadcrumb="Campaigns · Project folder"
+        breadcrumb={t("Campaigns · Project folder")}
         title={s.group.title}
-        subtitle={s.campaigns.map((c) => `${c.role.title}: ${c.label || c.name}`).join(" · ")}
+        subtitle={s.campaigns.map((c) => `${t(c.role.title)}: ${c.label || c.name}`).join(" · ")}
         action={
           <div className="flex flex-wrap items-center gap-2">
             <LiveRefresh />
             {forms.map((f) => (
               <Link key={f.id} href={`/forms/${encodeURIComponent(f.id)}`} className="btn-ghost" title={f.pageUrl ?? f.id}>
-                Form drop-off{(forms.length > 1 || f.customTitle) && <span className="ml-1 text-ink-faint">· {f.customTitle || formPage(f)}</span>} <NewBadge className="ml-1" /> →
+                {t("Form drop-off")}{(forms.length > 1 || f.customTitle) && <span className="ml-1 text-ink-faint">· {f.customTitle || formPage(f)}</span>} <NewBadge className="ml-1" /> →
               </Link>
             ))}
-            {projectCard && <Link href={`/projects/${projectCard.slug}`} className="btn-ghost" title="The project's results from its reports">Project card →</Link>}
-            <Link href="/campaigns" className="btn-ghost">← All campaigns</Link>
+            {projectCard && <Link href={`/projects/${projectCard.slug}`} className="btn-ghost" title={t("The project's results from its reports")}>{t("Project card")} →</Link>}
+            <Link href="/campaigns" className="btn-ghost">← {t("All campaigns")}</Link>
           </div>
         }
       />
@@ -64,26 +67,26 @@ export default async function ProjectFolderPage(props: { params: Promise<{ key: 
 
       {programmes.length > 0 && s.totals.projectRegs > 0 && (
         <section className="card mb-6 p-5">
-          <h2 className="font-display text-base font-semibold">Who went on from the project</h2>
+          <h2 className="font-display text-base font-semibold">{t("Who went on from the project")}</h2>
           <p className="mt-1 text-xs text-ink-faint">
-            Tracker data: programme registrants who are also among the project&apos;s registrants (same e-mail or phone).
+            {t("Tracker data: programme registrants who are also among the project's registrants (same e-mail or phone).")}
           </p>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-faint">
-                  <th className="pb-2 font-medium">Programme</th>
-                  <th className="pb-2 text-right font-medium">Registrations (tracker)</th>
-                  <th className="pb-2 text-right font-medium">Also registered for the project</th>
+                  <th className="pb-2 font-medium">{t("Programme")}</th>
+                  <th className="pb-2 text-right font-medium">{t("Registrations (tracker)")}</th>
+                  <th className="pb-2 text-right font-medium">{t("Also registered for the project")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
                 {programmes.map((c) => (
                   <tr key={c.id}>
-                    <td className="py-2.5 text-ink">{c.role.title}</td>
+                    <td className="py-2.5 text-ink">{t(c.role.title)}</td>
                     <td className="num py-2.5 text-right text-leads">{formatNumber(c.leads)}</td>
                     <td className="num py-2.5 text-right text-ink-muted">
-                      {c.fromProject === null ? "—" : `${formatNumber(c.fromProject)} (${formatPercent((c.fromProject / s.totals.projectRegs) * 100)} of project regs)`}
+                      {c.fromProject === null ? "—" : t("{n} ({pct} of project regs)", { n: formatNumber(c.fromProject), pct: formatPercent((c.fromProject / s.totals.projectRegs) * 100) })}
                     </td>
                   </tr>
                 ))}
@@ -93,30 +96,30 @@ export default async function ProjectFolderPage(props: { params: Promise<{ key: 
         </section>
       )}
 
-      <CampaignsTable rows={s.campaigns} />
+      <CampaignsTable rows={s.campaigns} t={t} />
 
       <section className="mt-6 grid gap-6 xl:grid-cols-2">
-        <ChannelTable title="By source" head="Source" rows={s.bySource} campaigns={s.campaigns} />
-        <ChannelTable title="By channel (utm_content)" head="Channel" rows={s.byContent} campaigns={s.campaigns} />
+        <ChannelTable t={t} title={t("By source")} head={t("Source")} rows={s.bySource} campaigns={s.campaigns} />
+        <ChannelTable t={t} title={t("By channel (utm_content)")} head={t("Channel")} rows={s.byContent} campaigns={s.campaigns} />
       </section>
     </>
   );
 }
 
-function CampaignsTable({ rows }: { rows: CampaignStats[] }) {
+function CampaignsTable({ rows, t }: { rows: CampaignStats[]; t: T }) {
   return (
     <section className="card p-5">
-      <h2 className="font-display text-base font-semibold">Campaigns</h2>
+      <h2 className="font-display text-base font-semibold">{t("Campaigns")}</h2>
       <div className="mt-4 overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-faint">
-              <th className="pb-2 font-medium">Campaign</th>
-              <th className="pb-2 font-medium">Role</th>
-              <th className="pb-2 text-right font-medium">Links</th>
-              <th className="pb-2 text-right font-medium">Clicks</th>
-              <th className="pb-2 text-right font-medium">Unique</th>
-              <th className="pb-2 text-right font-medium">Leads</th>
+              <th className="pb-2 font-medium">{t("Campaign")}</th>
+              <th className="pb-2 font-medium">{t("Role")}</th>
+              <th className="pb-2 text-right font-medium">{t("Links")}</th>
+              <th className="pb-2 text-right font-medium">{t("Clicks")}</th>
+              <th className="pb-2 text-right font-medium">{t("Unique")}</th>
+              <th className="pb-2 text-right font-medium">{t("Leads")}</th>
               <th className="pb-2 text-right font-medium">CR%</th>
             </tr>
           </thead>
@@ -127,7 +130,7 @@ function CampaignsTable({ rows }: { rows: CampaignStats[] }) {
                   <Link href={`/campaigns/${c.id}`} className="font-medium text-ink hover:text-accent">{c.label || c.name}</Link>
                   <div className="text-xs text-ink-faint">{c.name}</div>
                 </td>
-                <td className="py-2.5 text-ink-muted">{c.role.title}</td>
+                <td className="py-2.5 text-ink-muted">{t(c.role.title)}</td>
                 <td className="num py-2.5 text-right text-ink-muted">{formatNumber(c.links)}</td>
                 <td className="num py-2.5 text-right text-ink-muted">{formatNumber(c.clicks)}</td>
                 <td className="num py-2.5 text-right text-ink-muted">{formatNumber(c.uniqueClicks)}</td>
@@ -142,7 +145,7 @@ function CampaignsTable({ rows }: { rows: CampaignStats[] }) {
   );
 }
 
-function ChannelTable({ title, head, rows, campaigns }: { title: string; head: string; rows: ChannelRow[]; campaigns: CampaignStats[] }) {
+function ChannelTable({ title, head, rows, campaigns, t }: { title: string; head: string; rows: ChannelRow[]; campaigns: CampaignStats[]; t: T }) {
   const project = campaigns.filter((c) => c.role.kind === "project");
   const programmes = campaigns.filter((c) => c.role.kind === "programme");
   const sum = (r: ChannelRow, cs: CampaignStats[]) => cs.reduce((n, c) => n + (r.leads[c.id] ?? 0), 0);
@@ -150,19 +153,19 @@ function ChannelTable({ title, head, rows, campaigns }: { title: string; head: s
     <section className="card p-5">
       <h2 className="font-display text-base font-semibold">{title}</h2>
       {rows.length === 0 ? (
-        <p className="mt-4 text-sm text-ink-faint">No data yet.</p>
+        <p className="mt-4 text-sm text-ink-faint">{t("No data yet.")}</p>
       ) : (
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-faint">
                 <th className="pb-2 font-medium">{head}</th>
-                <th className="pb-2 text-right font-medium">Unique clicks</th>
-                <th className="pb-2 text-right font-medium">Project regs</th>
+                <th className="pb-2 text-right font-medium">{t("Unique clicks")}</th>
+                <th className="pb-2 text-right font-medium">{t("Project regs")}</th>
                 {programmes.map((c) => (
-                  <th key={c.id} className="pb-2 text-right font-medium">{c.role.title.replace("EwA2", "")} regs</th>
+                  <th key={c.id} className="pb-2 text-right font-medium">{t("{name} regs", { name: c.role.title.replace("EwA2", "") })}</th>
                 ))}
-                {programmes.length > 0 && <th className="pb-2 text-right font-medium">Programme ÷ project</th>}
+                {programmes.length > 0 && <th className="pb-2 text-right font-medium">{t("Programme ÷ project")}</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-line">

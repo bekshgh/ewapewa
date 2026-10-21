@@ -188,7 +188,7 @@ export const FILTERS: FilterDef[] = [
 
   /* ─── G. admin ────────────────────────────────────────────── */
   { key: "vis", label: "Report visibility", group: "admin", kind: "multiselect", field: "reportVisibilities", appliesTo: "all", nullPolicy: "exclude", visibility: "admin",
-    options: [{ value: "private", label: "Private" }, { value: "link", label: "Link" }, { value: "public", label: "Public" }] },
+    options: [{ value: "private", label: "Private" }, { value: "link", label: "By link" }, { value: "public", label: "Public" }] },
   { key: "warn", label: "Has parser warnings", group: "admin", kind: "boolean", field: "hasWarnings", appliesTo: "all", nullPolicy: "exclude", visibility: "admin" },
   { key: "stale", label: "Days since report update", group: "admin", kind: "range", appliesTo: "all", nullPolicy: "exclude", visibility: "admin", unit: "days",
     get: (r, ctx) => {

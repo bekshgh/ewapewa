@@ -5,6 +5,7 @@ import { kitContext } from "@/lib/linkKitServer";
 import { AccessDenied } from "@/components/AccessDenied";
 import { canEditCampaign, currentActor } from "@/lib/auth";
 import { UTM_MEDIUMS, UTM_SOURCES } from "@/lib/constants";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,8 @@ const BASE = process.env.NEXT_PUBLIC_BASE_URL || "";
 
 export default async function CampaignUtmLinksPage(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
-  if (!(await canEditCampaign(await currentActor(), id))) return <AccessDenied title="Not your project" />;
+  const t = await getT();
+  if (!(await canEditCampaign(await currentActor(), id))) return <AccessDenied title={t("Not your project")} />;
   const ctx = await kitContext(id);
   if (!ctx) notFound();
   const { campaign } = ctx;
@@ -20,8 +22,8 @@ export default async function CampaignUtmLinksPage(props: { params: Promise<{ id
   return (
     <>
       <PageHeader
-        breadcrumb="Campaigns"
-        title="Create UTM links"
+        breadcrumb={t("Campaigns")}
+        title={t("Create UTM links")}
         subtitle={`${campaign.label || campaign.name} · utm_campaign: ${campaign.name}`}
       />
       <LinkKitBuilder

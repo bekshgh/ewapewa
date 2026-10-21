@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useLang, useT } from "@/lib/i18n/client";
 
 type Count = { table: string; rows: number };
 type TableResult = { table: string; found: number; imported: number; merged: number };
@@ -26,6 +27,9 @@ const LABELS: Record<string, string> = {
 
 /** Copies all data from a previous deployment of this tracker (see lib/legacyImport). */
 export function LegacyImport() {
+  const t = useT();
+  const lang = useLang();
+  const num = (n: number) => n.toLocaleString(lang === "ru" ? "ru-RU" : "en-US");
   const router = useRouter();
   const [url, setUrl] = useState("");
   const [busy, setBusy] = useState<"check" | "import" | null>(null);
@@ -43,8 +47,8 @@ export function LegacyImport() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url, mode }),
       });
-      const data = await res.json().catch(() => ({ error: `Request failed (${res.status})` }));
-      if (!res.ok) throw new Error(data.error ?? `Request failed (${res.status})`);
+      const data = await res.json().catch(() => ({ error: t("Request failed ({status})", { status: res.status }) }));
+      if (!res.ok) throw new Error(data.error ?? t("Request failed ({status})", { status: res.status }));
       if (mode === "check") setCounts(data.tables);
       else {
         setResult(data);
@@ -60,14 +64,13 @@ export function LegacyImport() {
 
   return (
     <section>
-      <h2 className="mb-1 font-display text-lg font-semibold">Import from a previous tracker</h2>
+      <h2 className="mb-1 font-display text-lg font-semibold">{t("Import from a previous tracker")}</h2>
       <p className="mb-3 text-sm text-ink-muted">
-        Copies links, clicks, leads, campaigns, webhook logs, reports and projects from another deployment of this
-        tracker. The old site is only read. Running it again is safe: nothing is copied twice.
+        {t("Copies links, clicks, leads, campaigns, webhook logs, reports and projects from another deployment of this tracker. The old site is only read. Running it again is safe: nothing is copied twice.")}
       </p>
       <div className="card space-y-4 p-5">
         <div>
-          <label className="label">Old site&apos;s database address</label>
+          <label className="label">{t("Old site's database address")}</label>
           <input
             className="input font-mono text-xs"
             type="password"
@@ -81,17 +84,16 @@ export function LegacyImport() {
             }}
           />
           <p className="hint mt-1">
-            In the old project on Vercel: Settings → Environment Variables → <code>DATABASE_URL</code>. Used once, never
-            stored.
+            {t("In the old project on Vercel: Settings → Environment Variables →")} <code>DATABASE_URL</code>. {t("Used once, never stored.")}
           </p>
         </div>
 
         <div className="flex flex-wrap gap-3">
           <button className="btn-ghost border border-line text-sm" disabled={!url || !!busy} onClick={() => run("check")}>
-            {busy === "check" ? "Checking…" : "1. Check"}
+            {busy === "check" ? t("Checking…") : "1. " + t("Check")}
           </button>
           <button className="btn-primary text-sm" disabled={!url || !counts || !!busy} onClick={() => run("import")}>
-            {busy === "import" ? "Importing… (can take a minute)" : "2. Import everything"}
+            {busy === "import" ? t("Importing… (can take a minute)") : "2. " + t("Import everything")}
           </button>
         </div>
 
@@ -99,12 +101,12 @@ export function LegacyImport() {
 
         {counts && !result && (
           <div>
-            <p className="mb-2 text-sm text-ink-muted">Found on the old site:</p>
+            <p className="mb-2 text-sm text-ink-muted">{t("Found on the old site:")}</p>
             <ul className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm sm:grid-cols-3">
               {counts.map((c) => (
                 <li key={c.table} className="flex justify-between gap-3">
-                  <span className="text-ink-muted">{LABELS[c.table] ?? c.table}</span>
-                  <span className="font-mono text-ink">{c.rows.toLocaleString()}</span>
+                  <span className="text-ink-muted">{LABELS[c.table] ? t(LABELS[c.table]) : c.table}</span>
+                  <span className="font-mono text-ink">{num(c.rows)}</span>
                 </li>
               ))}
             </ul>
@@ -113,38 +115,37 @@ export function LegacyImport() {
 
         {result && (
           <div>
-            <p className="mb-2 text-sm font-medium text-ink">Import finished.</p>
+            <p className="mb-2 text-sm font-medium text-ink">{t("Import finished.")}</p>
             <table className="w-full max-w-lg text-sm">
               <thead>
                 <tr className="text-left text-xs text-ink-faint">
-                  <th className="py-1 font-normal">Data</th>
-                  <th className="py-1 text-right font-normal">On old site</th>
-                  <th className="py-1 text-right font-normal">Newly copied</th>
+                  <th className="py-1 font-normal">{t("Data")}</th>
+                  <th className="py-1 text-right font-normal">{t("On old site")}</th>
+                  <th className="py-1 text-right font-normal">{t("Newly copied")}</th>
                 </tr>
               </thead>
               <tbody>
-                {result.tables.map((t) => (
-                  <tr key={t.table} className="border-t border-line">
+                {result.tables.map((x) => (
+                  <tr key={x.table} className="border-t border-line">
                     <td className="py-1 text-ink-muted">
-                      {LABELS[t.table] ?? t.table}
-                      {t.merged > 0 && <span className="text-ink-faint"> ({t.merged} merged with existing)</span>}
+                      {LABELS[x.table] ? t(LABELS[x.table]) : x.table}
+                      {x.merged > 0 && <span className="text-ink-faint"> ({t("{n} merged with existing", { n: x.merged })})</span>}
                     </td>
-                    <td className="py-1 text-right font-mono">{t.found.toLocaleString()}</td>
-                    <td className="py-1 text-right font-mono text-ink">{t.imported.toLocaleString()}</td>
+                    <td className="py-1 text-right font-mono">{num(x.found)}</td>
+                    <td className="py-1 text-right font-mono text-ink">{num(x.imported)}</td>
                   </tr>
                 ))}
                 {result.formSubmitsAsLeads !== undefined && (
                   <tr className="border-t border-line">
-                    <td className="py-1 text-ink-muted">Form submits → leads</td>
+                    <td className="py-1 text-ink-muted">{t("Form submits → leads")}</td>
                     <td />
-                    <td className="py-1 text-right font-mono text-ink">{result.formSubmitsAsLeads.toLocaleString()}</td>
+                    <td className="py-1 text-right font-mono text-ink">{num(result.formSubmitsAsLeads)}</td>
                   </tr>
                 )}
               </tbody>
             </table>
             <p className="hint mt-2">
-              &quot;Newly copied&quot; is lower than the total when some rows were already here, for example after an
-              earlier run.
+              {t("“Newly copied” is lower than the total when some rows were already here, for example after an earlier run.")}
             </p>
           </div>
         )}

@@ -7,11 +7,13 @@ import { groupCampaigns } from "@/lib/projectGroups";
 import { currentActor, editableCampaignIds } from "@/lib/auth";
 import { canCreateCampaigns } from "@/lib/permissions";
 import { NewBadge } from "@/components/ui/NewBadge";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function CampaignsPage() {
   const actor = await currentActor();
+  const t = await getT();
   const [campaigns, editable] = await Promise.all([prisma.campaign.findMany({
     orderBy: { createdAt: "desc" },
     include: { _count: { select: { links: true } } },
@@ -26,14 +28,13 @@ export default async function CampaignsPage() {
 
   return (
     <>
-      <PageHeader breadcrumb="Campaigns" title="Campaigns" subtitle={`${rows.length} campaign${rows.length === 1 ? "" : "s"} total`} action={<LiveRefresh />} />
+      <PageHeader breadcrumb={t("Campaigns")} title={t("Campaigns")} subtitle={t("{n} campaigns total", { n: rows.length })} action={<LiveRefresh />} />
 
       {folders.length > 0 && (
         <section className="mb-8">
-          <h2 className="mb-1 font-display text-base font-semibold">Project folders <NewBadge className="ml-1" /></h2>
+          <h2 className="mb-1 font-display text-base font-semibold">{t("Project folders")} <NewBadge className="ml-1" /></h2>
           <p className="mb-3 text-xs text-ink-faint">
-            Campaigns with the same project name are one folder: the project campaign plus its EwA2oGX / EwA2MXP campaigns, with their
-            numbers and form drop-off. The project&apos;s results from reports live in Projects.
+            {t("Campaigns with the same project name are one folder: the project campaign plus its EwA2oGX / EwA2MXP campaigns, with their numbers and form drop-off. The project's results from reports live in Projects.")}
           </p>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {folders.map((f) => (
@@ -41,7 +42,7 @@ export default async function CampaignsPage() {
                 <div className="font-medium text-ink">{f.title}</div>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {f.campaigns.map((c) => (
-                    <span key={c.id} className="rounded-md border border-line px-2 py-0.5 text-xs text-ink-muted">{c.role.title}</span>
+                    <span key={c.id} className="rounded-md border border-line px-2 py-0.5 text-xs text-ink-muted">{t(c.role.title)}</span>
                   ))}
                 </div>
               </Link>

@@ -1,7 +1,10 @@
 "use client";
+
 import { useState } from "react";
+import { useT } from "@/lib/i18n/client";
 
 export function CopyButton({ value, className = "" }: { value: string; className?: string }) {
+  const t = useT();
   const [copied, setCopied] = useState(false);
   return (
     <button
@@ -15,7 +18,7 @@ export function CopyButton({ value, className = "" }: { value: string; className
       }}
       className={`inline-flex items-center rounded-md border border-line bg-bg-raised px-2 py-0.5 text-xs font-medium text-ink-muted transition hover:border-accent hover:text-accent ${className}`}
     >
-      {copied ? "✓ Copied" : "Copy"}
+      {copied ? `✓ ${t("Copied")}` : t("Copy")}
     </button>
   );
 }

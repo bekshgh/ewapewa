@@ -6,11 +6,13 @@ import { RegistrationImport } from "@/components/RegistrationImport";
 import { AccessDenied } from "@/components/AccessDenied";
 import { currentActor } from "@/lib/auth";
 import { isAdmin } from "@/lib/permissions";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function DataPage() {
   if (!isAdmin(await currentActor())) return <AccessDenied />;
+  const t = await getT();
   const [clicks, leads, links, campaigns, webhookLogs] = await Promise.all([
     prisma.clickEvent.count(),
     prisma.lead.count(),
@@ -22,9 +24,9 @@ export default async function DataPage() {
   return (
     <>
       <PageHeader
-        breadcrumb="Data"
-        title="Data management"
-        subtitle="Import from a previous tracker or a registrations sheet, or delete clicks, leads, links or campaigns."
+        breadcrumb={t("Data")}
+        title={t("Data management")}
+        subtitle={t("Import from a previous tracker or a registrations sheet, or delete clicks, leads, links or campaigns.")}
       />
       <div className="mb-8">
         <LegacyImport />

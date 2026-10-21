@@ -5,6 +5,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Pill } from "@/components/ui/Pill";
 import { prisma } from "@/lib/db";
 import { formatDateTime, formatNumber } from "@/lib/utils";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,7 @@ type SP = { q?: string; campaign?: string; page?: string };
  */
 export default async function LeadsPage(props: { searchParams: Promise<SP> }) {
   const sp = await props.searchParams;
+  const t = await getT();
   const q = (sp.q ?? "").trim().slice(0, 100);
   const campaign = sp.campaign ?? "";
   const page = Math.max(1, Number(sp.page) || 1);
@@ -58,8 +60,8 @@ export default async function LeadsPage(props: { searchParams: Promise<SP> }) {
   if (all === 0) {
     return (
       <>
-        <PageHeader breadcrumb="Leads" title="Leads" subtitle="0 leads from forms" />
-        <EmptyState title="No leads yet" description="Once your form fires its webhook, leads will appear here." ctaHref="/webhooks" ctaLabel="Set up the webhook" />
+        <PageHeader breadcrumb={t("Leads")} title={t("Leads")} subtitle={t("0 leads from forms")} />
+        <EmptyState title={t("No leads yet")} description={t("Once your form fires its webhook, leads will appear here.")} ctaHref="/webhooks" ctaLabel={t("Set up the webhook")} />
       </>
     );
   }
@@ -74,28 +76,28 @@ export default async function LeadsPage(props: { searchParams: Promise<SP> }) {
     const s = x.toString();
     return s ? `/leads?${s}` : "/leads";
   };
-  const tabTotal = tabs.reduce((a, t) => a + Number(t.n), 0);
+  const tabTotal = tabs.reduce((a, x) => a + Number(x.n), 0);
 
   return (
     <>
-      <PageHeader breadcrumb="Leads" title="Leads" subtitle={`${formatNumber(all)} lead${all === 1 ? "" : "s"} from forms`} />
+      <PageHeader breadcrumb={t("Leads")} title={t("Leads")} subtitle={t("Leads from forms: {n}", { n: formatNumber(all) })} />
 
       <form action="/leads" className="mb-4 flex flex-wrap gap-2">
         {campaign && <input type="hidden" name="campaign" value={campaign} />}
-        <input name="q" defaultValue={q} className="input max-w-xs" placeholder="Search by name, e-mail or phone" aria-label="Search leads" />
-        <button type="submit" className="btn-ghost border border-line">Search</button>
-        {q && <Link href={href({ q: "" })} className="btn-ghost">Clear</Link>}
+        <input name="q" defaultValue={q} className="input max-w-xs" placeholder={t("Search by name, e-mail or phone")} aria-label={t("Search leads")} />
+        <button type="submit" className="btn-ghost border border-line">{t("Search")}</button>
+        {q && <Link href={href({ q: "" })} className="btn-ghost">{t("Clear")}</Link>}
       </form>
 
       <div className="mb-5 flex flex-wrap gap-2">
-        {[{ key: "", label: "All campaigns", n: tabTotal }, ...tabs.map((t) => ({ key: t.campaign ?? NONE, label: t.campaign ?? "No campaign", n: Number(t.n) }))].map((t) => (
+        {[{ key: "", label: t("All campaigns"), n: tabTotal }, ...tabs.map((x) => ({ key: x.campaign ?? NONE, label: x.campaign ?? t("No campaign"), n: Number(x.n) }))].map((tab) => (
           <Link
-            key={t.key || "all"}
-            href={href({ campaign: t.key })}
-            className={`rounded-xl px-4 py-1.5 text-sm font-medium transition ${campaign === t.key ? "bg-accent text-black" : "bg-bg-raised text-ink-muted hover:text-ink"}`}
+            key={tab.key || "all"}
+            href={href({ campaign: tab.key })}
+            className={`rounded-xl px-4 py-1.5 text-sm font-medium transition ${campaign === tab.key ? "bg-accent text-black" : "bg-bg-raised text-ink-muted hover:text-ink"}`}
           >
-            {t.label}
-            <span className="ml-1.5 text-xs opacity-70">({formatNumber(t.n)})</span>
+            {tab.label}
+            <span className="ml-1.5 text-xs opacity-70">({formatNumber(tab.n)})</span>
           </Link>
         ))}
       </div>
@@ -105,19 +107,19 @@ export default async function LeadsPage(props: { searchParams: Promise<SP> }) {
           <table className="w-full min-w-[820px] text-sm">
             <thead>
               <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-faint">
-                <th className="px-5 py-3.5 font-medium">Lead</th>
-                <th className="px-5 py-3.5 font-medium">Contact</th>
-                <th className="px-5 py-3.5 font-medium">Source / campaign</th>
-                <th className="px-5 py-3.5 font-medium">Attribution</th>
-                <th className="px-5 py-3.5 font-medium">Link</th>
-                <th className="px-5 py-3.5 text-right font-medium">Submitted</th>
+                <th className="px-5 py-3.5 font-medium">{t("Lead")}</th>
+                <th className="px-5 py-3.5 font-medium">{t("Contact")}</th>
+                <th className="px-5 py-3.5 font-medium">{t("Source / campaign")}</th>
+                <th className="px-5 py-3.5 font-medium">{t("Attribution")}</th>
+                <th className="px-5 py-3.5 font-medium">{t("Link")}</th>
+                <th className="px-5 py-3.5 text-right font-medium">{t("Submitted")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {leads.length === 0 && <tr><td colSpan={6} className="px-5 py-10 text-center text-ink-faint">No leads match.</td></tr>}
+              {leads.length === 0 && <tr><td colSpan={6} className="px-5 py-10 text-center text-ink-faint">{t("No leads match.")}</td></tr>}
               {leads.map((l) => (
                 <tr key={l.id} className="hover:bg-bg-hover/40">
-                  <td className="px-5 py-3.5 font-medium text-ink">{l.name || "Unnamed"}</td>
+                  <td className="px-5 py-3.5 font-medium text-ink">{l.name || t("Unnamed")}</td>
                   <td className="px-5 py-3.5 text-ink-muted"><div>{l.email || "—"}</div><div className="text-xs text-ink-faint">{l.phone || ""}</div></td>
                   <td className="px-5 py-3.5 text-ink-muted">
                     {(l.trackingLink ? l.trackingLink.utmSource : l.utmSource) || "—"}
@@ -135,13 +137,13 @@ export default async function LeadsPage(props: { searchParams: Promise<SP> }) {
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-ink-muted">
         <span>
-          {total === 0 ? "0 leads" : `${formatNumber((page - 1) * PAGE_SIZE + 1)}–${formatNumber(Math.min(page * PAGE_SIZE, total))} of ${formatNumber(total)}`}
+          {total === 0 ? t("0 leads") : t("{from}–{to} of {total}", { from: formatNumber((page - 1) * PAGE_SIZE + 1), to: formatNumber(Math.min(page * PAGE_SIZE, total)), total: formatNumber(total) })}
         </span>
         {pages > 1 && (
           <div className="flex gap-2">
-            {page > 1 && <Link href={href({ page: String(page - 1) })} className="btn-ghost border border-line">← Newer</Link>}
-            <span className="px-2 py-2">Page {page} of {pages}</span>
-            {page < pages && <Link href={href({ page: String(page + 1) })} className="btn-ghost border border-line">Older →</Link>}
+            {page > 1 && <Link href={href({ page: String(page - 1) })} className="btn-ghost border border-line">← {t("Newer")}</Link>}
+            <span className="px-2 py-2">{t("Page {page} of {pages}", { page, pages })}</span>
+            {page < pages && <Link href={href({ page: String(page + 1) })} className="btn-ghost border border-line">{t("Older")} →</Link>}
           </div>
         )}
       </div>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { EditLinkDialog } from "@/components/EditLinkDialog";
 import { shortUrl } from "@/lib/linkDomains";
+import { useT } from "@/lib/i18n/client";
 
 export interface CampaignLinkRow {
   id: string;
@@ -21,6 +22,7 @@ export interface CampaignLinkRow {
 
 /** The campaign's ready links: short URL to hand out, with clicks and leads; copy all or download CSV. */
 export function CampaignLinks({ rows, base, file, createHref, editable = false }: { rows: CampaignLinkRow[]; base: string; file: string; createHref: string | null; editable?: boolean }) {
+  const t = useT();
   const [info, setInfo] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const short = (r: { slug: string; shortDomain: string | null }) => shortUrl(base, r.slug, r.shortDomain);
@@ -29,9 +31,9 @@ export function CampaignLinks({ rows, base, file, createHref, editable = false }
     const text = rows.map((r) => `${r.label} — ${short(r)}`).join("\n");
     try {
       await navigator.clipboard.writeText(text);
-      setInfo("All links copied");
+      setInfo(t("All links copied"));
     } catch {
-      setInfo("Could not copy: select the links in the table");
+      setInfo(t("Could not copy: select the links in the table"));
     }
   }
 
@@ -51,30 +53,30 @@ export function CampaignLinks({ rows, base, file, createHref, editable = false }
     <section className="card mt-6 overflow-hidden">
       {editing && <EditLinkDialog id={editing} onClose={() => setEditing(null)} />}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-6 py-4">
-        <h2 className="font-display text-lg font-semibold">Links <span className="text-sm font-normal text-ink-faint">{rows.length}</span></h2>
+        <h2 className="font-display text-lg font-semibold">{t("Links")} <span className="text-sm font-normal text-ink-faint">{rows.length}</span></h2>
         {rows.length > 0 && (
           <div className="flex flex-wrap items-center gap-2">
             {info && <span className="text-xs text-leads">{info}</span>}
-            <button type="button" className="btn-ghost border border-line text-sm" onClick={copyAll}>Copy all</button>
-            <button type="button" className="btn-ghost border border-line text-sm" onClick={downloadCsv}>Download CSV</button>
+            <button type="button" className="btn-ghost border border-line text-sm" onClick={copyAll}>{t("Copy all")}</button>
+            <button type="button" className="btn-ghost border border-line text-sm" onClick={downloadCsv}>{t("Download CSV")}</button>
           </div>
         )}
       </div>
       {rows.length === 0 ? (
         <p className="px-6 py-10 text-center text-sm text-ink-faint">
-          No links yet.{" "}
-          {createHref && <Link href={createHref} className="text-accent hover:underline">Create UTM links →</Link>}
+          {t("No links yet.")}{" "}
+          {createHref && <Link href={createHref} className="text-accent hover:underline">{t("Create UTM links")} →</Link>}
         </p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] text-sm">
             <thead>
               <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-faint">
-                <th className="px-6 py-3 font-medium">Link</th>
-                <th className="px-6 py-3 font-medium">Short URL</th>
-                <th className="px-6 py-3 font-medium">Source · content</th>
-                <th className="px-6 py-3 text-right font-medium">Clicks</th>
-                <th className="px-6 py-3 text-right font-medium">Leads</th>
+                <th className="px-6 py-3 font-medium">{t("Link")}</th>
+                <th className="px-6 py-3 font-medium">{t("Short URL")}</th>
+                <th className="px-6 py-3 font-medium">{t("Source · content")}</th>
+                <th className="px-6 py-3 text-right font-medium">{t("Clicks")}</th>
+                <th className="px-6 py-3 text-right font-medium">{t("Leads")}</th>
                 {editable && <th className="px-6 py-3" />}
               </tr>
             </thead>
@@ -93,7 +95,7 @@ export function CampaignLinks({ rows, base, file, createHref, editable = false }
                   <td className="num px-6 py-3 text-right text-leads">{r.leads}</td>
                   {editable && (
                     <td className="px-6 py-3 text-right">
-                      <button type="button" onClick={() => setEditing(r.id)} className="text-xs font-medium text-accent hover:opacity-80">Edit</button>
+                      <button type="button" onClick={() => setEditing(r.id)} className="text-xs font-medium text-accent hover:opacity-80">{t("Edit")}</button>
                     </td>
                   )}
                 </tr>

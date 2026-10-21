@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { normalizeProjectName } from "@/lib/naming";
+import { useT } from "@/lib/i18n/client";
 
 type Item = { kind: "project" | "campaign"; id: string; name: string; suggested: string | null };
 
 /** Rename projects and campaigns named before the "<Project> F'26" rule. */
 export function OldNamesFixer() {
+  const t = useT();
   const router = useRouter();
   const [items, setItems] = useState<Item[] | null>(null);
   const [draft, setDraft] = useState<Record<string, string>>({});
@@ -21,7 +23,7 @@ export function OldNamesFixer() {
         setItems(d.items);
         setDraft(Object.fromEntries(d.items.map((i) => [i.id, i.suggested ?? ""])));
       })
-      .catch(() => setMsg({ ok: false, text: "Could not load the list" }));
+      .catch(() => setMsg({ ok: false, text: t("Could not load the list") }));
   useEffect(() => { void load(); }, []);
 
   const ready = (items ?? []).filter((i) => normalizeProjectName(draft[i.id] ?? "") !== null);
@@ -36,14 +38,14 @@ export function OldNamesFixer() {
     }).catch(() => null);
     const body = res ? await res.json().catch(() => ({})) : {};
     setBusy(false);
-    if (!res?.ok) return setMsg({ ok: false, text: body.error ?? "Could not rename" });
-    setMsg({ ok: true, text: `Renamed ${body.renamed}` });
+    if (!res?.ok) return setMsg({ ok: false, text: body.error ?? t("Could not rename") });
+    setMsg({ ok: true, text: t("Renamed: {n}", { n: body.renamed }) });
     await load();
     router.refresh();
   }
 
-  if (!items) return <p className="text-sm text-ink-muted">{msg?.text ?? "Loading…"}</p>;
-  if (items.length === 0) return <p className="text-sm text-leads">All names follow the rule.</p>;
+  if (!items) return <p className="text-sm text-ink-muted">{msg?.text ?? t("Loading…")}</p>;
+  if (items.length === 0) return <p className="text-sm text-leads">{t("All names follow the rule.")}</p>;
 
   return (
     <div className="space-y-3">
@@ -51,8 +53,8 @@ export function OldNamesFixer() {
         <table className="w-full min-w-[560px] text-sm">
           <thead>
             <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-faint">
-              <th className="py-2 pr-3 font-medium">Now</th>
-              <th className="py-2 pr-3 font-medium">New name</th>
+              <th className="py-2 pr-3 font-medium">{t("Now")}</th>
+              <th className="py-2 pr-3 font-medium">{t("New name")}</th>
               <th className="py-2 font-medium" />
             </tr>
           </thead>
@@ -63,18 +65,18 @@ export function OldNamesFixer() {
                 <tr key={i.id}>
                   <td className="py-2 pr-3 text-ink">
                     {i.name}
-                    <div className="text-xs text-ink-faint">{i.kind}</div>
+                    <div className="text-xs text-ink-faint">{t(i.kind)}</div>
                   </td>
                   <td className="py-2 pr-3">
                     <input
                       className={`input py-1.5 text-sm ${draft[i.id] && !ok ? "border-danger/60" : ""}`}
                       value={draft[i.id] ?? ""}
-                      placeholder="Name F'26"
+                      placeholder={t("Name F'26")}
                       onChange={(e) => setDraft((d) => ({ ...d, [i.id]: e.target.value }))}
                     />
                   </td>
                   <td className="py-2 text-right">
-                    <button type="button" className="btn-ghost border border-line py-1.5 text-xs" disabled={busy || !ok} onClick={() => rename([i])}>Rename</button>
+                    <button type="button" className="btn-ghost border border-line py-1.5 text-xs" disabled={busy || !ok} onClick={() => rename([i])}>{t("Rename")}</button>
                   </td>
                 </tr>
               );
@@ -84,13 +86,12 @@ export function OldNamesFixer() {
       </div>
       <div className="flex flex-wrap items-center gap-3">
         <button type="button" className="btn-primary" disabled={busy || ready.length === 0} onClick={() => rename(ready)}>
-          {busy ? "Renaming…" : `Rename ${ready.length} with a valid new name`}
+          {busy ? t("Renaming…") : t("Rename {n} with a valid new name", { n: ready.length })}
         </button>
         {msg && <span className={`text-sm ${msg.ok ? "text-leads" : "text-danger"}`}>{msg.text}</span>}
       </div>
       <p className="text-xs text-ink-faint">
-        Suggestions come from a campaign&apos;s season or utm value and a project&apos;s start date; check them before renaming. A campaign&apos;s
-        utm_campaign value does not change.
+        {t("Suggestions come from a campaign's season or utm value and a project's start date; check them before renaming. A campaign's utm_campaign value does not change.")}
       </p>
     </div>
   );

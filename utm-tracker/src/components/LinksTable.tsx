@@ -9,6 +9,7 @@ import { EditLinkDialog } from "@/components/EditLinkDialog";
 import { Portal } from "@/components/ui/Portal";
 import { formatNumber, relativeTime } from "@/lib/utils";
 import { shortUrl } from "@/lib/linkDomains";
+import { useLang, useT } from "@/lib/i18n/client";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_URL || "";
 const PAGE = 50; // rows shown at a time
@@ -35,6 +36,7 @@ export type LinkRow = {
 
 /** QR made in the browser (no third-party service sees the links): PNG 1024 px and SVG for print. */
 function QRModal({ url, slug, onClose }: { url: string; slug: string; onClose: () => void }) {
+  const t = useT();
   const [png, setPng] = useState<string | null>(null);
   const [svg, setSvg] = useState<string | null>(null);
   useEffect(() => {
@@ -55,13 +57,13 @@ function QRModal({ url, slug, onClose }: { url: string; slug: string; onClose: (
         className="card flex flex-col items-center gap-4 p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="text-sm font-semibold text-ink">QR Code</p>
+        <p className="text-sm font-semibold text-ink">{t("QR code")}</p>
         {png ? <img src={png} alt="QR code" width={220} height={220} className="rounded-xl" /> : <div className="h-[220px] w-[220px] animate-pulse rounded-xl bg-bg-hover" />}
         <p className="max-w-[240px] break-all text-center text-xs text-ink-faint">{url}</p>
         <div className="flex flex-wrap justify-center gap-2">
           {png && <a href={png} download={`qr-${slug}.png`} className="btn-ghost border border-line text-xs">PNG 1024 px</a>}
-          {svg && <a href={svg} download={`qr-${slug}.svg`} className="btn-ghost border border-line text-xs" title="Vector: any size for print">SVG (print)</a>}
-          <button className="btn-ghost text-xs" onClick={onClose}>Close</button>
+          {svg && <a href={svg} download={`qr-${slug}.svg`} className="btn-ghost border border-line text-xs" title={t("Vector: any size for print")}>{t("SVG (print)")}</a>}
+          <button className="btn-ghost text-xs" onClick={onClose}>{t("Close")}</button>
         </div>
       </div>
     </div>
@@ -70,6 +72,8 @@ function QRModal({ url, slug, onClose }: { url: string; slug: string; onClose: (
 }
 
 export function LinksTable({ links }: { links: LinkRow[] }) {
+  const t = useT();
+  const lang = useLang();
   const router = useRouter();
   const [q, setQ] = useState("");
   const [campaign, setCampaign] = useState("");
@@ -96,7 +100,7 @@ export function LinksTable({ links }: { links: LinkRow[] }) {
     router.refresh();
   }
   async function remove(id: string) {
-    if (!confirm("Delete this link and all its click data? This cannot be undone.")) return;
+    if (!confirm(t("Delete this link and all its click data? This cannot be undone."))) return;
     await fetch(`/api/links/${id}`, { method: "DELETE" });
     router.refresh();
   }
@@ -107,20 +111,20 @@ export function LinksTable({ links }: { links: LinkRow[] }) {
       {editing && <EditLinkDialog id={editing} onClose={() => setEditing(null)} />}
 
       <div className="mb-5 flex flex-wrap items-center gap-3">
-        <input className="input max-w-xs" placeholder="Search links…" value={q} onChange={(e) => setQ(e.target.value)} />
+        <input className="input max-w-xs" placeholder={t("Search links…")} value={q} onChange={(e) => setQ(e.target.value)} />
         <select className="input max-w-[180px]" value={campaign} onChange={(e) => setCampaign(e.target.value)}>
-          <option value="">All campaigns</option>
+          <option value="">{t("All campaigns")}</option>
           {campaigns.map((c) => <option key={c}>{c}</option>)}
         </select>
         <select className="input max-w-[160px]" value={source} onChange={(e) => setSource(e.target.value)}>
-          <option value="">All sources</option>
+          <option value="">{t("All sources")}</option>
           {sources.map((s) => <option key={s}>{s}</option>)}
         </select>
         <label className="flex cursor-pointer items-center gap-2 text-sm text-ink-muted">
           <input type="checkbox" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} className="accent-accent" />
-          Show archived ({archivedCount})
+          {t("Show archived ({n})", { n: archivedCount })}
         </label>
-        <Link href="/links/new" className="btn-primary ml-auto">+ Create link</Link>
+        <Link href="/links/new" className="btn-primary ml-auto">+ {t("Create link")}</Link>
       </div>
 
       <div className="card overflow-hidden">
@@ -128,19 +132,19 @@ export function LinksTable({ links }: { links: LinkRow[] }) {
           <table className="w-full min-w-[820px] text-sm">
             <thead>
               <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-faint">
-                <th className="px-5 py-3.5 font-medium">Description</th>
-                <th className="px-5 py-3.5 font-medium">Short URL</th>
-                <th className="px-5 py-3.5 font-medium">Campaign / source</th>
-                <th className="px-5 py-3.5 text-right font-medium">Clicks</th>
-                <th className="px-5 py-3.5 text-right font-medium">Leads</th>
+                <th className="px-5 py-3.5 font-medium">{t("Description")}</th>
+                <th className="px-5 py-3.5 font-medium">{t("Short URL")}</th>
+                <th className="px-5 py-3.5 font-medium">{t("Campaign / source")}</th>
+                <th className="px-5 py-3.5 text-right font-medium">{t("Clicks")}</th>
+                <th className="px-5 py-3.5 text-right font-medium">{t("Leads")}</th>
                 <th className="px-5 py-3.5 text-right font-medium">CR%</th>
-                <th className="px-5 py-3.5 font-medium">Created</th>
-                <th className="px-5 py-3.5 text-right font-medium">Actions</th>
+                <th className="px-5 py-3.5 font-medium">{t("Created")}</th>
+                <th className="px-5 py-3.5 text-right font-medium">{t("Actions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
               {filtered.length === 0 && (
-                <tr><td colSpan={8} className="px-5 py-10 text-center text-ink-faint">No links match your filters.</td></tr>
+                <tr><td colSpan={8} className="px-5 py-10 text-center text-ink-faint">{t("No links match your filters.")}</td></tr>
               )}
               {filtered.slice(0, limit).map((l) => {
                 const fullUrl = shortUrl(BASE, l.slug, l.shortDomain);
@@ -158,7 +162,7 @@ export function LinksTable({ links }: { links: LinkRow[] }) {
                           type="button"
                           onClick={() => setQr({ url: fullUrl, slug: l.slug })}
                           className="inline-flex items-center rounded-md border border-line bg-bg-raised px-2 py-0.5 text-xs font-medium text-ink-muted transition hover:border-accent hover:text-accent"
-                          title="Show QR code"
+                          title={t("Show QR code")}
                         >
                           QR
                         </button>
@@ -171,20 +175,20 @@ export function LinksTable({ links }: { links: LinkRow[] }) {
                     <td className="num px-5 py-3.5 text-right text-ink">{formatNumber(l.clicks)}</td>
                     <td className="num px-5 py-3.5 text-right text-leads">{formatNumber(l.leads)}</td>
                     <td className="num px-5 py-3.5 text-right text-ink-muted">{l.clicks ? `${l.cr.toFixed(1)}%` : "—"}</td>
-                    <td className="px-5 py-3.5 text-xs text-ink-faint">{relativeTime(l.createdAt)}</td>
+                    <td className="px-5 py-3.5 text-xs text-ink-faint">{relativeTime(l.createdAt, lang)}</td>
                     <td className="px-5 py-3.5">
                       <div className="flex items-center justify-end gap-3 text-xs">
-                        <a href={fullUrl} target="_blank" rel="noreferrer" className="text-ink-faint hover:text-ink">Open</a>
+                        <a href={fullUrl} target="_blank" rel="noreferrer" className="text-ink-faint hover:text-ink">{t("Open")}</a>
                         {l.editable && (
                           <>
-                            <button onClick={() => setEditing(l.id)} className="font-medium text-accent hover:opacity-80">Edit</button>
+                            <button onClick={() => setEditing(l.id)} className="font-medium text-accent hover:opacity-80">{t("Edit")}</button>
                             <button onClick={() => patch(l.id, { isActive: !l.isActive })} className="text-ink-faint hover:text-ink">
-                              {l.isActive ? "Pause" : "Resume"}
+                              {l.isActive ? t("Pause") : t("Resume")}
                             </button>
                             <button onClick={() => patch(l.id, { isArchived: !l.isArchived })} className="text-ink-faint hover:text-ink">
-                              {l.isArchived ? "Restore" : "Archive"}
+                              {l.isArchived ? t("Restore") : t("Archive")}
                             </button>
-                            <button onClick={() => remove(l.id)} className="text-danger hover:opacity-80">Delete</button>
+                            <button onClick={() => remove(l.id)} className="text-danger hover:opacity-80">{t("Delete")}</button>
                           </>
                         )}
                       </div>
@@ -197,10 +201,10 @@ export function LinksTable({ links }: { links: LinkRow[] }) {
         </div>
         {filtered.length > limit && (
           <div className="flex items-center justify-between gap-3 border-t border-line px-5 py-3 text-sm text-ink-muted">
-            <span>Showing {limit} of {filtered.length}</span>
+            <span>{t("Showing {n} of {total}", { n: limit, total: filtered.length })}</span>
             <div className="flex gap-2">
-              <button type="button" className="btn-ghost border border-line" onClick={() => setLimit((n) => n + PAGE)}>Show {Math.min(PAGE, filtered.length - limit)} more</button>
-              <button type="button" className="btn-ghost" onClick={() => setLimit(filtered.length)}>Show all</button>
+              <button type="button" className="btn-ghost border border-line" onClick={() => setLimit((n) => n + PAGE)}>{t("Show {n} more", { n: Math.min(PAGE, filtered.length - limit) })}</button>
+              <button type="button" className="btn-ghost" onClick={() => setLimit(filtered.length)}>{t("Show all")}</button>
             </div>
           </div>
         )}

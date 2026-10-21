@@ -5,12 +5,14 @@ import { currentActor } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { isAdmin } from "@/lib/permissions";
 import { allProjectGroups } from "@/lib/projectStats";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function TeamPage() {
   const actor = await currentActor();
   if (!isAdmin(actor)) return <AccessDenied />;
+  const t = await getT();
   const [users, folders] = await Promise.all([
     prisma.user.findMany({
       orderBy: [{ status: "asc" }, { createdAt: "asc" }],
@@ -22,9 +24,9 @@ export default async function TeamPage() {
   return (
     <>
       <PageHeader
-        breadcrumb="Team"
-        title="Team"
-        subtitle="Approve new accounts and decide who can do what. Project managers edit only the projects you give them; everyone sees all numbers."
+        breadcrumb={t("Team")}
+        title={t("Team")}
+        subtitle={t("Approve new accounts and decide who can do what. Project managers edit only the projects you give them; everyone sees all numbers.")}
       />
       <TeamManager
         me={actor!.id}
