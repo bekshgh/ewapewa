@@ -84,7 +84,7 @@ function DonutChart({ data, field }: { data: { name: string; value: number }[]; 
             </Pie>
             <Tooltip
               contentStyle={{ background: "#16161b", border: "1px solid #26262e", borderRadius: 10, fontSize: 11, color: "#f4f4f5" }}
-              formatter={(v: number) => [`${v} (${total > 0 ? ((v / total) * 100).toFixed(1) : 0}%)`, t(field)]}
+              formatter={(v: number, name: string) => [`${v} (${total > 0 ? ((v / total) * 100).toFixed(1) : 0}%)`, `${name} · ${t(field)}`]}
               labelStyle={{ color: "#e4e4e7" }}
               itemStyle={{ color: "#f4f4f5" }}
             />
@@ -172,7 +172,7 @@ export function BreakdownPanel({ title, head, rows }: { title: string; head: str
                     <td className="num py-2.5 text-right text-ink-muted">
                       {totalClicks > 0 ? `${((r.clicks / totalClicks) * 100).toFixed(1)}%` : "—"}
                     </td>
-                    <td className="num py-2.5 text-right text-leads">{formatNumber(r.leads)}</td>
+                    <td className={`num py-2.5 text-right ${r.leads ? "text-ink" : "text-ink-faint"}`}>{formatNumber(r.leads)}</td>
                     <td className="num py-2.5 text-right text-ink-muted">
                       {totalLeads > 0 ? `${((r.leads / totalLeads) * 100).toFixed(1)}%` : "—"}
                     </td>
