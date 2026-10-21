@@ -26,9 +26,9 @@ const config: Config = {
         danger: "#f87171",
       },
       fontFamily: {
-        display: ["var(--font-display)", "system-ui", "sans-serif"],
-        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
-        mono: ["var(--font-mono)", "ui-monospace", "monospace"],
+        display: ["var(--font-display)", "var(--font-cyrillic)", "system-ui", "sans-serif"],
+        sans: ["var(--font-sans)", "var(--font-cyrillic)", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "var(--font-mono-cyrillic)", "ui-monospace", "monospace"],
       },
       borderRadius: {
         xl: "14px",

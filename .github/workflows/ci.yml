@@ -6,26 +6,41 @@ on:
 
 jobs:
   utm-tracker:
-    runs-on: ubuntu-latest
+    # pinned: ubuntu-latest moves to a new release on its own
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: utm-tracker
+    services:
+      # a throwaway database, so the *.db.test.ts suites run instead of being skipped
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ci" --health-interval 5s --health-timeout 5s --health-retries 10
     env:
-      # The build never connects to the database; Prisma only needs well-formed URLs.
       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
       DIRECT_URL: postgresql://ci:ci@localhost:5432/ci
+      TEST_DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
       NEXT_PUBLIC_BASE_URL: http://localhost:3000
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: utm-tracker/package-lock.json
       - run: npm ci
       - name: Typecheck
         run: npx tsc --noEmit
+      - name: Migrate the test database
+        run: npx prisma migrate deploy
       - name: Tests
-        run: npm test
+        # one file at a time: the database suites share one database
+        run: npx vitest run --no-file-parallelism
       - name: Build
         run: npx next build

@@ -92,10 +92,10 @@ export default async function SettingsPage() {
         <h2 className="mb-3 font-display text-lg font-semibold">Workspace</h2>
         <div className="card p-5">
           <div className="grid gap-5 sm:grid-cols-2">
-            <div>
+            <div className="min-w-0">
               <label className="text-xs uppercase tracking-wide text-ink-faint">Tracker base URL</label>
               <div className="mt-1.5 flex items-center gap-2">
-                <code className="flex-1 truncate rounded-lg border border-line bg-bg-base px-3 py-2 font-mono text-sm text-ink">
+                <code className="min-w-0 flex-1 truncate rounded-lg border border-line bg-bg-base px-3 py-2 font-mono text-sm text-ink">
                   {BASE}
                 </code>
                 <CopyButton value={BASE} />
@@ -104,10 +104,10 @@ export default async function SettingsPage() {
                 Used to build short links <span className="font-mono">{BASE}/r/&#123;slug&#125;</span>.
               </p>
             </div>
-            <div>
+            <div className="min-w-0">
               <label className="text-xs uppercase tracking-wide text-ink-faint">Webhook endpoint</label>
               <div className="mt-1.5 flex items-center gap-2">
-                <code className="flex-1 truncate rounded-lg border border-line bg-bg-base px-3 py-2 font-mono text-sm text-ink">
+                <code className="min-w-0 flex-1 truncate rounded-lg border border-line bg-bg-base px-3 py-2 font-mono text-sm text-ink">
                   {BASE}/api/webhooks/tilda-lead
                 </code>
                 <CopyButton value={`${BASE}/api/webhooks/tilda-lead`} />

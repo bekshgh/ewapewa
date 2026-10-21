@@ -30,17 +30,20 @@ export interface ReportFilter {
 /** The filtered sessions as a SQL fragment, reused by every query below. */
 function sessionsCte(f: ReportFilter) {
   const w: Prisma.Sql[] = [Prisma.sql`s."formId" = ${f.formId}`];
-  if (f.from) w.push(Prisma.sql`s."startedAt" >= ${f.from}`);
-  if (f.to) w.push(Prisma.sql`s."startedAt" < ${f.to}`);
+  if (f.from) w.push(Prisma.sql`(s."startedAt" AT TIME ZONE 'UTC') >= ${f.from}`);
+  if (f.to) w.push(Prisma.sql`(s."startedAt" AT TIME ZONE 'UTC') < ${f.to}`);
   if (!f.includeTest) w.push(Prisma.sql`NOT s."isTest"`);
   if (f.utmSource) w.push(f.utmSource === "(none)" ? Prisma.sql`s."utmSource" IS NULL` : Prisma.sql`s."utmSource" = ${f.utmSource}`);
   if (f.utmCampaign) w.push(f.utmCampaign === "(none)" ? Prisma.sql`s."utmCampaign" IS NULL` : Prisma.sql`s."utmCampaign" = ${f.utmCampaign}`);
   if (f.device) w.push(Prisma.sql`s.device = ${f.device}`);
   if (f.lang) w.push(Prisma.sql`s.lang = ${f.lang}`);
   if (f.city) w.push(f.city === "(none)" ? Prisma.sql`(s.answers->>'city') IS NULL` : Prisma.sql`s.answers->>'city' = ${f.city}`);
+  // "gone" = silent for 30 minutes. The columns hold UTC without a time zone: compare them
+  // "AT TIME ZONE 'UTC'" with moments from here, or the database's time zone setting shifts them.
+  const idleSince = new Date(Date.now() - 30 * 60_000);
   return Prisma.sql`
     s AS (
-      SELECT s.*, (s.outcome = 'abandoned' OR s."lastSeenAt" < now() - interval '30 minutes') AS ended
+      SELECT s.*, (s.outcome = 'abandoned' OR (s."lastSeenAt" AT TIME ZONE 'UTC') < ${idleSince}) AS ended
       FROM "AnalyticsSession" s WHERE ${Prisma.join(w, " AND ")}
     ),
     ev AS (SELECT e.* FROM "AnalyticsEvent" e JOIN s ON s.id = e."sessionId"),

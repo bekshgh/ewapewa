@@ -25,7 +25,7 @@ type Summary = {
 
 type Options = { city: string; onePerPerson: boolean };
 
-const day = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString() : "—");
+const day = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("en-GB", { timeZone: "Asia/Almaty" }) : "—");
 
 /** Upload a landing page's registrations sheet and turn its rows into leads (see lib/registrationImport). */
 export function RegistrationImport() {

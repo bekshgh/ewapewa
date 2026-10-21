@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { conversionRate } from "@/lib/utils";
+import { conversionRate, localDay } from "@/lib/utils";
 
 export type RangeKey = "7d" | "30d" | "90d" | "all";
 
@@ -77,7 +77,8 @@ export async function getTimeSeries(range: RangeKey) {
   ]);
 
   const map = new Map<string, { date: string; clicks: number; leads: number }>();
-  const dayKey = (d: Date) => d.toISOString().slice(0, 10);
+  // days in the team's time zone: a click at 02:00 in Almaty belongs to that day, not the one before
+  const dayKey = (d: Date) => localDay(d);
 
   // seed every day in range so the chart has no gaps
   const start = new Date(since);

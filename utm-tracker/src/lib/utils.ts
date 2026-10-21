@@ -58,9 +58,18 @@ export function conversionRate(leads: number, clicks: number): number {
   return (leads / clicks) * 100;
 }
 
+/** The team's time zone: dates and day buckets everywhere are Almaty time, not the server's (UTC on Vercel). */
+export const TIME_ZONE = "Asia/Almaty";
+
+/** "2026-10-21" — the calendar day of a moment in the team's time zone. */
+export function localDay(d: Date): string {
+  return d.toLocaleDateString("en-CA", { timeZone: TIME_ZONE });
+}
+
 export function formatDateTime(d: Date | string): string {
   const date = typeof d === "string" ? new Date(d) : d;
   return date.toLocaleString("en-GB", {
+    timeZone: TIME_ZONE,
     day: "numeric",
     month: "short",
     year: "numeric",

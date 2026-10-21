@@ -13,7 +13,7 @@ body {
 }
 
 body {
-  font-family: var(--font-sans), system-ui, sans-serif;
+  font-family: var(--font-sans), var(--font-cyrillic), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   background-image: radial-gradient(
       900px 500px at 80% -10%,
@@ -72,7 +72,7 @@ body {
     @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium;
   }
   .num {
-    font-family: var(--font-mono), monospace;
+    font-family: var(--font-mono), var(--font-mono-cyrillic), monospace;
     font-feature-settings: "tnum";
   }
 }
