@@ -174,8 +174,10 @@ export const FORMS_JS = String.raw`
       c.lang = (document.documentElement.lang || navigator.language || "").slice(0, 8);
       c.title = t.title;
       c.fields = t.list.map(function (f) { return { k: f.k, kind: f.kind, req: f.req, label: f.label }; });
-      // a multi-step form: this visit may not have seen every step, so the tracker adds to its field list
-      if (t.multi) c.steps = true;
+      // a form that may have steps (any non-Tilda one): this visit may not have seen every step, so the
+      // tracker adds to the field list instead of replacing it — a visitor who left on step 1 must not
+      // erase the questions of steps 2 and 3
+      if (t.multi || !t.tilda) c.steps = true;
       return c;
     }
     function flush(t, beacon) {
