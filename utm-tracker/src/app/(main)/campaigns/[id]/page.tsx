@@ -33,9 +33,10 @@ export default async function CampaignDetailPage(props: { params: Promise<{ id: 
   const [allByLink, uniqueByLink, totalLeads, srcLeads, cntLeads, leadsByLink, groups] = await Promise.all([
     prisma.clickEvent.groupBy({ by: ["trackingLinkId"], where: { trackingLinkId: { in: linkIds } }, _count: { _all: true } }),
     uniqueClicksByLink(null, linkIds),
-    prisma.lead.count({ where: { utmCampaign: campaign.name } }),
-    prisma.lead.groupBy({ by: ["utmSource"], where: { utmCampaign: campaign.name }, _count: { _all: true } }),
-    prisma.lead.groupBy({ by: ["utmContent"], where: { utmCampaign: campaign.name }, _count: { _all: true } }),
+    // the campaign's leads: through its links, or naming it in their UTM (direct, imported)
+    prisma.lead.count({ where: { OR: [{ utmCampaign: campaign.name }, { trackingLinkId: { in: linkIds } }] } }),
+    prisma.lead.groupBy({ by: ["utmSource", "trackingLinkId"], where: { OR: [{ utmCampaign: campaign.name }, { trackingLinkId: { in: linkIds } }] }, _count: { _all: true } }),
+    prisma.lead.groupBy({ by: ["utmContent", "trackingLinkId"], where: { OR: [{ utmCampaign: campaign.name }, { trackingLinkId: { in: linkIds } }] }, _count: { _all: true } }),
     prisma.lead.groupBy({ by: ["trackingLinkId"], where: { trackingLinkId: { in: linkIds } }, _count: { _all: true } }),
     allProjectGroups(),
   ]);
@@ -67,8 +68,14 @@ export default async function CampaignDetailPage(props: { params: Promise<{ id: 
       .map(([key, v]) => ({ key, ...v, cr: conversionRate(v.leads, v.uniqueClicks) }))
       .sort((a, b) => b.clicks - a.clicks);
   }
-  const bySource = breakdown((l) => l.utmSource, srcLeads.map((r) => ({ key: r.utmSource, n: r._count._all })));
-  const byContent = breakdown((l) => l.utmContent, cntLeads.map((r) => ({ key: r.utmContent, n: r._count._all })));
+  // a lead through one of the links counts under that link's tags, like its clicks
+  const linkById = new Map(links.map((l) => [l.id, l]));
+  const keyOf = (own: string | null, linkId: string | null, pick: (l: (typeof links)[number]) => string | null) => {
+    const l = linkId ? linkById.get(linkId) : undefined;
+    return l ? pick(l) : own;
+  };
+  const bySource = breakdown((l) => l.utmSource, srcLeads.map((r) => ({ key: keyOf(r.utmSource, r.trackingLinkId, (l) => l.utmSource), n: r._count._all })));
+  const byContent = breakdown((l) => l.utmContent, cntLeads.map((r) => ({ key: keyOf(r.utmContent, r.trackingLinkId, (l) => l.utmContent), n: r._count._all })));
 
   return (
     <>
@@ -88,7 +95,7 @@ export default async function CampaignDetailPage(props: { params: Promise<{ id: 
       />
       <section className="grid grid-cols-2 gap-4 lg:grid-cols-4 mb-6">
         <StatCard label="Total clicks"    value={formatNumber(totalClicks)}  sub="all recorded"     accent="clicks" />
-        <StatCard label="Unique clicks"   value={formatNumber(uniqueClicks)} sub="per device / IP"  accent="clicks" />
+        <StatCard label="Unique clicks"   value={formatNumber(uniqueClicks)} sub="devices that clicked"  accent="clicks" />
         <StatCard label="Leads"           value={formatNumber(totalLeads)}   sub="form submissions" accent="leads"  />
         <StatCard label="Conversion rate" value={formatPercent(cr)}          sub="unique clicks → leads" accent="accent" />
       </section>

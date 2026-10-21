@@ -23,7 +23,8 @@ describe.skipIf(!url)("project folder stats (database)", () => {
       data: { name: tag, slug: `${tag}-ogx`, destinationUrl: "https://x.example/", campaignId: ogx.id, utmCampaign: ogx.name, utmSource: "telegram", utmContent: "tapter" },
     });
     await db.clickEvent.createMany({
-      data: [1, 2, 3, 4].map((i) => ({ trackingLinkId: link.id, clickId: `${tag}c${i}`, isUnique: i <= 3 })),
+      // three devices; the fourth click is the third device again
+      data: [1, 2, 3, 4].map((i) => ({ trackingLinkId: link.id, clickId: `${tag}c${i}`, ipHash: `${tag}ip${Math.min(i, 3)}`, userAgent: "Safari" })),
     });
     // Four project registrations, two of them later apply to oGX.
     for (const i of [1, 2, 3, 4]) {

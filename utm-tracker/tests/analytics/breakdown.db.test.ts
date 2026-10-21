@@ -20,7 +20,7 @@ describe.skipIf(!url)("breakdowns count every lead (database)", () => {
     });
     await lead("linked", { trackingLinkId: link.id }); // UTM only on the link
     await lead("own", { utmSource: `${tag}src`, utmCampaign: `${tag}camp` }); // no link (imported)
-    await lead("other", { utmSource: `${tag}other`, trackingLinkId: link.id }); // own UTM wins
+    await lead("other", { utmSource: `${tag}other`, trackingLinkId: link.id }); // a stale copy: the link's UTM wins
   });
 
   afterAll(async () => {
@@ -29,10 +29,10 @@ describe.skipIf(!url)("breakdowns count every lead (database)", () => {
     await db.$disconnect();
   });
 
-  it("uses the lead's own UTM, falling back to its link's", async () => {
+  it("counts a lead under its link's UTM (like the link's clicks), else under its own", async () => {
     const bySource = await analytics.getBySource("all");
-    expect(bySource.find((r) => r.key === `${tag}src`)?.leads).toBe(2);
-    expect(bySource.find((r) => r.key === `${tag}other`)?.leads).toBe(1);
+    expect(bySource.find((r) => r.key === `${tag}src`)?.leads).toBe(3);
+    expect(bySource.find((r) => r.key === `${tag}other`)).toBeUndefined();
     const byCampaign = await analytics.getByCampaign("all");
     expect(byCampaign.find((r) => r.key === `${tag}camp`)?.leads).toBe(3);
   });

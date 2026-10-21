@@ -2,13 +2,13 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { StatCard } from "@/components/ui/StatCard";
 import { RangeTabs } from "@/components/ui/RangeTabs";
 import { Pill } from "@/components/ui/Pill";
-import { ClicksLeadsChart, Funnel, BreakdownPanel } from "@/components/charts/Charts";
+import Link from "next/link";
+import { ClicksLeadsChart, BreakdownPanel } from "@/components/charts/Charts";
 import {
   getOverview,
   getTimeSeries,
   getBySource,
   getByCampaign,
-  getByContent,
   getRecentClicks,
   getRecentLeads,
   type RangeKey,
@@ -28,12 +28,11 @@ export default async function DashboardPage(props: {
   const searchParams = await props.searchParams;
   const range = pickRange(searchParams.range);
 
-  const [overview, series, bySource, byCampaign, byContent, recentClicks, recentLeads] = await Promise.all([
+  const [overview, series, bySource, byCampaign, recentClicks, recentLeads] = await Promise.all([
     getOverview(range),
     getTimeSeries(range),
     getBySource(range),
     getByCampaign(range),
-    getByContent(range),
     getRecentClicks(10),
     getRecentLeads(10),
   ]);
@@ -49,7 +48,7 @@ export default async function DashboardPage(props: {
 
       <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard label="Total clicks"    value={formatNumber(overview.totalClicks)}     sub="all recorded clicks" accent="clicks" />
-        <StatCard label="Unique clicks"   value={formatNumber(overview.uniqueClicks)}    sub="one per device / IP" accent="clicks" />
+        <StatCard label="Unique clicks"   value={formatNumber(overview.uniqueClicks)}    sub="devices in the period" accent="clicks" />
         <StatCard label="Total leads"     value={formatNumber(overview.totalLeads)}      sub="form submissions"    accent="leads"  />
         <StatCard label="Conversion rate" value={formatPercent(overview.conversionRate)} sub="unique clicks → leads"      accent="accent" />
       </section>
@@ -61,21 +60,14 @@ export default async function DashboardPage(props: {
         </div>
       </section>
 
-      <section className="mt-6 card p-6">
-        <h2 className="font-display text-lg font-semibold">Conversion funnel</h2>
-        <div className="mt-5">
-          <Funnel clicks={overview.uniqueClicks} leads={overview.totalLeads} cr={overview.conversionRate} />
-        </div>
-      </section>
-
       <section className="mt-6 grid gap-6 lg:grid-cols-2">
         <BreakdownPanel title="By source"   head="Source"   rows={bySource}   />
         <BreakdownPanel title="By campaign" head="Campaign" rows={byCampaign} />
       </section>
 
-      <section className="mt-6">
-        <BreakdownPanel title="By content" head="Content" rows={byContent} />
-      </section>
+      <p className="mt-3 text-right text-sm">
+        <Link href={`/analytics${range === "all" ? "" : `?range=${range}`}`} className="text-accent hover:underline">Content and per-link tables → Analytics</Link>
+      </p>
 
       <section className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="card p-6">

@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { conversionRate, localDay } from "@/lib/utils";
 
@@ -10,21 +11,22 @@ export function rangeToDate(range: RangeKey): Date | null {
 }
 
 /**
- * Unique clicks per link: the first click from a device / IP on that link.
- * Conversion rates everywhere are leads ÷ unique clicks, so repeat clicks by
- * the same person do not dilute them.
+ * Unique clicks per link: distinct devices (IP hash + browser) that clicked it
+ * within the period. A campus Wi-Fi or a mobile operator puts many people
+ * behind one IP, so the IP alone undercounts them; and someone coming back next
+ * week counts again in next week's numbers. Conversion rates everywhere are
+ * leads ÷ unique clicks, so repeat taps by the same person do not dilute them.
  */
 export async function uniqueClicksByLink(since: Date | null, linkIds?: string[]): Promise<Map<string, number>> {
-  const rows = await prisma.clickEvent.groupBy({
-    by: ["trackingLinkId"],
-    where: {
-      isUnique: true,
-      ...(since ? { timestamp: { gte: since } } : {}),
-      ...(linkIds ? { trackingLinkId: { in: linkIds } } : {}),
-    },
-    _count: { _all: true },
-  });
-  return new Map(rows.map((r) => [r.trackingLinkId, r._count._all]));
+  if (linkIds && linkIds.length === 0) return new Map();
+  const where = [Prisma.sql`TRUE`];
+  // the column holds UTC without a time zone: compare it as UTC
+  if (since) where.push(Prisma.sql`("timestamp" AT TIME ZONE 'UTC') >= ${since}`);
+  if (linkIds) where.push(Prisma.sql`"trackingLinkId" IN (${Prisma.join(linkIds)})`);
+  const rows = await prisma.$queryRaw<{ id: string; n: bigint }[]>(Prisma.sql`
+    SELECT "trackingLinkId" AS id, COUNT(DISTINCT COALESCE("ipHash", "id") || '|' || COALESCE("userAgent", '')) AS n
+    FROM "ClickEvent" WHERE ${Prisma.join(where, " AND ")} GROUP BY 1`);
+  return new Map(rows.map((r) => [r.id, Number(r.n)]));
 }
 
 export async function getOverview(range: RangeKey) {
@@ -32,12 +34,13 @@ export async function getOverview(range: RangeKey) {
   const clickWhere = since ? { timestamp: { gte: since } } : {};
   const leadWhere = since ? { submittedAt: { gte: since } } : {};
 
-  const [totalClicks, uniqueClicks, totalLeads, activeCampaigns] = await Promise.all([
+  const [totalClicks, uniqueByLink, totalLeads, activeCampaigns] = await Promise.all([
     prisma.clickEvent.count({ where: clickWhere }),
-    prisma.clickEvent.count({ where: { ...clickWhere, isUnique: true } }),
+    uniqueClicksByLink(since),
     prisma.lead.count({ where: leadWhere }),
     prisma.campaign.count({ where: { status: "active" } }),
   ]);
+  const uniqueClicks = [...uniqueByLink.values()].reduce((a, b) => a + b, 0);
 
   return {
     totalClicks,
@@ -111,10 +114,10 @@ interface Breakdown {
 }
 
 /**
- * Clicks come from the links' UTM; leads from their own UTM, falling back to
- * the UTM of the link they came through. So leads count even when they are
- * not tied to a link (imported, unattributed or from a page with UTM only),
- * the same way the campaign page counts them.
+ * Clicks and leads land in the same row: a lead that came through a tracker
+ * link counts under that link's UTM, like the link's clicks (its own copy of
+ * the tags may be stale or mixed). Leads not tied to a link (direct,
+ * imported, a page with UTM only) count under their own UTM.
  */
 async function breakdownBy(field: "utmSource" | "utmCampaign" | "utmContent", range: RangeKey) {
   const since = rangeToDate(range);
@@ -152,7 +155,7 @@ async function breakdownBy(field: "utmSource" | "utmCampaign" | "utmContent", ra
   }
   for (const g of leadGroups) {
     const own = g[field] as string | null;
-    row(own || (g.trackingLinkId ? linkValue.get(g.trackingLinkId) : null)).leads += g._count._all;
+    row(g.trackingLinkId && linkValue.has(g.trackingLinkId) ? linkValue.get(g.trackingLinkId) : own).leads += g._count._all;
   }
 
   return Array.from(agg.entries())
