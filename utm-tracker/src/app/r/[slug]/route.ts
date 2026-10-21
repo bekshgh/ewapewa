@@ -10,6 +10,7 @@ export const runtime = "nodejs";
 /**
  * GET /r/{slug}
  * 1. Look up the tracking link.
+ * Paused / archived links (or campaigns) still redirect, without counting; an unknown slug gets 404.
  * 2. Record a server-side ClickEvent (so ad blockers / JS-off still count) —
  *    not for link previews / crawlers / prefetches (lib/bots.ts), and only once
  *    for the same device tapping again within seconds.
@@ -20,11 +21,26 @@ export async function GET(req: NextRequest, props: { params: Promise<{ slug: str
   const params = await props.params;
   const slug = params.slug;
 
-  const link = await prisma.trackingLink.findUnique({ where: { slug } });
+  const link = await prisma.trackingLink.findUnique({ where: { slug }, include: { campaign: { select: { status: true } } } });
 
-  // Unknown or disabled link → send to homepage rather than a dead end.
-  if (!link || !link.isActive || link.isArchived) {
-    return NextResponse.redirect(new URL("/", req.url), 302);
+  // Unknown link: a plain "not found" (it used to bounce visitors to the tracker's sign-in page).
+  if (!link) return notFound();
+
+  const utm = {
+    utmSource: link.utmSource,
+    utmMedium: link.utmMedium,
+    utmCampaign: link.utmCampaign,
+    utmContent: link.utmContent,
+    utmTerm: link.utmTerm,
+  };
+  const custom = (link.customParams as Record<string, string> | null) ?? null;
+
+  // Paused / archived link, or its campaign paused / archived: printed QR codes and sent posts
+  // must keep working, so still open the page — just don't count the click.
+  const campaignStatus = link.campaign?.status
+    ?? (link.utmCampaign ? (await prisma.campaign.findFirst({ where: { name: link.utmCampaign }, select: { status: true } }))?.status : undefined);
+  if (!link.isActive || link.isArchived || (campaignStatus && campaignStatus !== "active")) {
+    return NextResponse.redirect(buildDestinationUrl(link.destinationUrl, utm, custom, null), 302);
   }
 
   // --- gather request metadata ---
@@ -47,15 +63,6 @@ export async function GET(req: NextRequest, props: { params: Promise<{ slug: str
   // Capture any extra query params present on the short link itself.
   const rawParams: Record<string, string> = {};
   req.nextUrl.searchParams.forEach((v, k) => (rawParams[k] = v));
-
-  const utm = {
-    utmSource: link.utmSource,
-    utmMedium: link.utmMedium,
-    utmCampaign: link.utmCampaign,
-    utmContent: link.utmContent,
-    utmTerm: link.utmTerm,
-  };
-  const custom = (link.customParams as Record<string, string> | null) ?? null;
 
   // Link previews, crawlers, scripts, prefetches: redirect, but don't count a click.
   // On printed links (QR codes) only sure bots are skipped: scanner apps look like scripts.
@@ -120,4 +127,13 @@ export async function GET(req: NextRequest, props: { params: Promise<{ slug: str
   }
 
   return NextResponse.redirect(buildDestinationUrl(link.destinationUrl, utm, custom, clickId), 302);
+}
+
+function notFound() {
+  return new NextResponse(
+    `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Link not found</title>
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b0b0e;color:#e4e4e7;font:16px/1.5 system-ui,sans-serif;text-align:center;padding:24px}h1{font-size:22px;margin:0 0 8px}p{color:#a1a1aa;margin:0}</style></head>
+<body><div><h1>This link doesn't exist</h1><p>Check the address, or ask whoever shared it for a new one.</p></div></body></html>`,
+    { status: 404, headers: { "Content-Type": "text/html; charset=utf-8" } },
+  );
 }

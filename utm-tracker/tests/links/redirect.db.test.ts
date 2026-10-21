@@ -53,6 +53,19 @@ describe.skipIf(!url)("short link clicks (database)", () => {
     await db.trackingLink.delete({ where: { id: qr.id } });
   });
 
+  it("a paused campaign's link still opens the page, without counting; an unknown slug is 404", async () => {
+    const c = await db.campaign.create({ data: { name: `${tag}_paused`, label: `${tag} Paused F'26`, status: "paused" } });
+    const l = await db.trackingLink.create({ data: { name: `${tag} p`, slug: `${tag}-paused`, destinationUrl: `https://${tag}.example/x`, campaignId: c.id, utmSource: "instagram" } });
+    const r = await GET(new NextRequest(`http://x/r/${l.slug}`, { headers: { "x-forwarded-for": "10.4.4.4", "user-agent": CHROME, "accept-language": "ru" } }), { params: Promise.resolve({ slug: l.slug }) });
+    expect(r.status).toBe(302);
+    expect(new URL(r.headers.get("location")!).host).toBe(`${tag}.example`);
+    expect(await db.clickEvent.count({ where: { trackingLinkId: l.id } })).toBe(0);
+    const missing = await GET(new NextRequest(`http://x/r/${tag}-nope`), { params: Promise.resolve({ slug: `${tag}-nope` }) });
+    expect(missing.status).toBe(404);
+    await db.trackingLink.delete({ where: { id: l.id } });
+    await db.campaign.delete({ where: { id: c.id } });
+  });
+
   it("counts a person once, even when they tap again within seconds", async () => {
     const person = { "user-agent": CHROME, "accept-language": "ru-RU,ru;q=0.9" };
     const first = await open(person);

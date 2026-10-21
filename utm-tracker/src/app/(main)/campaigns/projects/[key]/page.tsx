@@ -27,11 +27,13 @@ export default async function ProjectFolderPage(props: { params: Promise<{ key: 
   ]);
   if (!s) notFound();
   const programmes = s.campaigns.filter((c) => c.role.kind === "programme");
+  // the same project in Projects (results from its reports), named like the folder
+  const projectCard = await prisma.project.findFirst({ where: { name: { equals: s.group.title, mode: "insensitive" } }, select: { slug: true } });
 
   return (
     <>
       <PageHeader
-        breadcrumb="Campaigns · Project"
+        breadcrumb="Campaigns · Project folder"
         title={s.group.title}
         subtitle={s.campaigns.map((c) => `${c.role.title}: ${c.label || c.name}`).join(" · ")}
         action={
@@ -42,6 +44,7 @@ export default async function ProjectFolderPage(props: { params: Promise<{ key: 
                 Form drop-off{(forms.length > 1 || f.customTitle) && <span className="ml-1 text-ink-faint">· {f.customTitle || formPage(f)}</span>} <NewBadge className="ml-1" /> →
               </Link>
             ))}
+            {projectCard && <Link href={`/projects/${projectCard.slug}`} className="btn-ghost" title="The project's results from its reports">Project card →</Link>}
             <Link href="/campaigns" className="btn-ghost">← All campaigns</Link>
           </div>
         }

@@ -79,9 +79,10 @@ export default async function CampaignDetailPage(props: { params: Promise<{ id: 
         action={
           <div className="flex flex-wrap items-center gap-3">
             <LiveRefresh />
-            {folder && <Link href={`/campaigns/projects/${folder.key}`} className="btn-ghost text-sm">Project: {folder.title} →</Link>}
+            {folder && <Link href={`/campaigns/projects/${folder.key}`} className="btn-ghost text-sm" title="The campaign together with its EwA2oGX / EwA2MXP campaigns">Project folder: {folder.title} →</Link>}
             {editable && <Link href={`/campaigns/${campaign.id}/utm-links`} className="btn-primary text-sm">Create UTM links</Link>}
-            {editable && <CampaignActions id={campaign.id} status={campaign.status} canDelete={isAdmin(actor)} />}
+            {editable && <CampaignActions id={campaign.id} status={campaign.status} canDelete={isAdmin(actor)}
+              campaign={{ name: campaign.name, label: campaign.label, type: campaign.type, funnel: campaign.funnel, description: campaign.description }} />}
           </div>
         }
       />

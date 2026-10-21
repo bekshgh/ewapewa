@@ -30,9 +30,10 @@ export default async function CampaignsPage() {
 
       {folders.length > 0 && (
         <section className="mb-8">
-          <h2 className="mb-1 font-display text-base font-semibold">Projects <NewBadge className="ml-1" /></h2>
+          <h2 className="mb-1 font-display text-base font-semibold">Project folders <NewBadge className="ml-1" /></h2>
           <p className="mb-3 text-xs text-ink-faint">
-            Campaigns with the same project name are one folder: the project campaign plus its EwA2oGX / EwA2MXP campaigns.
+            Campaigns with the same project name are one folder: the project campaign plus its EwA2oGX / EwA2MXP campaigns, with their
+            numbers and form drop-off. The project&apos;s results from reports live in Projects.
           </p>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {folders.map((f) => (

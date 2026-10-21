@@ -113,12 +113,12 @@ export function CampaignManager({ campaigns, canCreate, editable }: { campaigns:
                   <td className="px-5 py-3.5 text-right">
                     <div className="flex items-center justify-end gap-2 text-xs">
                       {!canEdit.has(c.id) ? null : c.status === "active" ? (
-                        <button onClick={() => patch(c.id, "stopped")} disabled={patching === c.id + "stopped"} className="text-ink-faint hover:text-accent transition">
-                          {patching === c.id + "stopped" ? "…" : "Stop"}
+                        <button onClick={() => patch(c.id, "paused")} disabled={patching === c.id + "paused"} title="Links keep opening the page, clicks stop being counted" className="text-ink-faint hover:text-accent transition">
+                          {patching === c.id + "paused" ? "…" : "Pause"}
                         </button>
                       ) : (
                         <button onClick={() => patch(c.id, "active")} disabled={patching === c.id + "active"} className="text-leads hover:opacity-80 transition">
-                          {patching === c.id + "active" ? "…" : "Activate"}
+                          {patching === c.id + "active" ? "…" : "Resume"}
                         </button>
                       )}
                       <Link href={`/campaigns/${c.id}`} className="text-ink-faint hover:text-ink transition">Analytics →</Link>
