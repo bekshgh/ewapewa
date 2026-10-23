@@ -87,7 +87,7 @@ function Breakdown({ title, head, rows, showPct, t }: { title: string; head: str
             <tr key={r.key}>
               <td className="py-2.5 text-ink">{r.key}</td>
               <td className="num py-2.5 text-right text-ink-muted">{formatNumber(r.clicks)}</td>
-              <td className="num py-2.5 text-right text-ink-muted">{formatNumber(r.leads)}</td>
+              <td className="num py-2.5 text-right text-leads">{formatNumber(r.leads)}</td>
               <td className="num py-2.5 text-right text-ink">
                 {showPct ? formatPercent((r.leads / totalLeads) * 100) : r.clicks ? formatPercent(r.cr) : "—"}
               </td>

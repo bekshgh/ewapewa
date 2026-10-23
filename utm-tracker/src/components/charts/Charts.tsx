@@ -17,10 +17,13 @@ import { useState } from "react";
 import { useT } from "@/lib/i18n/client";
 import { formatNumber, formatPercent } from "@/lib/utils";
 
+// Green means leads everywhere, so the campaign colours leave it out.
 const COLORS = [
-  "#4f8ef7", "#22c55e", "#f59e0b", "#ef4444", "#a78bfa",
-  "#06b6d4", "#f97316", "#ec4899", "#10b981", "#64748b",
+  "#4f8ef7", "#f59e0b", "#a78bfa", "#ef4444", "#06b6d4",
+  "#f97316", "#ec4899", "#eab308", "#e879f9", "#64748b",
 ];
+/** Shades of the leads green, brightest for the biggest slice. */
+const GREENS = ["#3ecf8e", "#25a56d", "#7ee2b8", "#167a4f", "#b4f0d4", "#0f5c3b", "#55d6a0", "#0a4029"];
 
 const axis = { stroke: "#6b6b76", fontSize: 11, tickLine: false };
 
@@ -62,6 +65,7 @@ type Row = { key: string; clicks: number; leads: number; cr: number };
 
 function DonutChart({ data, field }: { data: { name: string; value: number }[]; field: "Clicks" | "Leads" }) {
   const t = useT();
+  const colors = field === "Leads" ? GREENS : COLORS;
   const total = data.reduce((s, d) => s + d.value, 0);
   return (
     <div className="flex flex-col items-center">
@@ -79,7 +83,7 @@ function DonutChart({ data, field }: { data: { name: string; value: number }[]; 
               dataKey="value"
             >
               {data.map((_, i) => (
-                <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                <Cell key={i} fill={colors[i % colors.length]} />
               ))}
             </Pie>
             <Tooltip
@@ -95,7 +99,7 @@ function DonutChart({ data, field }: { data: { name: string; value: number }[]; 
       <div className="mt-2 flex flex-wrap justify-center gap-x-3 gap-y-1">
         {data.slice(0, 7).map((d, i) => (
           <span key={d.name} className="flex items-center gap-1 text-[11px] text-ink-muted">
-            <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ background: COLORS[i % COLORS.length] }} />
+            <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ background: colors[i % colors.length] }} />
             {d.name}
           </span>
         ))}
@@ -172,7 +176,7 @@ export function BreakdownPanel({ title, head, rows }: { title: string; head: str
                     <td className="num py-2.5 text-right text-ink-muted">
                       {totalClicks > 0 ? `${((r.clicks / totalClicks) * 100).toFixed(1)}%` : "—"}
                     </td>
-                    <td className={`num py-2.5 text-right ${r.leads ? "text-ink" : "text-ink-faint"}`}>{formatNumber(r.leads)}</td>
+                    <td className="num py-2.5 text-right text-leads">{formatNumber(r.leads)}</td>
                     <td className="num py-2.5 text-right text-ink-muted">
                       {totalLeads > 0 ? `${((r.leads / totalLeads) * 100).toFixed(1)}%` : "—"}
                     </td>
