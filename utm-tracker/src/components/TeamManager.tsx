@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import { ROLE_LABEL, type Role, type Status } from "@/lib/permissions";
 import { relativeTime } from "@/lib/utils";
 import { useLang, useT } from "@/lib/i18n/client";
+import type { SignupInfo } from "@/lib/signupInfo";
 
 type User = {
   id: string; email: string; name: string | null; role: Role; status: Status;
   position: string | null; projectKeys: string[]; lastLoginAt: string | null; createdAt: string;
+  about: string | null; signup: SignupInfo | null; decidedAt: string | null; decidedBy: string | null;
 };
 type Folder = { key: string; title: string };
 
@@ -21,7 +23,8 @@ const ROLE_HINT: Record<Role, string> = {
 export function TeamManager({ me, users, folders }: { me: string; users: User[]; folders: Folder[] }) {
   const t = useT();
   const pending = users.filter((u) => u.status === "pending");
-  const rest = users.filter((u) => u.status !== "pending");
+  const rest = users.filter((u) => u.status === "active" || u.status === "disabled");
+  const declined = users.filter((u) => u.status === "declined").sort((a, b) => (b.decidedAt ?? "").localeCompare(a.decidedAt ?? ""));
   return (
     <div className="space-y-6">
       {pending.length > 0 && (
@@ -42,6 +45,15 @@ export function TeamManager({ me, users, folders }: { me: string; users: User[];
           </div>
         )}
       </section>
+      {declined.length > 0 && (
+        <details className="card p-5">
+          <summary className="cursor-pointer font-display text-base font-semibold">{t("Declined")} · {declined.length}</summary>
+          <p className="mt-1 text-xs text-ink-faint">{t("They cannot sign in. If someone applies again with the same e-mail, they return to the waiting list.")}</p>
+          <div className="mt-3 divide-y divide-line">
+            {declined.map((u) => <DeclinedRow key={u.id} user={u} />)}
+          </div>
+        </details>
+      )}
     </div>
   );
 }
@@ -86,12 +98,13 @@ function UserRow({ user, folders, me }: { user: User; folders: Folder[]; me: str
           <div className="text-xs text-ink-faint">
             {user.email} · {user.lastLoginAt ? t("last seen {time}", { time: relativeTime(user.lastLoginAt, lang) }) : t("registered {time}", { time: relativeTime(user.createdAt, lang) })}
           </div>
+          <SignupContext user={user} />
         </div>
         <div className="flex flex-wrap gap-2 text-sm">
           {user.status === "pending" && (
             <>
               <button className="btn-primary text-sm" disabled={busy} onClick={() => save({ status: "active" })}>{t("Approve")}</button>
-              <button className="btn-ghost text-sm text-danger" disabled={busy} onClick={() => confirm(t("Turn down {email}?", { email: user.email })) && call(`/api/users/${user.id}`, { method: "DELETE" })}>{t("Decline")}</button>
+              <button className="btn-ghost text-sm text-danger" disabled={busy} onClick={() => confirm(t("Turn down {email}?", { email: user.email })) && call(`/api/users/${user.id}`, { method: "PATCH", body: JSON.stringify({ status: "declined" }) })}>{t("Decline")}</button>
             </>
           )}
           {user.status !== "pending" && dirty && <button className="btn-primary text-sm" disabled={busy} onClick={() => save()}>{t("Save")}</button>}
@@ -158,6 +171,76 @@ function UserRow({ user, folders, me }: { user: User; folders: Folder[]; me: str
           {t("New password for {email}:", { email: user.email })} <code className="font-mono text-ink">{tempPassword}</code> — {t("send it to them; they can change it in their profile. It is shown only now.")}
         </p>
       )}
+    </div>
+  );
+}
+
+const when = (iso: string, lang: string) =>
+  new Date(iso).toLocaleString(lang === "ru" ? "ru-RU" : "en-GB", { timeZone: "Asia/Almaty", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+
+/** Who is asking: what they wrote, where and on what they signed up, and any earlier decision. */
+function SignupContext({ user }: { user: User }) {
+  const t = useT();
+  const lang = useLang();
+  const s = user.signup ?? {};
+  let country = s.country;
+  try {
+    if (s.country) country = new Intl.DisplayNames([lang], { type: "region" }).of(s.country) ?? s.country;
+  } catch {}
+  const place = [s.city, country].filter(Boolean).join(", ");
+  const device = [s.device && t(s.device), s.os, s.browser].filter(Boolean).join(" · ");
+  const facts = [
+    place && `📍 ${place}`,
+    device && `💻 ${device}`,
+    s.from && `↪ ${t("came from {site}", { site: s.from })}`,
+    s.lang && `🗣 ${s.lang}`,
+    `🕓 ${t("signed up {date}", { date: when(user.createdAt, lang) })}`,
+  ].filter(Boolean);
+  return (
+    <div className="mt-1.5 max-w-2xl space-y-1 text-xs">
+      {user.about && <p className="text-ink-muted">«{user.about}»</p>}
+      <p className="flex flex-wrap gap-x-3 gap-y-0.5 text-ink-faint">{facts.map((f) => <span key={f as string}>{f}</span>)}</p>
+      {user.decidedAt && user.status === "pending" && (
+        <p className="text-accent">{t("Declined before: {date}, by {who}", { date: when(user.decidedAt, lang), who: user.decidedBy ?? "—" })}</p>
+      )}
+      {user.decidedAt && user.status !== "pending" && user.status !== "declined" && user.decidedBy && (
+        <p className="text-ink-faint">{t("Approved {date} by {who}", { date: when(user.decidedAt, lang), who: user.decidedBy })}</p>
+      )}
+    </div>
+  );
+}
+
+function DeclinedRow({ user }: { user: User }) {
+  const t = useT();
+  const lang = useLang();
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  async function call(init: RequestInit) {
+    setBusy(true); setError("");
+    const res = await fetch(`/api/users/${user.id}`, { headers: { "Content-Type": "application/json" }, ...init });
+    const data = await res.json().catch(() => null);
+    setBusy(false);
+    if (!res.ok) return setError(data?.error ?? t("Could not save"));
+    router.refresh();
+    window.dispatchEvent(new Event("team:changed"));
+  }
+  return (
+    <div className="flex flex-wrap items-start justify-between gap-3 py-4">
+      <div>
+        <div className="font-medium text-ink">{user.name || user.email}</div>
+        <div className="text-xs text-ink-faint">
+          {user.email}
+          {user.decidedAt && <> · <span className="text-danger">{t("declined {date} by {who}", { date: when(user.decidedAt, lang), who: user.decidedBy ?? "—" })}</span></>}
+        </div>
+        <SignupContext user={user} />
+        {error && <p className="mt-1 text-sm text-danger">{error}</p>}
+      </div>
+      <div className="flex flex-wrap gap-2 text-sm">
+        <button className="btn-ghost border border-line text-sm" disabled={busy} onClick={() => call({ method: "PATCH", body: JSON.stringify({ status: "active", role: "viewer" }) })}>{t("Approve after all")}</button>
+        <button className="btn-ghost text-sm text-danger" disabled={busy}
+          onClick={() => confirm(t("Delete {email} for good? The record of this sign-up disappears.", { email: user.email })) && call({ method: "DELETE" })}>{t("Delete for good")}</button>
+      </div>
     </div>
   );
 }

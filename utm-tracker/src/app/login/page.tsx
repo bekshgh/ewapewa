@@ -9,6 +9,7 @@ import { LangSwitch } from "@/components/Sidebar";
 const REASON: Record<string, string> = {
   pending: "Your account is waiting for an admin's approval.",
   disabled: "Your account is disabled. Ask an admin.",
+  declined: "Your sign-up was declined. Ask an admin if this is a mistake.",
 }; // t() below
 
 export default function LoginPage() {

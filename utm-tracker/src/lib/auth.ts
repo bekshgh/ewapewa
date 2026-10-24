@@ -38,7 +38,7 @@ const deny = (status: 401 | 403, error: string) => NextResponse.json({ error }, 
 export async function guard(level: "active" | "admin"): Promise<Actor | NextResponse> {
   const a = await currentActor();
   if (!a) return deny(401, "Sign in first");
-  if (a.status !== "active") return deny(403, a.status === "pending" ? "Your account is waiting for an admin's approval" : "Your account is disabled");
+  if (a.status !== "active") return deny(403, a.status === "pending" ? "Your account is waiting for an admin's approval" : a.status === "declined" ? "Your sign-up was declined" : "Your account is disabled");
   if (level === "admin" && !isAdmin(a)) return deny(403, "Only admins can do this");
   return a;
 }

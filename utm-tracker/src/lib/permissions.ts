@@ -9,7 +9,7 @@
  */
 
 export type Role = "admin" | "manager" | "viewer";
-export type Status = "pending" | "active" | "disabled";
+export type Status = "pending" | "active" | "disabled" | "declined";
 
 export interface Actor {
   /** User id, or "owner" for the AUTH_EMAIL login. */

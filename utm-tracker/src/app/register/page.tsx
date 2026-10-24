@@ -7,7 +7,7 @@ import { LangSwitch } from "@/components/Sidebar";
 
 export default function RegisterPage() {
   const t = useT();
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState({ name: "", email: "", password: "", about: "" });
   const [error, setError] = useState("");
   const [done, setDone] = useState<"pending" | "active" | null>(null);
   const [loading, setLoading] = useState(false);
@@ -21,7 +21,7 @@ export default function RegisterPage() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, referrer: document.referrer || undefined }),
       });
       const data = await res.json().catch(() => null);
       if (res.ok) setDone(data?.status === "active" ? "active" : "pending");
@@ -54,6 +54,11 @@ export default function RegisterPage() {
               <div>
                 <label className="label">{t("Your name")}</label>
                 <input className="input" value={form.name} onChange={(e) => set("name", e.target.value)} required autoFocus autoComplete="name" placeholder={t("Aruzhan K.")} />
+              </div>
+              <div>
+                <label className="label" htmlFor="reg-about">{t("Who are you in AIESEC?")}</label>
+                <input id="reg-about" className="input" value={form.about} onChange={(e) => set("about", e.target.value)} required minLength={2} maxLength={200} placeholder={t("e.g. OGX team, project manager of Business Cup")} />
+                <p className="hint">{t("So the admin knows who you are before giving access.")}</p>
               </div>
               <div>
                 <label className="label">{t("Email")}</label>

@@ -7,11 +7,11 @@ const schema = z.object({
   name: z.string().trim().min(1).max(80).optional(),
   position: z.string().trim().max(80).nullable().optional(),
   role: z.enum(["admin", "manager", "viewer"]).optional(),
-  status: z.enum(["pending", "active", "disabled"]).optional(),
+  status: z.enum(["pending", "active", "disabled", "declined"]).optional(),
   projectKeys: z.array(z.string().trim().min(1).max(120)).max(50).optional(),
 });
 
-/** PATCH — an admin approves, disables, or changes someone's role, position and projects. */
+/** PATCH — an admin approves, declines, disables, or changes someone's role, position and projects. */
 export async function PATCH(req: NextRequest, props: { params: Promise<{ id: string }> }) {
   const actor = await guard("admin");
   if (actor instanceof NextResponse) return actor;
@@ -27,6 +27,9 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
   const user = await prisma.user.findUnique({ where: { id } });
   if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  // approving or declining a sign-up records who decided and when
+  const decision = d.status && d.status !== user.status && (d.status === "declined" || (d.status === "active" && (user.status === "pending" || user.status === "declined")));
+
   const updated = await prisma.user.update({
     where: { id },
     data: {
@@ -34,6 +37,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
       ...(d.position !== undefined && { position: d.position || null }),
       ...(d.role !== undefined && { role: d.role }),
       ...(d.status !== undefined && { status: d.status }),
+      ...(decision && { decidedAt: new Date(), decidedBy: actor.name || actor.email }),
       ...(d.projectKeys !== undefined && { projectKeys: [...new Set(d.projectKeys)] }),
     },
     select: { id: true, role: true, status: true, position: true, projectKeys: true },
@@ -41,7 +45,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
   return NextResponse.json(updated);
 }
 
-/** DELETE — remove an account (e.g. turn down a registration). */
+/** DELETE — remove an account for good (declining keeps it: PATCH status "declined"). */
 export async function DELETE(_req: NextRequest, props: { params: Promise<{ id: string }> }) {
   const actor = await guard("admin");
   if (actor instanceof NextResponse) return actor;

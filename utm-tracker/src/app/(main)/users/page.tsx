@@ -5,6 +5,7 @@ import { currentActor } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { isAdmin } from "@/lib/permissions";
 import { allProjectGroups } from "@/lib/projectStats";
+import type { SignupInfo } from "@/lib/signupInfo";
 import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +17,7 @@ export default async function TeamPage() {
   const [users, folders] = await Promise.all([
     prisma.user.findMany({
       orderBy: [{ status: "asc" }, { createdAt: "asc" }],
-      select: { id: true, email: true, name: true, role: true, status: true, position: true, projectKeys: true, lastLoginAt: true, createdAt: true },
+      select: { id: true, email: true, name: true, role: true, status: true, position: true, projectKeys: true, lastLoginAt: true, createdAt: true, about: true, signup: true, decidedAt: true, decidedBy: true },
     }),
     allProjectGroups(),
   ]);
@@ -30,7 +31,7 @@ export default async function TeamPage() {
       />
       <TeamManager
         me={actor!.id}
-        users={users.map((u) => ({ ...u, lastLoginAt: u.lastLoginAt?.toISOString() ?? null, createdAt: u.createdAt.toISOString() }))}
+        users={users.map((u) => ({ ...u, signup: (u.signup ?? null) as SignupInfo | null, lastLoginAt: u.lastLoginAt?.toISOString() ?? null, createdAt: u.createdAt.toISOString(), decidedAt: u.decidedAt?.toISOString() ?? null }))}
         folders={folders.map((f) => ({ key: f.key, title: f.title }))}
       />
     </>

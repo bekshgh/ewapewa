@@ -21,6 +21,7 @@ export async function POST(req: NextRequest) {
   if (user && (await verifyPassword(password, user.passwordHash))) {
     if (user.status === "pending") return NextResponse.json({ error: "Your account is waiting for an admin's approval." }, { status: 403 });
     if (user.status === "disabled") return NextResponse.json({ error: "Your account is disabled. Ask an admin." }, { status: 403 });
+    if (user.status === "declined") return NextResponse.json({ error: "Your sign-up was declined. Ask an admin if this is a mistake." }, { status: 403 });
     subject = user.id;
     await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
   } else {

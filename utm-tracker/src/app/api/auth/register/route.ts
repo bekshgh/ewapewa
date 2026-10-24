@@ -3,16 +3,21 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { hashPassword } from "@/lib/password";
 import { blockedFor, noteAttempt, requestIpHash, tooMany } from "@/lib/authLimit";
+import { signupInfo } from "@/lib/signupInfo";
 
 const schema = z.object({
   name: z.string().trim().min(2, "Enter your name").max(80),
   email: z.string().trim().toLowerCase().email("Enter a valid e-mail").max(160),
   password: z.string().min(8, "Password: at least 8 characters").max(200),
+  about: z.string().trim().min(2, "Tell us who you are: team and role").max(200),
+  referrer: z.string().max(500).optional(),
 });
 
 /**
- * POST { name, email, password } — creates an account that waits for an
- * admin's approval. The owner's own e-mail (AUTH_EMAIL) is approved as admin.
+ * POST { name, email, password, about, referrer? } — creates an account that
+ * waits for an admin's approval, with where it came from (city, device…).
+ * The owner's own e-mail (AUTH_EMAIL) is approved as admin. Someone declined
+ * before may apply again: the account goes back to the waiting list.
  */
 export async function POST(req: NextRequest) {
   const ipHash = requestIpHash(req);
@@ -21,9 +26,15 @@ export async function POST(req: NextRequest) {
   await noteAttempt("register", ipHash, true);
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Check the form" }, { status: 422 });
-  const { name, email, password } = parsed.data;
+  const { name, email, password, about, referrer } = parsed.data;
+  const signup = { ...signupInfo(req, referrer) };
 
   const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing?.status === "declined") {
+    // decidedAt / decidedBy stay: the admin sees it was declined before
+    await prisma.user.update({ where: { id: existing.id }, data: { name, about, signup, status: "pending", passwordHash: await hashPassword(password), createdAt: new Date() } });
+    return NextResponse.json({ status: "pending" }, { status: 201 });
+  }
   if (existing) return NextResponse.json({ error: "This e-mail is already registered. Sign in instead." }, { status: 409 });
 
   const owner = !!process.env.AUTH_EMAIL && email === process.env.AUTH_EMAIL.trim().toLowerCase();
@@ -31,6 +42,8 @@ export async function POST(req: NextRequest) {
     data: {
       email,
       name,
+      about,
+      signup,
       passwordHash: await hashPassword(password),
       ...(owner ? { role: "admin" as const, status: "active" as const } : {}),
     },

@@ -39,6 +39,7 @@ enum UserStatus {
   pending // registered, waiting for an admin
   active
   disabled
+  declined // sign-up turned down; kept so admins see who was declined
 }
 
 model User {
@@ -51,6 +52,10 @@ model User {
   position     String? // e.g. "Project manager", "VP"
   projectKeys  String[]   @default([]) // project folders a manager edits (see projectGroups.ts)
   lastLoginAt  DateTime?
+  about        String? // what they wrote at sign-up: team, role
+  signup       Json? // where they signed up from: city, country, device, browser, os, language, referrer
+  decidedAt    DateTime? // when an admin approved or declined the sign-up
+  decidedBy    String? // that admin's name or e-mail
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @default(now()) @updatedAt
 

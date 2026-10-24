@@ -64,4 +64,11 @@ export const MISC: Record<string, string> = {
   Contents: "Содержание",
   "Loading projects": "Загружаем проекты",
   "Loading report": "Загружаем отчёт",
+  "Tell us who you are: team and role": "Расскажите, кто вы: команда и роль",
+  "Your sign-up was declined. Ask an admin if this is a mistake.": "Вашу регистрацию отклонили. Если это ошибка, напишите админу.",
+  "Your sign-up was declined": "Вашу регистрацию отклонили",
+  declined: "отклонён",
+  "Who are you in AIESEC?": "Кто вы в AIESEC?",
+  "e.g. OGX team, project manager of Business Cup": "например: команда OGX, менеджер проекта Business Cup",
+  "So the admin knows who you are before giving access.": "Чтобы админ понимал, кто вы, прежде чем дать доступ.",
 };

@@ -32,9 +32,9 @@ describe.skipIf(!url)("sign-in / sign-up rate limits (database)", () => {
 
   it("allows 5 sign-ups an hour from one visitor", async () => {
     for (let i = 0; i < 5; i++) {
-      const r = await post(register, "/api/auth/register", { name: "Limit Test", email: `limit-test-${Date.now()}-${i}@example.test`, password: "password123" });
+      const r = await post(register, "/api/auth/register", { name: "Limit Test", email: `limit-test-${Date.now()}-${i}@example.test`, password: "password123", about: "test" });
       expect(r.status).toBe(201);
     }
-    expect((await post(register, "/api/auth/register", { name: "Limit Test", email: `limit-test-${Date.now()}-x@example.test`, password: "password123" })).status).toBe(429);
+    expect((await post(register, "/api/auth/register", { name: "Limit Test", email: `limit-test-${Date.now()}-x@example.test`, password: "password123", about: "test" })).status).toBe(429);
   });
 });
