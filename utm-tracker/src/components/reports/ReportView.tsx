@@ -12,7 +12,8 @@ import type {
   TableView,
 } from "@/lib/reports/types";
 import { cn } from "@/lib/utils";
-import { CONFIGS } from "@/lib/reports/configs";
+import { CONFIGS, type ViewRule } from "@/lib/reports/configs";
+import { viewsFor } from "@/lib/reports/autoViews";
 import { formatValue, readableTitle } from "./format";
 import { BarsChart, DoughnutChart, LineSeriesChart, describeChart } from "./ReportCharts";
 import { ConcentrationMeter, DataTable, RankedBars, SegmentSwitcher } from "./ReportTables";
@@ -137,6 +138,12 @@ export function ReportView({ doc, initialTab }: { doc: ReportDocument; initialTa
   );
 }
 
+/** The config rule that draws this table now, if any. */
+function ruleFor(doc: ReportDocument, sheet: SheetDoc, s: Section): ViewRule | undefined {
+  if (s.kind !== "table") return undefined;
+  return CONFIGS[doc.type]?.views.find((r) => r.sheet === sheet.key && r.title.test(s.title));
+}
+
 function SheetPanel({ sheet, doc }: { sheet: SheetDoc; doc: ReportDocument }) {
   const tr = useT();
   let sections = sheet.sections;
@@ -163,7 +170,7 @@ function SheetPanel({ sheet, doc }: { sheet: SheetDoc; doc: ReportDocument }) {
       );
       continue;
     }
-    blocks.push(<SectionCard key={s.id} s={s} hero={sheet.key === "overview" && i === 0} />);
+    blocks.push(<SectionCard key={s.id} s={s} hero={sheet.key === "overview" && i === 0} rule={ruleFor(doc, sheet, s)} />);
     if (sheet.key === "overview" && s.kind === "kpiGroup" && sections[i + 1]?.kind !== "kpiGroup") {
       const caveats = doc.methodology.find((m) => /CAVEAT/i.test(m.title));
       if (caveats) blocks.push(<Caveats key="caveats" s={caveats} />);
@@ -183,7 +190,7 @@ function Card({ title, subtitle, children, id }: { title: string; subtitle?: str
   );
 }
 
-function SectionCard({ s, hero }: { s: Section; hero?: boolean }) {
+function SectionCard({ s, hero, rule }: { s: Section; hero?: boolean; rule?: ViewRule }) {
   const title = readableTitle(s.title);
   const sub = s.subtitle ? readableTitle(s.subtitle) : undefined;
   const id = `h-${s.id}`;
@@ -195,7 +202,7 @@ function SectionCard({ s, hero }: { s: Section; hero?: boolean }) {
     case "definitions":
       return <Card id={id} title={title} subtitle={sub}><Definitions s={s} /></Card>;
     case "table":
-      return <Card id={id} title={title} subtitle={sub}><TableBlock t={s} /></Card>;
+      return <Card id={id} title={title} subtitle={sub}><TableBlock t={s} rule={rule} /></Card>;
   }
 }
 
@@ -213,6 +220,7 @@ function KpiGrid({ s, hero }: { s: KpiSection; hero?: boolean }) {
           <p className={cn("num mt-1.5 font-bold tracking-tight", hero ? "text-3xl" : "text-2xl", TONE_TEXT[c.tone ?? "neutral"])}>
             {formatValue(c.value, c.format)}
           </p>
+          <KpiMeter c={c} />
           {c.subtext && (
             <p className={cn("mt-1 text-xs", c.tone === "warn" ? "text-accent" : "text-ink-muted")}>
               {c.tone === "warn" && <span aria-label={tr("warning")}>⚠ </span>}
@@ -221,6 +229,20 @@ function KpiGrid({ s, hero }: { s: KpiSection; hero?: boolean }) {
           )}
         </div>
       ))}
+    </div>
+  );
+}
+
+/** A thin bar under a share (0–100%) or a score out of 10, so the size reads at a glance. */
+function KpiMeter({ c }: { c: KpiSection["cards"][number] }) {
+  if (typeof c.value !== "number") return null;
+  let k: number | null = null;
+  if (c.format.kind === "percent" && c.value >= 0 && c.value <= 1) k = c.value;
+  else if (c.format.kind === "number" && c.value > 0 && c.value <= 10 && (/\/\s*10/.test(c.format.unit ?? "") || /score|organi[sz]ation|composite|rating|оценк/i.test(c.label))) k = c.value / 10;
+  if (k === null) return null;
+  return (
+    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-bg-hover" aria-hidden>
+      <div className={cn("h-full rounded-full", c.tone === "warn" ? "bg-accent" : c.tone === "critical" ? "bg-danger" : "bg-clicks")} style={{ width: `${Math.max(k * 100, 2)}%` }} />
     </div>
   );
 }
@@ -289,8 +311,12 @@ function Caveats({ s }: { s: DefinitionsSection }) {
 
 const CHART_VIEWS = new Set<TableView["type"]>(["bars", "line", "doughnut"]);
 
-function TableBlock({ t }: { t: TableSection }) {
+function TableBlock({ t: source, rule }: { t: TableSection; rule?: ViewRule }) {
   const tr = useT();
+  // today's config rule for this table (stored reports keep the views of the day they were read),
+  // and a chart picked from the table's shape where the config leaves it plain
+  const views = viewsFor(rule ? { ...source, views: rule.views(source) } : source);
+  const t = views === source.views ? source : { ...source, views };
   const charts = t.views.filter((v) => CHART_VIEWS.has(v.type));
   const primary = t.views.find((v) => !CHART_VIEWS.has(v.type));
 

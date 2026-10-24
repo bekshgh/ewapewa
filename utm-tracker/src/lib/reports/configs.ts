@@ -138,6 +138,7 @@ export const REGISTRATION: TypeConfig = {
       const cum = col(t, /^Cumul\.?$/i);
       const v: TableView[] = [];
       if (groups.length) v.push({ type: "bars", label: day, values: groups, stacked: true });
+      else if (total >= 0) v.push({ type: "bars", label: day, values: [total] }); // no channel split: one bar per day
       if (cum >= 0) v.push({ type: "line", label: day, values: [cum] });
       v.push({ type: "table" });
       return v;

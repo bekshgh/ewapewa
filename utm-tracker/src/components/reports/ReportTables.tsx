@@ -262,7 +262,7 @@ export function RankedBars({ t, v }: { t: TableSection; v: Extract<TableView, { 
           <li key={i} className="text-sm">
             <div className="flex items-baseline gap-3">
               <span className="num w-6 shrink-0 text-right text-xs text-ink-faint">{rankCol >= 0 ? formatValue(r[rankCol], t.columns[rankCol].format) : i + 1}</span>
-              <span className="min-w-0 flex-1 text-ink">{String(r[v.label] ?? "—")}</span>
+              <span className="min-w-0 flex-1 break-words text-ink">{String(r[v.label] ?? "—")}</span>
               <span className="num shrink-0 text-ink">{formatValue(r[v.value], t.columns[v.value].format)}</span>
               {share !== null && share !== undefined && (
                 <span className="num w-14 shrink-0 text-right text-xs text-ink-muted">{formatValue(share, t.columns[v.share!].format)}</span>
