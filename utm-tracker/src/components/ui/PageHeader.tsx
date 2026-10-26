@@ -13,8 +13,10 @@ export function PageHeader({
   titleAction?: React.ReactNode;
 }) {
   return (
-    <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-      <div>
+    // The title keeps at least 24rem; when the actions don't fit beside it they wrap below,
+    // instead of squeezing the title to one word per line.
+    <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-x-8">
+      <div className="min-w-0 break-words sm:flex-[1_1_24rem]">
         {breadcrumb && (
           <p className="mb-2 text-xs font-medium uppercase tracking-wider text-ink-faint">{breadcrumb}</p>
         )}
@@ -28,7 +30,7 @@ export function PageHeader({
         )}
         {subtitle && <p className="mt-1.5 text-sm text-ink-muted">{subtitle}</p>}
       </div>
-      {action && <div className="shrink-0">{action}</div>}
+      {action && <div className="max-w-full shrink-0">{action}</div>}
     </div>
   );
 }
