@@ -13,8 +13,9 @@ export function PageHeader({
   titleAction?: React.ReactNode;
 }) {
   return (
-    <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-      <div>
+    <div className="mb-8 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+      {/* flex-wrap: the title keeps its natural width and the actions drop under it when both do not fit on one line */}
+      <div className="min-w-0 max-w-full">
         {breadcrumb && (
           <p className="mb-2 text-xs font-medium uppercase tracking-wider text-ink-faint">{breadcrumb}</p>
         )}
@@ -28,7 +29,7 @@ export function PageHeader({
         )}
         {subtitle && <p className="mt-1.5 text-sm text-ink-muted">{subtitle}</p>}
       </div>
-      {action && <div className="shrink-0">{action}</div>}
+      {action && <div className="min-w-0 max-w-full">{action}</div>}
     </div>
   );
 }
