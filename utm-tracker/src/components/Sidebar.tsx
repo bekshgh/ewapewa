@@ -5,12 +5,13 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { NewBadge } from "@/components/ui/NewBadge";
+import { BetaBadge } from "@/components/ui/BetaBadge";
 import { saveLang, useLang, useT } from "@/lib/i18n/client";
 import { LANGS, type Lang } from "@/lib/i18n";
 
 type Access = "all" | "editors" | "admins";
 
-type Item = { href: string; label: string; icon: string; access?: Access; isNew?: boolean };
+type Item = { href: string; label: string; icon: string; access?: Access; isNew?: boolean; beta?: boolean };
 
 const NAV: Item[] = [
   { href: "/", label: "Dashboard", icon: "grid" },
@@ -22,6 +23,7 @@ const NAV: Item[] = [
   { href: "/forms", label: "Forms", icon: "form", isNew: true },
   { href: "/projects", label: "Projects", icon: "stack" },
   { href: "/reports", label: "Reports", icon: "doc" },
+  { href: "/forecast", label: "Attendance forecast", icon: "target", access: "editors", beta: true },
   { href: "/users", label: "Team", icon: "team", access: "admins" },
 ];
 
@@ -43,6 +45,8 @@ export interface SidebarUser {
   editor: boolean;
   /** Admins waiting to approve someone. */
   pending: number;
+  /** The attendance forecast beta is switched on (ATTENDANCE_FORECAST_BETA). */
+  forecast: boolean;
 }
 
 function Icon({ name }: { name: string }) {
@@ -57,6 +61,7 @@ function Icon({ name }: { name: string }) {
     users: <><circle cx="9" cy="8" r="3" /><path d="M3 20a6 6 0 0 1 12 0" /><path d="M16 6a3 3 0 0 1 0 6M21 20a6 6 0 0 0-4-5.6" /></>,
     flag: <><path d="M5 21V4" /><path d="M5 4h11l-2 3 2 3H5" /></>,
     stack: <><path d="M12 3 3 8l9 5 9-5-9-5Z" /><path d="m3 13 9 5 9-5" /></>,
+    target: <><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="1" /></>,
     doc: <><path d="M6 2h9l5 5v15H6z" /><path d="M14 2v6h6" /><path d="M9 17v-3M12 17v-6M15 17v-4" /></>,
     bolt: <path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" />,
     book: <><path d="M5 4a2 2 0 0 1 2-2h12v18H7a2 2 0 0 0-2 2V4Z" /><path d="M5 18h14" /></>,
@@ -71,7 +76,7 @@ function Icon({ name }: { name: string }) {
 export function Sidebar({ user }: { user: SidebarUser }) {
   const pathname = usePathname();
   const t = useT();
-  const allowed = (i: Item) => !i.access || i.access === "all" || (i.access === "admins" ? user.admin : user.editor);
+  const allowed = (i: Item) => (!i.beta || user.forecast) && (!i.access || i.access === "all" || (i.access === "admins" ? user.admin : user.editor));
   const items = NAV.filter(allowed);
   const others = OTHERS.filter(allowed);
   const [open, setOpen] = useState(false);
@@ -115,6 +120,7 @@ export function Sidebar({ user }: { user: SidebarUser }) {
       </span>
       {t(item.label)}
       {item.isNew && <NewBadge className="ml-auto" />}
+      {item.beta && <BetaBadge className="ml-auto" />}
       {item.href === "/users" && pending > 0 && (
         <span className="ml-auto rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold text-bg-base" title={t("Sign-ups waiting for approval: {n}", { n: pending })}>
           {pending}

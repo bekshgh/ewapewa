@@ -103,3 +103,21 @@ describe("selectRegistrations", () => {
     expect(parsed.rows[0].city).toBe("Астана");
   });
 });
+
+describe("form answers for the attendance forecast", () => {
+  it("keeps university, year, team and the other answer columns; contacts stay in their own fields", () => {
+    const parsed = parseRegistrations(
+      wb(grid("Заявки", [
+        ["Создано", "Имя", "Почта", "Participation type", "Team name", "University", "Year of study", "Major", "Screening"],
+        ["19.10.2026 19:19", "Aru Test", "aru@example.com", "Already have a team", "Rum 1025", "Nazarbayev University", "2nd year Undergraduate", "CS", "P0 — Core"],
+        ["19.10.2026 19:25", "No Answers", "na@example.com", null, null, null, null, null, null],
+      ])),
+    );
+    expect(parsed.rows[0].answers).toEqual({
+      participationType: "Already have a team", teamName: "Rum 1025", university: "Nazarbayev University",
+      yearOfStudy: "2nd year Undergraduate", major: "CS", segment: "P0 — Core",
+    });
+    expect(parsed.rows[0]).toMatchObject({ name: "Aru Test", email: "aru@example.com" });
+    expect(parsed.rows[1].answers).toBeUndefined();
+  });
+});

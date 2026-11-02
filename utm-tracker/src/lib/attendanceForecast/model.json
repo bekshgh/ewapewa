@@ -1,0 +1,341 @@
+{
+ "version": "bc-s26-day1-v1",
+ "trainedOn": "Business Cup S26 (весна 2026): 1 018 приглашённых, чек-ин первого дня",
+ "cv": {
+  "auc": 0.67,
+  "predictedTotal": 601,
+  "actualTotal": 601
+ },
+ "intercept": -0.3251,
+ "coef": {
+  "team_status=Looking for team": -0.463,
+  "team_status=Solo": 0.1619,
+  "team_status=Team": 0.2999,
+  "team_size_b=1": -0.4058,
+  "team_size_b=2": 0.3872,
+  "team_size_b=3": 0.4855,
+  "team_size_b=4+": -0.167,
+  "team_size_b=n/a": -0.3011,
+  "year=1st year": 0.1558,
+  "year=2nd year": 0.3175,
+  "year=3rd year": -0.0377,
+  "year=4th year": 0.0017,
+  "year=Foundation": -0.0467,
+  "year=Graduate": 0.0977,
+  "year=Master's": -0.4366,
+  "year=Other": -0.0529,
+  "university=AITU": -0.1176,
+  "university=ENU": 0.5556,
+  "university=MNU": 0.1058,
+  "university=NU": 0.3943,
+  "university=Other": -0.5184,
+  "university=Outside Astana": -0.4208,
+  "major_cat=Business & Management": 0.1266,
+  "major_cat=Computer Science": 0.0537,
+  "major_cat=Creative & Media": 0.1459,
+  "major_cat=Data Science & AI": 0.1562,
+  "major_cat=Economics & Finance": -0.053,
+  "major_cat=Engineering": -0.2809,
+  "major_cat=IT & Cybersecurity": 0.2352,
+  "major_cat=Math & Natural Sciences": 0.1162,
+  "major_cat=Medicine": 0.0337,
+  "major_cat=Other": -0.2431,
+  "major_cat=Social Sciences & Humanities": -0.4278,
+  "major_cat=Undeclared / Foundation": 0.107,
+  "major_cat=Unknown": 0.0291,
+  "zimran=No": -0.2729,
+  "zimran=Yes": 0.2717,
+  "prior_aiesec_b=No": -0.0793,
+  "prior_aiesec_b=Yes": 0.0781,
+  "reg_timing=1-3 days before": 0.2391,
+  "reg_timing=15+ days before": -0.0622,
+  "reg_timing=4-7 days before": -0.2488,
+  "reg_timing=8-14 days before": -0.076,
+  "reg_timing=Deadline day": 0.1467
+ },
+ "levels": {
+  "team_status": [
+   "Looking for team",
+   "Solo",
+   "Team"
+  ],
+  "team_size_b": [
+   "1",
+   "2",
+   "3",
+   "4+",
+   "n/a"
+  ],
+  "year": [
+   "1st year",
+   "2nd year",
+   "3rd year",
+   "4th year",
+   "Foundation",
+   "Graduate",
+   "Master's",
+   "Other"
+  ],
+  "university": [
+   "AITU",
+   "ENU",
+   "MNU",
+   "NU",
+   "Other",
+   "Outside Astana"
+  ],
+  "major_cat": [
+   "Business & Management",
+   "Computer Science",
+   "Creative & Media",
+   "Data Science & AI",
+   "Economics & Finance",
+   "Engineering",
+   "IT & Cybersecurity",
+   "Math & Natural Sciences",
+   "Medicine",
+   "Other",
+   "Social Sciences & Humanities",
+   "Undeclared / Foundation",
+   "Unknown"
+  ],
+  "zimran": [
+   "No",
+   "Yes"
+  ],
+  "prior_aiesec_b": [
+   "No",
+   "Yes"
+  ],
+  "reg_timing": [
+   "1-3 days before",
+   "15+ days before",
+   "4-7 days before",
+   "8-14 days before",
+   "Deadline day"
+  ]
+ },
+ "overdispersion": 1.63,
+ "registrationCurve": {
+  "ratios": {
+   "low": 1.86,
+   "mid": 2.67,
+   "high": 4.06
+  },
+  "ratioSources": {
+   "low": "Creative One",
+   "mid": "AIESEC x Higgsfield",
+   "high": "Business Cup S26"
+  },
+  "shareOfFinalWeekByDaysLeft": [
+   0.316,
+   0.154,
+   0.144,
+   0.14,
+   0.097,
+   0.074,
+   0.076
+  ]
+ },
+ "majorRules": [
+  [
+   "Data Science & AI",
+   [
+    "data",
+    "\\bai\\b",
+    "artificial",
+    "intellig",
+    "machine learning",
+    "\\bml\\b",
+    "\\bnlp\\b",
+    "analytic",
+    "\\bbda\\b",
+    "аналит",
+    "данн",
+    "интеллект"
+   ]
+  ],
+  [
+   "IT & Cybersecurity",
+   [
+    "cyber",
+    "security",
+    "безопасн",
+    "\\bit\\b",
+    "information",
+    "\\bict\\b",
+    "\\biot\\b",
+    "smart tech",
+    "telecom",
+    "информ",
+    "\\bит\\b",
+    "систем"
+   ]
+  ],
+  [
+   "Computer Science",
+   [
+    "comput",
+    "software",
+    "\\bcs\\b",
+    "\\bse\\b",
+    "program",
+    "develop",
+    "backend",
+    "frontend",
+    "gamedev",
+    "web",
+    "программ",
+    "разработ"
+   ]
+  ],
+  [
+   "Engineering",
+   [
+    "engin",
+    "robot",
+    "mechanic",
+    "aerospace",
+    "civil",
+    "petroleum",
+    "oil",
+    "\\bcee\\b",
+    "\\bmae\\b",
+    "\\bchme\\b",
+    "automat",
+    "construct",
+    "geolog",
+    "инженер",
+    "механ",
+    "строит",
+    "робот",
+    "нефт",
+    "автомат"
+   ]
+  ],
+  [
+   "Economics & Finance",
+   [
+    "econ",
+    "financ",
+    "account",
+    "эконом",
+    "финанс",
+    "учет",
+    "аудит",
+    "бухгалт"
+   ]
+  ],
+  [
+   "Business & Management",
+   [
+    "manag",
+    "market",
+    "busines",
+    "bussines",
+    "\\bmba\\b",
+    "\\bbba\\b",
+    "logist",
+    "entrepren",
+    "touris",
+    "менедж",
+    "маркет",
+    "бизнес",
+    "логист",
+    "таргет"
+   ]
+  ],
+  [
+   "Creative & Media",
+   [
+    "design",
+    "media",
+    "journal",
+    "architect",
+    "film",
+    "cinema",
+    "produc",
+    "art\\b",
+    "arts",
+    "fashion",
+    "multimedia",
+    "дизайн",
+    "медиа",
+    "журнал",
+    "архитект",
+    "кино"
+   ]
+  ],
+  [
+   "Social Sciences & Humanities",
+   [
+    "polit",
+    "relation",
+    "sociolog",
+    "psir",
+    "psycholog",
+    "\\blaw",
+    "legal",
+    "juris",
+    "linguist",
+    "language",
+    "translat",
+    "philolog",
+    "literat",
+    "histor",
+    "anthropol",
+    "pedagog",
+    "educat",
+    "teacher",
+    "public",
+    "global",
+    "eurasian",
+    "wllc",
+    "полит",
+    "отношен",
+    "социол",
+    "психол",
+    "право",
+    "юрис",
+    "лингв",
+    "язык",
+    "перевод",
+    "филол",
+    "истор",
+    "педагог",
+    "учител",
+    "управлен"
+   ]
+  ],
+  [
+   "Math & Natural Sciences",
+   [
+    "math",
+    "physic",
+    "chemi",
+    "biolog",
+    "bio",
+    "scien",
+    "geosci",
+    "neuro",
+    "матем",
+    "физик",
+    "хими",
+    "биолог"
+   ]
+  ],
+  [
+   "Medicine",
+   [
+    "medic",
+    "pharm",
+    "doctor",
+    "nusom",
+    "veterin",
+    "медиц",
+    "врач",
+    "фарм"
+   ]
+  ]
+ ]
+}

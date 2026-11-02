@@ -2,6 +2,8 @@ import crypto from "crypto";
 import { AttributionStatus, type Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { readWorkbook, type Grid, type Workbook } from "@/lib/reports/xlsx";
+import { detectColumns } from "@/lib/attendanceForecast/forecastCore";
+import { ANSWER_FIELDS, type AnswerField } from "@/lib/attendanceForecast/site";
 
 /**
  * Imports registrations exported from a landing page (e.g. the Google Sheet a
@@ -26,7 +28,7 @@ type Field =
   | "utmSource" | "utmMedium" | "utmCampaign" | "utmContent" | "utmTerm";
 
 const ALIASES: Record<Field, string[]> = {
-  date: ["дата и время", "дата", "время", "date", "datetime", "date and time", "timestamp", "submitted at", "created at", "sent"],
+  date: ["дата и время", "дата", "время", "создано", "date", "datetime", "date and time", "timestamp", "submitted at", "created at", "created", "sent"],
   name: ["имя и фамилия", "имя", "фио", "name", "full name"],
   email: ["email", "e-mail", "почта", "электронная почта"],
   phone: ["телефон", "номер телефона", "phone", "tel"],
@@ -64,6 +66,8 @@ export interface Registration {
   utmCampaign?: string;
   utmContent?: string;
   utmTerm?: string;
+  /** Form answers the attendance forecast reads (university, year of study, team…), when the sheet has them. */
+  answers?: Partial<Record<AnswerField, string>>;
 }
 
 export interface ParsedRegistrations {
@@ -143,6 +147,14 @@ function queryOf(url: string | undefined): URLSearchParams | null {
 export function parseRegistrations(wb: Workbook, tzOffsetMinutes = DEFAULT_TZ_OFFSET_MINUTES): ParsedRegistrations {
   const { grid, headerRow, cols } = findRegistrationSheet(wb);
   const cell = (r: number, f: Field) => (cols[f] === undefined ? undefined : grid.cells.get(`${r},${cols[f]}`)?.v);
+  // answer columns, found by the forecast's header names (contact columns are already taken above)
+  const headers = Array.from({ length: grid.maxCol }, (_, i) => grid.cells.get(`${headerRow},${i + 1}`)?.v ?? null);
+  const open = headers.map((h, i) => (Object.values(cols).includes(i + 1) ? null : h));
+  const found = detectColumns(open);
+  const answerCols = ANSWER_FIELDS.flatMap((f) => {
+    const i = found[f] === undefined ? -1 : open.findIndex((h) => h !== null && String(h) === found[f]);
+    return i < 0 ? [] : [[f, i + 1] as const];
+  });
 
   const rows: Registration[] = [];
   let skipped = 0;
@@ -171,6 +183,11 @@ export function parseRegistrations(wb: Workbook, tzOffsetMinutes = DEFAULT_TZ_OF
       clickId: text(cell(r, "clickId"), 100) ?? text(q?.get("click_id"), 100),
     };
     for (const f of UTM_FIELDS) reg[f] = text(cell(r, f), 200) ?? text(q?.get(UTM_PARAM[f]), 200);
+    const answers = Object.fromEntries(answerCols.flatMap(([f, c]) => {
+      const v = text(grid.cells.get(`${r},${c}`)?.v, 300);
+      return v ? [[f, v]] : [];
+    }));
+    if (Object.keys(answers).length) reg.answers = answers;
     rows.push(reg);
   }
   return { sheet: grid.name, rows, skipped };
@@ -356,7 +373,7 @@ export async function importRegistrations(
       pageUrl: r.pageUrl ?? null,
       ...utm,
       submittedAt: r.submittedAt,
-      sourcePayload: { _source: "registration-import", sheet: parsed.sheet, row: r.row },
+      sourcePayload: { _source: "registration-import", sheet: parsed.sheet, row: r.row, ...(r.answers ? { answers: r.answers } : {}) },
       attributionStatus: status,
       dedupeKey: key,
     });

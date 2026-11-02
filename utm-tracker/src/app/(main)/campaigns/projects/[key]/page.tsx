@@ -3,10 +3,12 @@ import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { LiveRefresh } from "@/components/ui/LiveRefresh";
 import { NewBadge } from "@/components/ui/NewBadge";
+import { BetaBadge } from "@/components/ui/BetaBadge";
 import { ProjectNumbers } from "@/components/ProjectNumbers";
 import { currentActor } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { canEditFolder } from "@/lib/permissions";
+import { canForecastFolder, forecastBetaEnabled } from "@/lib/attendanceForecast/site";
 import { folderNumbers } from "@/lib/projectNumbers";
 import { formatNumber, formatPercent } from "@/lib/utils";
 import { manualNumbers, projectStats, type ChannelRow, type CampaignStats } from "@/lib/projectStats";
@@ -47,6 +49,9 @@ export default async function ProjectFolderPage(props: { params: Promise<{ key: 
                 {t("Form drop-off")}{(forms.length > 1 || f.customTitle) && <span className="ml-1 text-ink-faint">· {f.customTitle || formPage(f)}</span>} <NewBadge className="ml-1" /> →
               </Link>
             ))}
+            {forecastBetaEnabled() && canForecastFolder(actor, s.group.key) && s.projectCampaignIds.length > 0 && (
+              <Link href={`/forecast?folder=${encodeURIComponent(s.group.key)}`} className="btn-ghost">{t("Attendance forecast")} <BetaBadge className="ml-1" /> →</Link>
+            )}
             {projectCard && <Link href={`/projects/${projectCard.slug}`} className="btn-ghost" title={t("The project's results from its reports")}>{t("Project card")} →</Link>}
             <Link href="/campaigns" className="btn-ghost">← {t("All campaigns")}</Link>
           </div>

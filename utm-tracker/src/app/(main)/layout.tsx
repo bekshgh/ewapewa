@@ -3,6 +3,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { currentActor } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { ROLE_LABEL, isAdmin } from "@/lib/permissions";
+import { forecastBetaEnabled } from "@/lib/attendanceForecast/site";
 
 export default async function MainLayout({ children }: { children: React.ReactNode }) {
   const actor = await currentActor();
@@ -20,6 +21,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
           admin,
           editor: admin || actor.role === "manager",
           pending,
+          forecast: forecastBetaEnabled(),
         }}
       />
       <main className="flex-1 min-w-0 px-5 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10">
