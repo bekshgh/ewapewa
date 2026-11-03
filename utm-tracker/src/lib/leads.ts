@@ -33,7 +33,7 @@ export async function recordLead(
     submittedAt: lead.submittedAt,
   });
 
-  const existing = await findByDedupeKey(dedupeKey);
+  const existing = (await findByDedupeKey(dedupeKey)) ?? (lead.clickId ? null : await findSamePerson(lead));
   if (existing) return logDuplicate(existing, lead, opts);
 
   const attribution = await resolveAttribution(lead);
@@ -102,13 +102,32 @@ const MERGE_FIELDS = [
   "utmSource", "utmMedium", "utmCampaign", "utmContent", "utmTerm",
 ] as const;
 
+const findSelect = {
+  id: true, attributionStatus: true, clickId: true,
+  ...Object.fromEntries(MERGE_FIELDS.map((f) => [f, true])) as Record<(typeof MERGE_FIELDS)[number], true>,
+};
+
 function findByDedupeKey(dedupeKey: string) {
-  return prisma.lead.findUnique({
-    where: { dedupeKey },
-    select: {
-      id: true, attributionStatus: true, clickId: true,
-      ...Object.fromEntries(MERGE_FIELDS.map((f) => [f, true])) as Record<(typeof MERGE_FIELDS)[number], true>,
+  return prisma.lead.findUnique({ where: { dedupeKey }, select: findSelect });
+}
+
+/** Without a click the same send can arrive twice under different keys — the page's script
+ * ("dr:" per page view) and the form's own webhook — so the same person within the hour is one lead. */
+const SAME_PERSON_MS = 60 * 60_000;
+function findSamePerson(lead: NormalisedLead) {
+  const email = lead.email?.trim();
+  const phone = lead.phone?.trim();
+  if (!email && !phone) return null;
+  const at = lead.submittedAt.getTime();
+  return prisma.lead.findFirst({
+    where: {
+      OR: [...(email ? [{ email: { equals: email, mode: "insensitive" as const } }] : []), ...(phone ? [{ phone }] : [])],
+      submittedAt: { gte: new Date(at - SAME_PERSON_MS), lte: new Date(at + SAME_PERSON_MS) },
+      // one person registering for two projects within the hour stays two leads
+      ...(lead.utmCampaign ? { AND: [{ OR: [{ utmCampaign: lead.utmCampaign }, { utmCampaign: null }] }] } : {}),
     },
+    orderBy: { submittedAt: "asc" },
+    select: findSelect,
   });
 }
 

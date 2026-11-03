@@ -427,9 +427,9 @@ function WhyTheyDiffer() {
       <h2 className="font-display text-base font-semibold text-ink">{t("Why the numbers differ")}</h2>
       <ul className="mt-3 list-disc space-y-2 pl-5">
         <li><b className="text-ink">{t("No tag in the form's export")}</b> — {t("the person opened the form without UTM in the address: typed it, found it in search, or got a link from a teammate or a friend. The site counts such people as direct.")}</li>
-        <li><b className="text-ink">{t("Only in the file")}</b> — {t("the site sees a registration only if its script ran in the person's browser and saw the thank-you screen: an ad blocker, a closed tab or a slow send means no lead. A direct registration is also skipped when the script could not read an e-mail or phone, and after 10 from one network in an hour.")}</li>
+        <li><b className="text-ink">{t("Only in the file")}</b> — {t("the site sees a registration only if its script ran in the person's browser and saw the thank-you screen: an ad blocker, a closed tab or a slow send means no lead. A direct registration is also skipped when the script could not read an e-mail or phone, and after 60 from one network in an hour.")}</li>
         <li><b className="text-ink">{t("Only on the site")}</b> — {t("leads after the export was made, test sends, or a different e-mail in the form and on the site.")}</li>
-        <li><b className="text-ink">{t("Different tags")}</b> — {t("the site keeps the link's tags for a day and trusts the link a person came through; the form may remember an earlier or a later visit.")}</li>
+        <li><b className="text-ink">{t("Different tags")}</b> — {t("the site keeps the link's tags for 30 days and trusts the link a person came through; the form may remember an earlier or a later visit.")}</li>
         <li>{t("Repeat sends: the form keeps every one, the site merges repeats from one visit. Here both are counted as people.")}</li>
       </ul>
     </section>

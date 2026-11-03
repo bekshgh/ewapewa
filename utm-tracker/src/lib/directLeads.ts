@@ -65,7 +65,8 @@ export async function landingLinks(): Promise<LandingLink[]> {
   return links.map((l) => ({ destinationUrl: l.destinationUrl, campaign: l.campaign?.name ?? l.utmCampaign ?? null }));
 }
 
-export const DIRECT_PER_IP_PER_HOUR = 10;
+/** A university hall or an event shares one Wi-Fi: enough for a crowd, still a cap on a script. */
+export const DIRECT_PER_IP_PER_HOUR = 60;
 
 /** How many direct leads this (hashed) IP sent in the last hour. */
 export async function recentDirectFrom(ipHash: string): Promise<number> {

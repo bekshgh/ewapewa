@@ -5,6 +5,7 @@ import { recordLead } from "@/lib/leads";
 import { type NormalisedLead } from "@/lib/attribution";
 import { WebhookStatus } from "@prisma/client";
 import { safeEqual } from "@/lib/session";
+import { campaignForPage, landingLinks } from "@/lib/directLeads";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -96,6 +97,13 @@ export async function POST(req: NextRequest) {
     utmTerm: pick(body, "utm_term"),
     submittedAt,
   };
+
+  // Without a click and tags (a visitor who came straight to the form, e.g. Zimran's webhook):
+  // a direct registration of the campaign whose links lead to the page, as the page's script does.
+  if (!lead.clickId && !lead.utmCampaign && lead.pageUrl) {
+    const campaign = campaignForPage(lead.pageUrl, await landingLinks());
+    if (campaign) Object.assign(lead, { utmCampaign: campaign, utmSource: lead.utmSource ?? "direct", utmMedium: lead.utmMedium ?? "none" });
+  }
 
   const result = await recordLead(lead, { provider: "tilda", rawPayload: body });
 

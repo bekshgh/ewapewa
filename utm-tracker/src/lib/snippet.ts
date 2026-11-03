@@ -19,14 +19,15 @@ export function buildSnippetJs(base: string): string {
   var FIELDS = ["click_id","utm_source","utm_medium","utm_campaign","utm_content","utm_term"];
   var p = new URLSearchParams(window.location.search);
 
-  // Persist the params to a cookie so they survive a redirect to a thank-you page.
+  // Persist the params to a cookie for 30 days: they survive a redirect to a thank-you page
+  // and a visitor who clicks today and registers next week still counts for the link.
   // A visit with any of them replaces the whole set: tags of an earlier visit must
   // never mix into this one (utm_content of yesterday's QR on today's Instagram click).
   if (FIELDS.some(function (name) { return p.get(name); })) {
     FIELDS.forEach(function (name) {
       var v = p.get(name);
       try {
-        document.cookie = "tl_" + name + "=" + (v ? encodeURIComponent(v) + ";max-age=86400" : ";max-age=0") + ";path=/;SameSite=Lax";
+        document.cookie = "tl_" + name + "=" + (v ? encodeURIComponent(v) + ";max-age=2592000" : ";max-age=0") + ";path=/;SameSite=Lax";
       } catch (e) {}
     });
   }

@@ -41,18 +41,29 @@ async function handle(req: NextRequest) {
         where: { clickId },
         select: {
           id: true,
-          trackingLink: { select: { utmSource: true, utmMedium: true, utmCampaign: true, utmContent: true, utmTerm: true } },
+          trackingLink: { select: { utmSource: true, utmMedium: true, utmCampaign: true, utmContent: true, utmTerm: true, campaign: { select: { name: true } } } },
         },
       })
     : null;
   if (!clickId || !click) return handleDirect(req, body);
+
+  // The link's tags live 30 days in a cookie on the landing's domain. A site with several
+  // projects' landings must not credit last week's click on project A to a registration
+  // for project B: then it is a direct registration of B (the cookie's tags dropped too).
+  const pageUrl = str(body.pageUrl) || str(body.page_url) || str(body.url);
+  const linkCampaign = click.trackingLink.campaign?.name ?? click.trackingLink.utmCampaign;
+  const pageCampaign = pageUrl ? campaignForPage(pageUrl, await landingLinks()) : null;
+  if (pageCampaign && linkCampaign && pageCampaign !== linkCampaign) {
+    const rest = Object.fromEntries(Object.entries(body).filter(([k]) => !/^(click_?id|clickId|utm_)/i.test(k)));
+    return handleDirect(req, rest);
+  }
 
   const lead: NormalisedLead = {
     name: str(body.name),
     phone: str(body.phone),
     email: str(body.email),
     formName: str(body.formname) || str(body.formName),
-    pageUrl: str(body.pageUrl) || str(body.page_url) || str(body.url),
+    pageUrl,
     clickId,
     // The link the visitor came through is the truth; the page's tags only fill gaps
     // (they may be stale, copied along with the address, or mixed from another visit).

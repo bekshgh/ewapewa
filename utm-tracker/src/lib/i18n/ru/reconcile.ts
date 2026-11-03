@@ -71,12 +71,12 @@ export const RECONCILE: Record<string, string> = {
   "No tag in the form's export": "Нет метки в выгрузке формы",
   "the person opened the form without UTM in the address: typed it, found it in search, or got a link from a teammate or a friend. The site counts such people as direct.":
     "человек открыл форму без UTM в адресе: набрал его сам, нашёл в поиске или получил ссылку от сокомандника или друга. Сайт считает таких людей direct.",
-  "the site sees a registration only if its script ran in the person's browser and saw the thank-you screen: an ad blocker, a closed tab or a slow send means no lead. A direct registration is also skipped when the script could not read an e-mail or phone, and after 10 from one network in an hour.":
-    "сайт видит регистрацию, только если его скрипт сработал в браузере человека и увидел экран «Спасибо»: блокировщик рекламы, закрытая вкладка или долгая отправка — и лида нет. Регистрация без ссылки (direct) ещё пропускается, если скрипт не смог прочитать почту или телефон, и после 10 заявок из одной сети за час.",
+  "the site sees a registration only if its script ran in the person's browser and saw the thank-you screen: an ad blocker, a closed tab or a slow send means no lead. A direct registration is also skipped when the script could not read an e-mail or phone, and after 60 from one network in an hour.":
+    "сайт видит регистрацию, только если его скрипт сработал в браузере человека и увидел экран «Спасибо»: блокировщик рекламы, закрытая вкладка или долгая отправка — и лида нет. Регистрация без ссылки (direct) ещё пропускается, если скрипт не смог прочитать почту или телефон, и после 60 заявок из одной сети за час.",
   "leads after the export was made, test sends, or a different e-mail in the form and on the site.":
     "лиды, пришедшие после выгрузки, тестовые отправки или разная почта в форме и на сайте.",
-  "the site keeps the link's tags for a day and trusts the link a person came through; the form may remember an earlier or a later visit.":
-    "сайт хранит метки ссылки сутки и верит ссылке, по которой человек пришёл; форма может запомнить более ранний или более поздний визит.",
+  "the site keeps the link's tags for 30 days and trusts the link a person came through; the form may remember an earlier or a later visit.":
+    "сайт хранит метки ссылки 30 дней и верит ссылке, по которой человек пришёл; форма может запомнить более ранний или более поздний визит.",
   "Repeat sends: the form keeps every one, the site merges repeats from one visit. Here both are counted as people.":
     "Повторные отправки: форма хранит каждую, сайт склеивает повторы в рамках одного визита. Здесь и там считаем людей.",
 };
