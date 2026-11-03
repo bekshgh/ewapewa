@@ -24,6 +24,7 @@ const NAV: Item[] = [
   { href: "/projects", label: "Projects", icon: "stack" },
   { href: "/reports", label: "Reports", icon: "doc" },
   { href: "/forecast", label: "Attendance forecast", icon: "target", access: "editors", beta: true },
+  { href: "/reconcile", label: "Registration check", icon: "check", access: "editors", isNew: true },
   { href: "/users", label: "Team", icon: "team", access: "admins" },
 ];
 
@@ -61,6 +62,7 @@ function Icon({ name }: { name: string }) {
     users: <><circle cx="9" cy="8" r="3" /><path d="M3 20a6 6 0 0 1 12 0" /><path d="M16 6a3 3 0 0 1 0 6M21 20a6 6 0 0 0-4-5.6" /></>,
     flag: <><path d="M5 21V4" /><path d="M5 4h11l-2 3 2 3H5" /></>,
     stack: <><path d="M12 3 3 8l9 5 9-5-9-5Z" /><path d="m3 13 9 5 9-5" /></>,
+    check: <><rect x="4" y="3" width="16" height="18" rx="2" /><path d="m8.5 12 2.5 2.5 4.5-5" /></>,
     target: <><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="1" /></>,
     doc: <><path d="M6 2h9l5 5v15H6z" /><path d="M14 2v6h6" /><path d="M9 17v-3M12 17v-6M15 17v-4" /></>,
     bolt: <path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" />,

@@ -63,22 +63,26 @@ export interface FolderRegistrations {
   filled: Record<AnswerField, number>;
 }
 
-export async function folderRegistrations(key: string): Promise<FolderRegistrations | null> {
+/** Which leads belong to a project folder: its own campaign's, by their utm_campaign or else their link's (as on the folder page). null: no such folder. */
+export async function folderLeadWhere(key: string): Promise<Prisma.LeadWhereInput | null> {
   const group = (await allProjectGroups()).find((g) => g.key === key);
   if (!group) return null;
   const own = group.campaigns.filter((c) => c.role.kind === "project");
+  if (!own.length) return { id: { in: [] } };
   const names = own.map((c) => c.name);
-  const ids = own.map((c) => c.id);
-  const filled = Object.fromEntries(ANSWER_FIELDS.map((f) => [f, 0])) as Record<AnswerField, number>;
-  if (!own.length) return { rows: [], filled };
-
   const links = await prisma.trackingLink.findMany({
-    where: { OR: [{ utmCampaign: { in: names } }, { campaignId: { in: ids } }] },
+    where: { OR: [{ utmCampaign: { in: names } }, { campaignId: { in: own.map((c) => c.id) } }] },
     select: { id: true },
   });
-  // A lead belongs to a campaign by its own utm_campaign, else by its link's (as on the folder page).
+  return { OR: [{ utmCampaign: { in: names } }, { utmCampaign: null, trackingLinkId: { in: links.map((l) => l.id) } }] };
+}
+
+export async function folderRegistrations(key: string): Promise<FolderRegistrations | null> {
+  const where = await folderLeadWhere(key);
+  if (!where) return null;
+  const filled = Object.fromEntries(ANSWER_FIELDS.map((f) => [f, 0])) as Record<AnswerField, number>;
   const leads = await prisma.lead.findMany({
-    where: { OR: [{ utmCampaign: { in: names } }, { utmCampaign: null, trackingLinkId: { in: links.map((l) => l.id) } }] },
+    where,
     select: { name: true, email: true, phone: true, submittedAt: true, sourcePayload: true },
     orderBy: { submittedAt: "asc" },
   });

@@ -16,6 +16,7 @@ import { DATA } from "./ru/data";
 import { MISC } from "./ru/misc";
 import { REPORTS } from "./ru/reports";
 import { FORECAST } from "./ru/forecast";
+import { RECONCILE } from "./ru/reconcile";
 
 export const RU: Record<string, string> = {
   ...COMMON,
@@ -30,4 +31,5 @@ export const RU: Record<string, string> = {
   ...MISC,
   ...REPORTS,
   ...FORECAST,
+  ...RECONCILE,
 };

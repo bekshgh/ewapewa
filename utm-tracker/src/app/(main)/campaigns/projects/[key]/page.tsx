@@ -52,6 +52,9 @@ export default async function ProjectFolderPage(props: { params: Promise<{ key: 
             {forecastBetaEnabled() && canForecastFolder(actor, s.group.key) && s.projectCampaignIds.length > 0 && (
               <Link href={`/forecast?folder=${encodeURIComponent(s.group.key)}`} className="btn-ghost">{t("Attendance forecast")} <BetaBadge className="ml-1" /> →</Link>
             )}
+            {canForecastFolder(actor, s.group.key) && s.projectCampaignIds.length > 0 && (
+              <Link href={`/reconcile?folder=${encodeURIComponent(s.group.key)}`} className="btn-ghost" title={t("Compare the form's export with the site's leads")}>{t("Registration check")} <NewBadge className="ml-1" /> →</Link>
+            )}
             {projectCard && <Link href={`/projects/${projectCard.slug}`} className="btn-ghost" title={t("The project's results from its reports")}>{t("Project card")} →</Link>}
             <Link href="/campaigns" className="btn-ghost">← {t("All campaigns")}</Link>
           </div>
