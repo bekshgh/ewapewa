@@ -24,13 +24,13 @@ const NAV: Item[] = [
   { href: "/projects", label: "Projects", icon: "stack" },
   { href: "/reports", label: "Reports", icon: "doc" },
   { href: "/forecast", label: "Attendance forecast", icon: "target", access: "editors", beta: true },
-  { href: "/reconcile", label: "Registration check", icon: "check", access: "editors", isNew: true },
   { href: "/users", label: "Team", icon: "team", access: "admins" },
 ];
 
 /** Tucked under "Others". */
 const OTHERS: Item[] = [
   { href: "/webhooks", label: "Webhook", icon: "bolt", access: "admins" },
+  { href: "/reconcile", label: "Registration check", icon: "check", access: "editors", isNew: true },
   { href: "/guide", label: "Guideline", icon: "book" },
   { href: "/data", label: "Data", icon: "trash", access: "admins" },
   { href: "/settings", label: "Settings", icon: "cog", access: "admins" },
