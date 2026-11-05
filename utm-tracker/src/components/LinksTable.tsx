@@ -172,7 +172,7 @@ export function LinksTable({ links }: { links: LinkRow[] }) {
                       <span className="text-ink">{l.campaignName || "—"}</span>
                       <span className="text-ink-faint"> / {l.utmSource || "—"} / {l.utmMedium || "—"}</span>
                     </td>
-                    <td className="num px-5 py-3.5 text-right text-ink">{formatNumber(l.clicks)}</td>
+                    <td className="num px-5 py-3.5 text-right text-ink">{l.clicks ? <Link href={`/links/${l.id}/clicks`} className="hover:text-accent hover:underline" title={t("Where the clicks come from")}>{formatNumber(l.clicks)}</Link> : formatNumber(l.clicks)}</td>
                     <td className="num px-5 py-3.5 text-right text-leads">{formatNumber(l.leads)}</td>
                     <td className="num px-5 py-3.5 text-right text-ink-muted">{l.clicks ? `${l.cr.toFixed(1)}%` : "—"}</td>
                     <td className="px-5 py-3.5 text-xs text-ink-faint">{relativeTime(l.createdAt, lang)}</td>

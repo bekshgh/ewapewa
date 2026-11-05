@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { RangeTabs } from "@/components/ui/RangeTabs";
 import { getBySource, getByCampaign, getByContent, getLinkStats, type RangeKey } from "@/lib/analytics";
@@ -54,7 +55,7 @@ export default async function AnalyticsPage(props: { searchParams: Promise<{ ran
                 <tr key={l.id} className="hover:bg-bg-hover/40">
                   <td className="px-6 py-3 text-ink">/r/{l.slug}</td>
                   <td className="px-6 py-3 text-ink-muted">{l.utmSource || "—"} · {l.utmContent || "—"}</td>
-                  <td className="num px-6 py-3 text-right text-ink">{formatNumber(l.clicks)}</td>
+                  <td className="num px-6 py-3 text-right text-ink">{l.clicks ? <Link href={`/links/${l.id}/clicks`} className="hover:text-accent hover:underline" title={t("Where the clicks come from")}>{formatNumber(l.clicks)}</Link> : formatNumber(l.clicks)}</td>
                   <td className="num px-6 py-3 text-right text-leads">{formatNumber(l.leads)}</td>
                   <td className="num px-6 py-3 text-right text-ink">{l.clicks ? formatPercent(l.cr) : "—"}</td>
                 </tr>

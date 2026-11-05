@@ -136,4 +136,40 @@ export const LINKS: Record<string, string> = {
   "bio — link in bio": "bio — ссылка в профиле",
   "message — DM / chat": "message — личка / чат",
   "Project set": "Набор проекта",
+
+  // click quality
+  "Where the clicks come from": "Откуда клики",
+  "Click quality": "Качество кликов",
+  Devices: "Устройства",
+  "{n} in the last 24 hours": "за последние 24 часа: {n}",
+  "{n} clicks per device · {ips} networks (IP)": "{n} клика на устройство · сетей (IP): {ips}",
+  "{p} of devices registered": "зарегистрировались {p} устройств",
+  "last click {time}": "последний клик {time}",
+  "What stands out": "Что бросается в глаза",
+  "{p} of clicks open inside an app (Instagram, Facebook…): typical for ads and posts in those apps.":
+    "{p} кликов открываются внутри приложения (Instagram, Facebook…): так бывает у рекламы и постов в этих приложениях.",
+  "{p} of clicks come between 00:00 and 06:00: much for people, typical for ads shown all night or a script.":
+    "{p} кликов приходятся на 00:00–06:00: для людей это много, так бывает у рекламы, которая крутится всю ночь, или у скрипта.",
+  "{n} clicks per device on average: people rarely open one link that often.":
+    "В среднем {n} клика с одного устройства: люди редко открывают одну ссылку так часто.",
+  "{p} of clicks come from devices with more than 20 clicks each: looks like a script or a page that opens the link by itself.":
+    "{p} кликов — с устройств, у которых больше 20 кликов: похоже на скрипт или страницу, которая сама открывает ссылку.",
+  "{p} of clicks have no referring site: apps and ads usually send none, so this alone proves nothing.":
+    "У {p} кликов нет сайта-источника: приложения и реклама обычно его не передают, так что само по себе это ничего не доказывает.",
+  "By hour (Almaty)": "По часам (Алматы)",
+  "App or browser": "Приложение или браузер",
+  app: "приложение",
+  Unknown: "Неизвестно",
+  "Referring site": "Сайт-источник",
+  "none (app, ad or typed)": "нет (приложение, реклама или ввели вручную)",
+  Place: "Место",
+  "System and device": "Система и устройство",
+  "Repeat clicks from one device": "Повторные клики с одного устройства",
+  "Clicks per device": "Кликов с устройства",
+  "Their clicks": "Их клики",
+  "Share of clicks": "Доля кликов",
+  "Busiest devices": "Самые активные устройства",
+  "From — to": "С — по",
+  "Previews of messengers and known bots are not counted as clicks at all; IP addresses are stored only as a hash.":
+    "Превью мессенджеров и известные боты вообще не считаются кликами; IP-адреса хранятся только в виде хеша.",
 };
