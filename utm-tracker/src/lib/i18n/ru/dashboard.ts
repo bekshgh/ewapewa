@@ -41,7 +41,7 @@ export const DASHBOARD: Record<string, string> = {
   Copy: "Копировать",
   Copied: "Скопировано",
   code: "код",
-  "Updates by itself every {n} seconds": "Обновляется само каждые {n} с",
+  "Updates by itself every {n} min": "Обновляется само каждые {n} мин",
   "Updating…": "Обновляю…",
   "Updated {time}": "Обновлено {time}",
   Refresh: "Обновить",

@@ -50,6 +50,11 @@ export async function middleware(req: NextRequest) {
   return res;
 }
 
+// The busy public traffic from the landings (t.js, beacons, link clicks, the Tilda
+// webhook, report pages) never reaches the middleware: every call costs CPU, and
+// these paths would be let through anyway.
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|icon.png|apple-icon.png|t.js|r/|report/|api/collect|api/track/|api/webhooks/tilda-lead).*)",
+  ],
 };

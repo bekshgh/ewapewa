@@ -4,13 +4,18 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/client";
 
+// A dashboard left open on a screen nobody touches stops refreshing: each refresh
+// re-renders the whole page on the server, and that is billed CPU.
+const IDLE_MS = 15 * 60 * 1000;
+const ACTIVITY = ["pointerdown", "keydown", "wheel", "touchstart"] as const;
+
 /**
  * Keeps a page's numbers fresh without reloading the site: re-fetches the
  * server data in place (router.refresh) every `every` seconds while the tab
- * is visible, when the tab comes back, and on "Refresh". Scroll position and
- * anything typed on the page stay.
+ * is visible and someone used the page in the last 15 minutes, when the tab
+ * comes back, and on "Refresh". Scroll position and anything typed on the page stay.
  */
-export function LiveRefresh({ every = 30 }: { every?: number }) {
+export function LiveRefresh({ every = 300 }: { every?: number }) {
   const t = useT();
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -18,16 +23,27 @@ export function LiveRefresh({ every = 30 }: { every?: number }) {
   const last = useRef(0);
 
   useEffect(() => {
+    let active = Date.now();
+    const touch = () => { active = Date.now(); };
     const refresh = () => {
       if (document.visibilityState !== "visible") return;
       last.current = Date.now();
       start(() => router.refresh());
     };
     setAt(new Date());
-    const timer = setInterval(refresh, every * 1000);
-    const onVisible = () => { if (Date.now() - last.current > every * 1000) refresh(); };
+    const timer = setInterval(() => { if (Date.now() - active < IDLE_MS) refresh(); }, every * 1000);
+    const onVisible = () => {
+      if (document.visibilityState !== "visible") return;
+      touch();
+      if (Date.now() - last.current > every * 1000) refresh();
+    };
     document.addEventListener("visibilitychange", onVisible);
-    return () => { clearInterval(timer); document.removeEventListener("visibilitychange", onVisible); };
+    for (const e of ACTIVITY) window.addEventListener(e, touch, { passive: true });
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+      for (const e of ACTIVITY) window.removeEventListener(e, touch);
+    };
   }, [router, every]);
 
   // the refresh finished: note the time
@@ -38,7 +54,7 @@ export function LiveRefresh({ every = 30 }: { every?: number }) {
       type="button"
       onClick={() => { last.current = Date.now(); start(() => router.refresh()); }}
       className="inline-flex items-center gap-2 rounded-xl border border-line px-3 py-2 text-xs text-ink-muted transition hover:border-accent/60 hover:text-ink"
-      title={t("Updates by itself every {n} seconds", { n: every })}
+      title={t("Updates by itself every {n} min", { n: Math.round(every / 60) })}
     >
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
         className={pending ? "animate-spin motion-reduce:animate-none" : ""} aria-hidden>
